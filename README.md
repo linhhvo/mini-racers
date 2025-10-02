@@ -5,10 +5,10 @@ You can use Markdown language to render it as formatted **HTML** file.
 
 # Group
 
-- Member 1
-- Member 2
-- Member 3
-- Member 4
+- Linh Bui
+- Linh Vo
+- Lam Ho
+- Stanislaw Piskorski
 
 # Repository organization
 
