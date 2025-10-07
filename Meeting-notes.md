@@ -29,6 +29,8 @@ On track to complete the project plan by the end of sprint 0
 
 ### TODOs
 
+[Project plan draft](https://docs.google.com/document/d/1hF5EHEoB2Lj5j-O3phHMEeXI7LqFMOemOW5JotfcBY4/edit?usp=sharing)
+
 1. Linh Bui to complete Module/Class diagram and explanations
 2. Linh Vo to complete Game features and Project practicalities
 3. Lam to complete Introduction and Game flow
@@ -56,7 +58,7 @@ On track to complete the project plan by the end of sprint 0
     2. One sprint check-in ("daily") (can be 15-20 minutes) at the end of the first week
     3. One sprint review at the end of the second week of the sprint (with advisor)
 - Team is aware of the project schedule: 4 sprints (8 weeks) for this project including exam week
-- Team agreed on working on the final project documentation in paralell with development
+- Team agreed on working on the final project documentation in parallel with development
 - Team agreed to have the project demo on 09.12
 - Team agreed to communicate mainly on Telegram
 
