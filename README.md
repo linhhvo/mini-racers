@@ -1,8 +1,6 @@
 # Project Name (replace here!)
 
-This is the template for the projects. Please copy the project description here.
-You can use Markdown language to render it as formatted **HTML** file.
-
+Micro Machines is a legendary driving game from the 90s in which you race with little toy cars in everyday-like environments such as tabletops, floors or bathtubs. This project recreates the fast-paced, arcade-style fun of the original Micro Machines with modern visuals and smooth controls.
 # Group
 
 - Linh Bui
@@ -12,18 +10,28 @@ You can use Markdown language to render it as formatted **HTML** file.
 
 # Repository organization
 
-Your project implementation should follow the organization in this repository.
-See readme.md files in each folder.
+```
+./
+├── doc/
+│   └── readme.md
+├── libs/
+│   └── readme.md
+├── plan/
+│   ├── project-plan.pdf
+│   └── readme.md
+├── src/
+│   └── readme.md
+├── tests/
+│   └── readme.md
+├── CMakeLists.txt
+├── Meeting-notes.md
+└── README.md
+```
 
-# Project Implementation
+# Features
 
-You must use git repository for the work on the project, making frequent enough commits so
-that the project group (and course staff) can follow the progress.
+List of features
 
-The course staff should be able to easily compile the project work using makefile and related
-instructions provided in the git repository. The final output should be in the **master branch** of the git repository.
+# How to play
 
-# Source code documentation
-
-It is recommended to use Doxygen to document your source code.
-Please go over the _Project Guidelines_ for details.
+Instructions about installation and how to play the game
