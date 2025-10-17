@@ -4,7 +4,7 @@ Micro Machines is a legendary driving game from the 90s in which you race with l
 # Group
 
 - Linh Bui
-- Linh Vo
+- Linh Vo - LV
 - Lam Ho
 - Stanislaw Piskorski
 
