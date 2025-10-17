@@ -1,4 +1,4 @@
-# Project Name (replace here!)
+# Project Name (edited the name)
 
 Micro Machines is a legendary driving game from the 90s in which you race with little toy cars in everyday-like environments such as tabletops, floors or bathtubs. This project recreates the fast-paced, arcade-style fun of the original Micro Machines with modern visuals and smooth controls.
 # Group
