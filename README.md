@@ -36,3 +36,17 @@ List of features
 # How to play
 
 Instructions about installation and how to play the game
+
+# Set up steps
+## 1. Install essential build tools and SFML (Ubuntu example):
+
+```bash
+sudo apt update
+sudo apt install build-essential cmake libsfml-dev
+```
+## 2. Create build directory and generate build files
+```bash
+mkdir build
+cd build
+cmake ..
+```
