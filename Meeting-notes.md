@@ -1,4 +1,38 @@
 # Meeting Notes
+# Meeting 17.10.2025 15::15
+
+**Participants**:
+
+- [x] Linh Bui
+- [x] Linh Vo 
+- [x] Lam Ho 
+- [x] Stanislaw Piskorski (Stas)
+
+## Summary of works
+- Agreed on deliverables for sprint 1 and meeting time for sprint review (sometime on Thursday morning 23.10)
+- Went over the workflow for git branching and merging
+
+
+## Challenges
+
+
+## Project status
+
+
+
+### TODOs
+
+1. Linh Bui to configure CMake to link libraries and set up project skeleton
+2. Stas to intergrate tmxlite to load and render map
+3. Lam to implement vehicle movements and physics
+4. Linh Vo to implement menu and race scenes
+
+---
+---
+
+
+
+
 # Meeting 06.10.2025 16::15
 
 **Participants**:
@@ -39,7 +73,6 @@ On track to complete the project plan by the end of sprint 0
 ---
 ---
 
-# Meeting Notes
 # Meeting 02.10.2025 15::00
 
 **Participants**:
