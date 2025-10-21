@@ -47,3 +47,7 @@ dkms.conf
 
 # Build directory
 build
+
+# LSP config
+.clangd
+.cache

@@ -3,8 +3,8 @@
 
 class App {
 public:
-    App();
-    void run();  // main loop
+  App();
+  void run(); // main loop
 private:
-    sf::RenderWindow window;
+  sf::RenderWindow window;
 };
