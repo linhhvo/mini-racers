@@ -4,7 +4,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <iostream>
 
-const std::string IMAGE_FILE{"./assets/backgrounds/RaceScene.jpg"};
+const std::string IMAGE_FILE{"../assets/backgrounds/RaceScene.jpg"};
 
 RaceScene::RaceScene(SceneManager &manager) : manager_(manager) {
   sf::RenderWindow &window = manager_.getWindow();
