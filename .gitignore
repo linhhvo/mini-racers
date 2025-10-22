@@ -51,3 +51,6 @@ build
 # LSP config
 .clangd
 .cache
+
+# VScode
+.VScode
