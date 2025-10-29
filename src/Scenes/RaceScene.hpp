@@ -1,7 +1,8 @@
 #pragma once
+#include "Gameplay/iforce2d_car.hpp"
 #include "Scene.hpp"
 #include "Scenes/SceneManager.hpp"
-#include "Gameplay/iforce2d_car.hpp"
+#include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
@@ -17,6 +18,10 @@ private:
   sf::Sprite backgroundSprite_;
   SceneManager &manager_;
 
+  sf::Texture carTexture_;
+  sf::Sprite carSprite_;
+
   b2WorldId world_;
-  iforce2d_TopdownCar* car_;
+  iforce2d_TopdownCar *car_;
+  InputManager input_;
 };
