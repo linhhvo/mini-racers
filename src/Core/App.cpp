@@ -6,7 +6,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <Scenes/SceneManager.hpp>
 
-App::App() : window(sf::VideoMode(1280, 960), "MicroMachines Skeleton") {
+App::App() : window(sf::VideoMode(800, 600), "MicroMachines Skeleton") {
   window.setFramerateLimit(60);
 }
 
