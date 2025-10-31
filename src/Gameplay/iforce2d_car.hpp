@@ -4,14 +4,11 @@
 
 class iforce2d_TopdownCar {
 public:
-  iforce2d_TopdownCar(b2WorldId world) : world_(world) {
+  iforce2d_TopdownCar(b2WorldId world, int nofCars) : world_(world), nofCars_(nofCars) {
     b2World_SetGravity(world, b2Vec2{0.0f, 0.0f});
 
     // set up ground areas
     {
-      b2BodyDef bodyDef = b2DefaultBodyDef();
-      body = b2CreateBody(world_, &bodyDef);
-
       b2Polygon ground = b2MakeBox(9, 7);
 
       b2SurfaceMaterial material = b2SurfaceMaterial();
@@ -29,33 +26,35 @@ public:
       shapeDef.material = material;
     }
 
-    // m_tire = new TDTire(m_world);
-    // m_tire->setCharacteristics(100, -20, 150);
-
-    car = new Vehicle(world_);
+    for (int i =0; i < nofCars_; i++) {
+      auto car = new Vehicle(world_);
+      cars.push_back(car);
+    }
 
     m_controlState = 0;
   }
 
   ~iforce2d_TopdownCar() {
-    // delete m_tire;
-    delete car;
-    b2DestroyBody(body);
-    b2DestroyWorld(world_);
+    for (int i = 0; i < nofCars_; i++) {
+      delete cars[i];
+    }
+    cars.clear();
   }
-  Vehicle *GetVehicle() { return car; }
+  Vehicle *GetVehicle(int idx) { return cars[idx]; }
 
-  void Keyboard(unsigned char key, bool pressed) {
-    car->updateKey(key, pressed);
+  void Keyboard(unsigned char key, bool pressed, int idx) {
+    if (idx >= 0 && idx < nofCars_) {
+      cars[idx]->updateKey(key, pressed);
+    }
   }
 
-  static iforce2d_TopdownCar *Create(b2WorldId world) {
-    return new iforce2d_TopdownCar(world);
+  static iforce2d_TopdownCar *Create(b2WorldId world, int nofCars) {
+    return new iforce2d_TopdownCar(world, nofCars);
   }
 
 private:
-  Vehicle *car;
+  int nofCars_;
+  std::vector<Vehicle*> cars;
   int m_controlState;
-  b2BodyId body;
   b2WorldId world_;
 };
