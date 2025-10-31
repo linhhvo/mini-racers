@@ -10,14 +10,25 @@
 #include <string>
 
 const std::string FONT_FILE{"../assets/fonts/MenuScenceFont.ttf"};
+const std::string BTN_NORMAL_FILE{"../assets/buttons/normal.png"};
+const std::string BTN_HIGHLIGHT_FILE{"../assets/buttons/highlight.png"};
+
 sf::Font font;
 
-Button::Button(const std::string &label)
-    : button_(sf::RectangleShape({200.f, 100.f})) {
+Button::Button(const std::string &label) {
 
   if (!font.loadFromFile(FONT_FILE)) {
     std::cout << "unable to load font" << std::endl;
   }
+
+  if (!normalTexture_.loadFromFile(BTN_NORMAL_FILE)) {
+    std::cout << "unable to load normal texture" << std::endl;
+  }
+  std::cout << "Button texture size: " << normalTexture_.getSize().x << "x"
+            << normalTexture_.getSize().y << std::endl;
+
+  buttonSprite_.setTexture(normalTexture_);
+  buttonSprite_.setScale(6, 2.5);
 
   label_.setString(label);
   label_.setFont(font);
@@ -25,10 +36,10 @@ Button::Button(const std::string &label)
 }
 
 void Button::setPosition(const sf::Vector2f &pos) {
-  button_.setPosition(pos);
+  buttonSprite_.setPosition(pos);
 
   // position label text to the center of button
-  sf::FloatRect buttonBounds = button_.getGlobalBounds();
+  sf::FloatRect buttonBounds = buttonSprite_.getGlobalBounds();
   sf::FloatRect labelBounds = label_.getGlobalBounds();
 
   label_.setPosition(buttonBounds.left + (buttonBounds.width / 2.f) -
@@ -39,7 +50,8 @@ void Button::setPosition(const sf::Vector2f &pos) {
 }
 
 sf::Vector2f Button::getSize() const {
-  return sf::Vector2f(button_.getSize().x, button_.getSize().y);
+  return sf::Vector2f(buttonSprite_.getGlobalBounds().width,
+                      buttonSprite_.getGlobalBounds().height);
 }
 
 void Button::trigger() {
@@ -48,6 +60,6 @@ void Button::trigger() {
 }
 
 void Button::render(sf::RenderTarget &renderTarget) {
-  renderTarget.draw(button_);
+  renderTarget.draw(buttonSprite_);
   renderTarget.draw(label_);
 }

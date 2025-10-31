@@ -2,7 +2,9 @@
 
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <functional>
 #include <string>
@@ -17,6 +19,9 @@ public:
   std::function<void()> onPress;
 
 private:
-  sf::RectangleShape button_;
+  // sf::RectangleShape button_;
+  sf::Sprite buttonSprite_;
+  sf::Texture normalTexture_;
+  sf::Texture highlightTexture_;
   sf::Text label_;
 };

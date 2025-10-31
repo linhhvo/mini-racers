@@ -10,6 +10,7 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <iostream>
+#include <memory>
 #include <string>
 
 const std::string IMAGE_FILE{"../assets/backgrounds/MenuScene.jpg"};
@@ -34,20 +35,20 @@ MenuScene::MenuScene(SceneManager &manager) : manager_(manager) {
                                 window.getSize().y / 2.f);
 
   // initialize start game and exit buttons
-  Button startGameBtn = Button("Start");
-  Button exitGameBtn = Button("Exit");
+  auto startGameBtn = std::make_unique<Button>("Start");
+  auto exitGameBtn = std::make_unique<Button>("Exit");
 
-  startGameBtn.onPress = [&]() {
+  startGameBtn->onPress = [&]() {
     std::cout << "press start\n";
     manager.switchScene<RaceScene>(manager_);
   };
-  exitGameBtn.onPress = [&]() {
+  exitGameBtn->onPress = [&]() {
     std::cout << "press exit\n";
     window.close();
   };
 
-  buttonsContainer_.addBtn(startGameBtn);
-  buttonsContainer_.addBtn(exitGameBtn);
+  buttonsContainer_.addBtn(std::move(startGameBtn));
+  buttonsContainer_.addBtn(std::move(exitGameBtn));
 
   // position buttons to the center of the window vertically
   buttonsContainer_.setPosition(sf::Vector2f(
@@ -68,7 +69,7 @@ void MenuScene::handleEvent(const sf::Event &event) {
       std::cout << selectedIndex_ << '\n';
     }
     if (event.key.code == sf::Keyboard::Enter) {
-      buttonsContainer_.buttons_[selectedIndex_].trigger();
+      (*buttonsContainer_.buttons_[selectedIndex_]).trigger();
       std::cout << selectedIndex_ << '\n';
     }
   }

@@ -2,15 +2,19 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <algorithm>
+#include <memory>
+#include <utility>
 #include <vector>
 
-void BtnContainer::addBtn(const Button &btn) { buttons_.push_back(btn); }
+void BtnContainer::addBtn(std::unique_ptr<Button> btn) {
+  buttons_.push_back(std::move(btn));
+}
 
 void BtnContainer::setPosition(const sf::Vector2f &pos) {
   float yPadding = 0.f;
   for (auto &btn : buttons_) {
-    btn.setPosition(sf::Vector2f(pos.x, pos.y + yPadding));
-    yPadding += btn.getSize().y + spacing_;
+    btn->setPosition(sf::Vector2f(pos.x, pos.y + yPadding));
+    yPadding += btn->getSize().y + spacing_;
   }
 }
 
@@ -19,8 +23,8 @@ sf::Vector2f BtnContainer::getSize() const {
   float height = 0.f;
 
   for (const auto &btn : buttons_) {
-    width = std::max(width, btn.getSize().x);
-    height += btn.getSize().y + spacing_;
+    width = std::max(width, btn->getSize().x);
+    height += btn->getSize().y + spacing_;
   }
 
   if (!buttons_.empty()) {
@@ -32,6 +36,6 @@ sf::Vector2f BtnContainer::getSize() const {
 
 void BtnContainer::render(sf::RenderTarget &renderTarget) {
   for (auto &btn : buttons_) {
-    btn.render(renderTarget);
+    btn->render(renderTarget);
   }
 }
