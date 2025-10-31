@@ -20,8 +20,11 @@ private:
 
   sf::Texture carTexture_;
   sf::Sprite carSprite_;
+  std::vector<sf::Sprite> carSprites;
 
   b2WorldId world_;
   iforce2d_TopdownCar *car_;
   InputManager input_;
+  int nofCars = 2;
+  int spacing = 100;
 };
