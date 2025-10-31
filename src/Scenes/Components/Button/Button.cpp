@@ -21,13 +21,12 @@ Button::Button(const std::string &label) {
     std::cout << "unable to load font" << std::endl;
   }
 
-  if (!normalTexture_.loadFromFile(BTN_NORMAL_FILE)) {
-    std::cout << "unable to load normal texture" << std::endl;
-  }
-  std::cout << "Button texture size: " << normalTexture_.getSize().x << "x"
-            << normalTexture_.getSize().y << std::endl;
+  // if (!normalTexture_.loadFromFile(BTN_NORMAL_FILE)) {
+  //   std::cout << "unable to load normal texture" << std::endl;
+  // }
 
-  buttonSprite_.setTexture(normalTexture_);
+  // buttonSprite_.setTexture(normalTexture_);
+  applyTexture(NORMAL);
   buttonSprite_.setScale(6, 2.5);
 
   label_.setString(label);
@@ -57,6 +56,22 @@ sf::Vector2f Button::getSize() const {
 void Button::trigger() {
   if (onPress)
     onPress();
+}
+
+void Button::applyTexture(Button::ButtonState state) {
+  if (state == HIGHLIGHT) {
+    if (!highlightTexture_.loadFromFile(BTN_HIGHLIGHT_FILE)) {
+      std::cout << "unable to load highlight texture" << std::endl;
+    }
+    buttonSprite_.setTexture(highlightTexture_);
+  }
+
+  if (state == NORMAL) {
+    if (!normalTexture_.loadFromFile(BTN_NORMAL_FILE)) {
+      std::cout << "unable to load normal texture" << std::endl;
+    }
+    buttonSprite_.setTexture(normalTexture_);
+  }
 }
 
 void Button::render(sf::RenderTarget &renderTarget) {

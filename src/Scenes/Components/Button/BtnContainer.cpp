@@ -1,4 +1,5 @@
 #include "BtnContainer.hpp"
+#include "Scenes/Components/Button/Button.hpp"
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <algorithm>
@@ -32,6 +33,16 @@ sf::Vector2f BtnContainer::getSize() const {
   }
 
   return sf::Vector2f(width, height);
+}
+
+void BtnContainer::highlightBtn(int selectedIdx) {
+  for (unsigned int i = 0; i < buttons_.size(); i++) {
+    if (i == selectedIdx) {
+      buttons_[i]->applyTexture(Button::HIGHLIGHT);
+    } else {
+      buttons_[i]->applyTexture(Button::NORMAL);
+    }
+  }
 }
 
 void BtnContainer::render(sf::RenderTarget &renderTarget) {

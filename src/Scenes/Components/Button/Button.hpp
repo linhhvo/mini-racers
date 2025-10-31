@@ -11,10 +11,16 @@
 
 class Button {
 public:
+  enum ButtonState { HIGHLIGHT, NORMAL };
+
   Button(const std::string &labelText);
+
   sf::Vector2f getSize() const;
   void setPosition(const sf::Vector2f &pos);
+
   void render(sf::RenderTarget &renderTarget);
+  void applyTexture(ButtonState state);
+
   void trigger();
   std::function<void()> onPress;
 

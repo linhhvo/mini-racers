@@ -54,6 +54,8 @@ MenuScene::MenuScene(SceneManager &manager) : manager_(manager) {
   buttonsContainer_.setPosition(sf::Vector2f(
       window.getSize().x / 2.f - buttonsContainer_.getSize().x / 2.f,
       window.getSize().y / 2.f - buttonsContainer_.getSize().y / 2.f));
+
+  buttonsContainer_.highlightBtn(0);
 }
 
 void MenuScene::handleEvent(const sf::Event &event) {
@@ -68,6 +70,9 @@ void MenuScene::handleEvent(const sf::Event &event) {
       selectedIndex_ = (selectedIndex_ + 1) % buttonsContainer_.buttons_.size();
       std::cout << selectedIndex_ << '\n';
     }
+
+    buttonsContainer_.highlightBtn(selectedIndex_);
+
     if (event.key.code == sf::Keyboard::Enter) {
       (*buttonsContainer_.buttons_[selectedIndex_]).trigger();
       std::cout << selectedIndex_ << '\n';
