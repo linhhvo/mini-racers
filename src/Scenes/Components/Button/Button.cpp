@@ -21,11 +21,6 @@ Button::Button(const std::string &label) {
     std::cout << "unable to load font" << std::endl;
   }
 
-  // if (!normalTexture_.loadFromFile(BTN_NORMAL_FILE)) {
-  //   std::cout << "unable to load normal texture" << std::endl;
-  // }
-
-  // buttonSprite_.setTexture(normalTexture_);
   applyTexture(NORMAL);
   buttonSprite_.setScale(6, 2.5);
 

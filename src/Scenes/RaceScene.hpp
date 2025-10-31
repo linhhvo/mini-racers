@@ -1,14 +1,17 @@
 #pragma once
 #include "../System/SceneManager.hpp"
 #include "Gameplay/iforce2d_car.hpp"
+#include "Race/HUD.hpp"
+#include "Race/Timer.hpp"
 #include "Scene.hpp"
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <memory>
 
 class RaceScene : public Scene {
 public:
-  RaceScene(SceneManager &manager);
+  RaceScene(SceneManager &manager, float raceDuration);
   void handleEvent(const sf::Event &event);
   void update(float dt);
   void render();
@@ -27,4 +30,7 @@ private:
   InputManager input_;
   int nofCars = 2;
   int spacing = 100;
+
+  Timer raceTimer_;
+  std::unique_ptr<HUD> HUD_display_;
 };

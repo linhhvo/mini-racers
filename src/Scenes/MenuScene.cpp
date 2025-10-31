@@ -40,7 +40,7 @@ MenuScene::MenuScene(SceneManager &manager) : manager_(manager) {
 
   startGameBtn->onPress = [&]() {
     std::cout << "press start\n";
-    manager.switchScene<RaceScene>(manager_);
+    manager.switchScene<RaceScene>(manager_, 30.f);
   };
   exitGameBtn->onPress = [&]() {
     std::cout << "press exit\n";

@@ -4,13 +4,18 @@
 #include "System/InputManager.hpp"
 #include "box2d/math_functions.h"
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Text.hpp>
 #include <SFML/Window/Keyboard.hpp>
+#include <cstdlib>
 #include <iostream>
+#include <memory>
 
 const std::string BACKGROUND_IMG{"../assets/backgrounds/RaceScene.png"};
 const std::string CAR_IMG{"../assets/vehicles/car.png"};
 
-RaceScene::RaceScene(SceneManager &manager) : manager_(manager) {
+RaceScene::RaceScene(SceneManager &manager, float raceDuration)
+    : manager_(manager), raceTimer_(raceDuration),
+      HUD_display_(std::make_unique<HUD>(raceTimer_)) {
   sf::RenderWindow &window = manager_.getWindow();
 
   // apply scene background image
@@ -51,6 +56,9 @@ RaceScene::RaceScene(SceneManager &manager) : manager_(manager) {
     carSprites[i].setPosition(window.getSize().x / 2.f + spacing * i,
                               window.getSize().y / 2.f + spacing * i);
   }
+
+  // start timer
+  raceTimer_.start();
 }
 
 void RaceScene::handleEvent(const sf::Event &event) {
@@ -113,6 +121,7 @@ void RaceScene::handleEvent(const sf::Event &event) {
 
 void RaceScene::update(float dt) {
   b2World_Step(world_, dt, 4);
+
   for (int i = 0; i < nofCars; i++) {
     car_->GetVehicle(i)->update();
     auto carBody = car_->GetVehicle(i)->GetBody();
@@ -122,11 +131,25 @@ void RaceScene::update(float dt) {
                               300 + car_->GetVehicle(i)->GetPosition().y);
     carSprites[i].setRotation(angleDeg);
   }
+
+  raceTimer_.update();
+  HUD_display_->update();
+
+  if (raceTimer_.isFinished()) {
+    std::cout << "race over" << std::endl;
+    exit(1);
+  }
 }
 
 void RaceScene::render() {
+  // render background (map)
   manager_.getWindow().draw(backgroundSprite_);
+
+  // render vehicles
   for (int i = 0; i < nofCars; i++) {
     manager_.getWindow().draw(carSprites[i]);
   }
+
+  // render HUD
+  HUD_display_->render(manager_.getWindow());
 }
