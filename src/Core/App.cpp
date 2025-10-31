@@ -1,10 +1,10 @@
 #include "App.hpp"
 #include "Scenes/MenuScene.hpp"
+#include "System/SceneManager.hpp"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/System/Vector2.hpp>
-#include <Scenes/SceneManager.hpp>
 
 App::App() : window(sf::VideoMode(800, 600), "MicroMachines Skeleton") {
   window.setFramerateLimit(60);

@@ -1,8 +1,8 @@
 #pragma once
 
+#include "../System/SceneManager.hpp"
 #include "Components/Button/BtnContainer.hpp"
 #include "Scene.hpp"
-#include "SceneManager.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>

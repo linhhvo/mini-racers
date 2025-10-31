@@ -1,6 +1,6 @@
 #include "RaceScene.hpp"
+#include "../System/SceneManager.hpp"
 #include "Scenes/MenuScene.hpp"
-#include "Scenes/SceneManager.hpp"
 #include "System/InputManager.hpp"
 #include "box2d/math_functions.h"
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -48,37 +48,65 @@ RaceScene::RaceScene(SceneManager &manager) : manager_(manager) {
   carSprites.resize(nofCars);
   for (int i = 0; i < nofCars; i++) {
     carSprites[i].setTexture(carTexture_);
-    carSprites[i].setPosition(window.getSize().x / 2.f + spacing * i, window.getSize().y / 2.f + spacing * i);
+    carSprites[i].setPosition(window.getSize().x / 2.f + spacing * i,
+                              window.getSize().y / 2.f + spacing * i);
   }
-
-
-  // std::cout << "pos of vehicle body at x = " << carSprite_.getPosition().x
-  //           << " and y = " << carSprite_.getPosition().y << std::endl;
 }
 
 void RaceScene::handleEvent(const sf::Event &event) {
   if (event.type == sf::Event::KeyPressed) {
-    switch(event.key.code) {
-      case sf::Keyboard::W: car_->Keyboard('w', true, 0); break;
-      case sf::Keyboard::A: car_->Keyboard('a', true, 0); break;
-      case sf::Keyboard::S: car_->Keyboard('s', true, 0); break;
-      case sf::Keyboard::D: car_->Keyboard('d', true, 0); break;
-      case sf::Keyboard::Up: car_->Keyboard('w', true, 1); break;
-      case sf::Keyboard::Left: car_->Keyboard('a', true, 1); break;
-      case sf::Keyboard::Down: car_->Keyboard('s', true, 1); break;
-      case sf::Keyboard::Right: car_->Keyboard('d', true, 1); break;
+    switch (event.key.code) {
+    case sf::Keyboard::W:
+      car_->Keyboard('w', true, 0);
+      break;
+    case sf::Keyboard::A:
+      car_->Keyboard('a', true, 0);
+      break;
+    case sf::Keyboard::S:
+      car_->Keyboard('s', true, 0);
+      break;
+    case sf::Keyboard::D:
+      car_->Keyboard('d', true, 0);
+      break;
+    case sf::Keyboard::Up:
+      car_->Keyboard('w', true, 1);
+      break;
+    case sf::Keyboard::Left:
+      car_->Keyboard('a', true, 1);
+      break;
+    case sf::Keyboard::Down:
+      car_->Keyboard('s', true, 1);
+      break;
+    case sf::Keyboard::Right:
+      car_->Keyboard('d', true, 1);
+      break;
     }
-  }
-  else if (event.type == sf::Event::KeyReleased) {
-    switch(event.key.code) {
-      case sf::Keyboard::W: car_->Keyboard('w', false, 0); break;
-      case sf::Keyboard::A: car_->Keyboard('a', false, 0); break;
-      case sf::Keyboard::S: car_->Keyboard('s', false, 0); break;
-      case sf::Keyboard::D: car_->Keyboard('d', false, 0); break;
-      case sf::Keyboard::Up: car_->Keyboard('w', false, 1); break;
-      case sf::Keyboard::Left: car_->Keyboard('a', false, 1); break;
-      case sf::Keyboard::Down: car_->Keyboard('s', false, 1); break;
-      case sf::Keyboard::Right: car_->Keyboard('d', false, 1); break;
+  } else if (event.type == sf::Event::KeyReleased) {
+    switch (event.key.code) {
+    case sf::Keyboard::W:
+      car_->Keyboard('w', false, 0);
+      break;
+    case sf::Keyboard::A:
+      car_->Keyboard('a', false, 0);
+      break;
+    case sf::Keyboard::S:
+      car_->Keyboard('s', false, 0);
+      break;
+    case sf::Keyboard::D:
+      car_->Keyboard('d', false, 0);
+      break;
+    case sf::Keyboard::Up:
+      car_->Keyboard('w', false, 1);
+      break;
+    case sf::Keyboard::Left:
+      car_->Keyboard('a', false, 1);
+      break;
+    case sf::Keyboard::Down:
+      car_->Keyboard('s', false, 1);
+      break;
+    case sf::Keyboard::Right:
+      car_->Keyboard('d', false, 1);
+      break;
     }
   }
 }
@@ -91,8 +119,8 @@ void RaceScene::update(float dt) {
     auto transform = b2Body_GetTransform(carBody);
     float angleDeg = b2Rot_GetAngle(transform.q) * RADTODEG;
     carSprites[i].setPosition(400 + car_->GetVehicle(i)->GetPosition().x,
-                          300 + car_->GetVehicle(i)->GetPosition().y);
-    carSprites[i].setRotation(angleDeg); 
+                              300 + car_->GetVehicle(i)->GetPosition().y);
+    carSprites[i].setRotation(angleDeg);
   }
 }
 
@@ -102,4 +130,3 @@ void RaceScene::render() {
     manager_.getWindow().draw(carSprites[i]);
   }
 }
-
