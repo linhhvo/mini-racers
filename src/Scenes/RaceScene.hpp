@@ -4,6 +4,7 @@
 #include "Race/HUD.hpp"
 #include "Race/Timer.hpp"
 #include "Scene.hpp"
+#include "System/GameContext.hpp"
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -11,12 +12,14 @@
 
 class RaceScene : public Scene {
 public:
-  RaceScene(SceneManager &manager, float raceDuration);
+  RaceScene(SceneManager &manager, GameContext &context);
   void handleEvent(const sf::Event &event);
   void update(float dt);
   void render();
 
 private:
+  GameContext &context_;
+
   sf::Texture backgroundTexture_;
   sf::Sprite backgroundSprite_;
   SceneManager &manager_;
@@ -28,7 +31,7 @@ private:
   b2WorldId world_;
   iforce2d_TopdownCar *car_;
   InputManager input_;
-  int nofCars = 2;
+  int nofCars = context_.config->numOfPlayers;
   int spacing = 100;
 
   Timer raceTimer_;

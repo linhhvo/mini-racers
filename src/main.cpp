@@ -1,7 +1,15 @@
 #include "Core/App.hpp"
+#include "System/Config.hpp"
+#include "System/GameContext.hpp"
+#include "System/InputManager.hpp"
 
 int main() {
-    App app;
-    app.run();
-    return 0;
+  Config config;
+  InputManager input;
+
+  GameContext context{&config, &input};
+
+  App app(context);
+  app.run();
+  return 0;
 }

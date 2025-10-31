@@ -2,6 +2,7 @@
 #include "Components/Button/BtnContainer.hpp"
 #include "Components/Button/Button.hpp"
 #include "RaceScene.hpp"
+#include "System/GameContext.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -15,7 +16,8 @@
 
 const std::string IMAGE_FILE{"../assets/backgrounds/MenuScene.jpg"};
 
-MenuScene::MenuScene(SceneManager &manager) : manager_(manager) {
+MenuScene::MenuScene(SceneManager &manager, GameContext &context)
+    : manager_(manager), context_(context) {
   sf::RenderWindow &window = manager_.getWindow();
 
   if (!backgroundTexture_.loadFromFile(IMAGE_FILE)) {
@@ -40,7 +42,7 @@ MenuScene::MenuScene(SceneManager &manager) : manager_(manager) {
 
   startGameBtn->onPress = [&]() {
     std::cout << "press start\n";
-    manager.switchScene<RaceScene>(manager_, 30.f);
+    manager.switchScene<RaceScene>(manager_, context);
   };
   exitGameBtn->onPress = [&]() {
     std::cout << "press exit\n";

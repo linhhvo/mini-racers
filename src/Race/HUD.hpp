@@ -19,4 +19,6 @@ public:
 private:
   Timer &timer_;
   sf::Text timerText_;
+  sf::Text rankText_;
+  sf::Text lapText_;
 };

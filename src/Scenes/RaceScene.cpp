@@ -1,7 +1,7 @@
 #include "RaceScene.hpp"
 #include "../System/SceneManager.hpp"
 #include "Scenes/MenuScene.hpp"
-#include "System/InputManager.hpp"
+#include "System/GameContext.hpp"
 #include "box2d/math_functions.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -13,8 +13,9 @@
 const std::string BACKGROUND_IMG{"../assets/backgrounds/RaceScene.png"};
 const std::string CAR_IMG{"../assets/vehicles/car.png"};
 
-RaceScene::RaceScene(SceneManager &manager, float raceDuration)
-    : manager_(manager), raceTimer_(raceDuration),
+RaceScene::RaceScene(SceneManager &manager, GameContext &context)
+    : context_(context), manager_(manager),
+      raceTimer_(context.config->raceDuration),
       HUD_display_(std::make_unique<HUD>(raceTimer_)) {
   sf::RenderWindow &window = manager_.getWindow();
 
