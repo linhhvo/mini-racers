@@ -16,7 +16,7 @@ const std::string CAR_IMG{"../assets/vehicles/car.png"};
 RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     : context_(context), manager_(manager),
       raceTimer_(context.config->raceDuration),
-      HUD_display_(std::make_unique<HUD>(raceTimer_)) {
+      HUD_display_(std::make_unique<HUD>(raceTimer_, context)) {
   sf::RenderWindow &window = manager_.getWindow();
 
   // apply scene background image
