@@ -16,12 +16,12 @@ public:
     running_ = false;
   };
 
-  void update() {
+  void update(float dt) {
     if (!running_)
       return;
 
-    float elapsed = clock_.getElapsedTime().asSeconds();
-    remaining_ = duration_ - elapsed;
+    // float elapsed = clock_.getElapsedTime().asSeconds();
+    remaining_ -= dt;
 
     if (remaining_ <= 0.f) {
       remaining_ = 0.f;

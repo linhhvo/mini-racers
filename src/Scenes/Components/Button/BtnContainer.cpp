@@ -19,6 +19,23 @@ void BtnContainer::setPosition(const sf::Vector2f &pos) {
   }
 }
 
+void BtnContainer::setScale() {
+  float width = 0.f;
+  float height = 0.f;
+
+  for (const auto &btn : buttons_) {
+    width = std::max(width, btn->getLabel().getGlobalBounds().width);
+    height = std::max(height, btn->getLabel().getGlobalBounds().height);
+  }
+
+  for (const auto &btn : buttons_) {
+    float scaleX = width / btn->getSize().x;
+    float scaleY = height / btn->getSize().y;
+
+    btn->setScale(sf::Vector2f(scaleX + 1.5, scaleY + 1.5));
+  }
+}
+
 sf::Vector2f BtnContainer::getSize() const {
   float width = 0.f;
   float height = 0.f;

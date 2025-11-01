@@ -1,6 +1,7 @@
 #include "RaceScene.hpp"
 #include "../System/SceneManager.hpp"
 #include "Scenes/MenuScene.hpp"
+#include "Scenes/PauseScene.hpp"
 #include "System/GameContext.hpp"
 #include "box2d/math_functions.h"
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -89,6 +90,9 @@ void RaceScene::handleEvent(const sf::Event &event) {
     case sf::Keyboard::Right:
       car_->Keyboard('d', true, 1);
       break;
+    case sf::Keyboard::Escape:
+      manager_.pushScene<PauseScene>(context_);
+      break;
     }
   } else if (event.type == sf::Event::KeyReleased) {
     switch (event.key.code) {
@@ -133,7 +137,7 @@ void RaceScene::update(float dt) {
     carSprites[i].setRotation(angleDeg);
   }
 
-  raceTimer_.update();
+  raceTimer_.update(dt);
   HUD_display_->update();
 
   if (raceTimer_.isFinished()) {

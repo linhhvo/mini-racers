@@ -15,6 +15,8 @@ public:
   void addBtn(std::unique_ptr<Button> btn);
 
   void setPosition(const sf::Vector2f &pos);
+  void setScale();
+
   sf::Vector2f getSize() const;
 
   void render(sf::RenderTarget &renderTarget);

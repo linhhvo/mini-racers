@@ -22,7 +22,6 @@ Button::Button(const std::string &label) {
   }
 
   applyTexture(NORMAL);
-  buttonSprite_.setScale(6, 2.5);
 
   label_.setString(label);
   label_.setFont(font);
@@ -43,10 +42,16 @@ void Button::setPosition(const sf::Vector2f &pos) {
   label_.move(0.f, -labelBounds.top);
 }
 
+void Button::setScale(const sf::Vector2f &factors) {
+  buttonSprite_.setScale(factors);
+}
+
 sf::Vector2f Button::getSize() const {
   return sf::Vector2f(buttonSprite_.getGlobalBounds().width,
                       buttonSprite_.getGlobalBounds().height);
 }
+
+sf::Text &Button::getLabel() { return label_; }
 
 void Button::trigger() {
   if (onPress)

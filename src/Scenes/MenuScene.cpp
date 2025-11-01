@@ -3,6 +3,7 @@
 #include "Components/Button/Button.hpp"
 #include "RaceScene.hpp"
 #include "System/GameContext.hpp"
+#include "System/SceneManager.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -40,19 +41,14 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
   auto startGameBtn = std::make_unique<Button>("Start");
   auto exitGameBtn = std::make_unique<Button>("Exit");
 
-  startGameBtn->onPress = [&]() {
-    std::cout << "press start\n";
-    manager.switchScene<RaceScene>(manager_, context);
-  };
-  exitGameBtn->onPress = [&]() {
-    std::cout << "press exit\n";
-    window.close();
-  };
+  startGameBtn->onPress = [&]() { manager_.switchScene<RaceScene>(context); };
+  exitGameBtn->onPress = [&]() { window.close(); };
 
   buttonsContainer_.addBtn(std::move(startGameBtn));
   buttonsContainer_.addBtn(std::move(exitGameBtn));
 
   // position buttons to the center of the window vertically
+  buttonsContainer_.setScale();
   buttonsContainer_.setPosition(sf::Vector2f(
       window.getSize().x / 2.f - buttonsContainer_.getSize().x / 2.f,
       window.getSize().y / 2.f - buttonsContainer_.getSize().y / 2.f));
@@ -77,7 +73,6 @@ void MenuScene::handleEvent(const sf::Event &event) {
 
     if (event.key.code == sf::Keyboard::Enter) {
       (*buttonsContainer_.buttons_[selectedIndex_]).trigger();
-      std::cout << selectedIndex_ << '\n';
     }
   }
 }

@@ -20,7 +20,7 @@ void App::run() {
   sf::View view = window.getDefaultView();
 
   SceneManager sceneManager(window);
-  sceneManager.switchScene<MenuScene>(sceneManager, context_);
+  sceneManager.switchScene<MenuScene>(context_);
 
   sf::Clock clock;
 
@@ -38,23 +38,16 @@ void App::run() {
         window.setView(view);
       }
 
-      if (sceneManager.getCurrentScene()) {
-        sceneManager.getCurrentScene()->handleEvent(event);
-      }
+      sceneManager.handleEnvent(event);
     }
 
     float dt = clock.restart().asSeconds();
 
-    if (sceneManager.getCurrentScene()) {
-      sceneManager.getCurrentScene()->update(dt);
-    }
+    sceneManager.update(dt);
 
     window.clear(sf::Color::Black);
 
-    // render menu scene
-    if (sceneManager.getCurrentScene()) {
-      sceneManager.getCurrentScene()->render();
-    }
+    sceneManager.render();
 
     window.display();
   }

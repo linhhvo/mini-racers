@@ -16,7 +16,10 @@ public:
   Button(const std::string &labelText);
 
   sf::Vector2f getSize() const;
+  sf::Text &getLabel();
+
   void setPosition(const sf::Vector2f &pos);
+  void setScale(const sf::Vector2f &factors);
 
   void render(sf::RenderTarget &renderTarget);
   void applyTexture(ButtonState state);
