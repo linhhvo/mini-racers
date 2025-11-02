@@ -8,5 +8,5 @@ public:
   int framerate = 60;
   int numOfLaps = 3;
   float raceDuration = 90;
-  int numOfPlayers = 3;
+  int numOfPlayers = 2;
 };

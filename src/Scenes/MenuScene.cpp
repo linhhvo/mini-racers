@@ -66,7 +66,6 @@ void MenuScene::handleEvent(const sf::Event &event) {
     }
     if (event.key.code == sf::Keyboard::Down) {
       selectedIndex_ = (selectedIndex_ + 1) % buttonsContainer_.buttons_.size();
-      std::cout << selectedIndex_ << '\n';
     }
 
     buttonsContainer_.highlightBtn(selectedIndex_);
