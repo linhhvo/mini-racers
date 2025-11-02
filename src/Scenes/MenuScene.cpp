@@ -62,7 +62,6 @@ void MenuScene::handleEvent(const sf::Event &event) {
       selectedIndex_ =
           (selectedIndex_ + buttonsContainer_.buttons_.size() - 1) %
           buttonsContainer_.buttons_.size();
-      std::cout << selectedIndex_ << '\n';
     }
     if (event.key.code == sf::Keyboard::Down) {
       selectedIndex_ = (selectedIndex_ + 1) % buttonsContainer_.buttons_.size();
