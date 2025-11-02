@@ -10,14 +10,18 @@
 #include <string>
 
 const std::string FONT_FILE{"../assets/fonts/MenuScenceFont.ttf"};
+const std::string BTN_NORMAL_FILE{"../assets/buttons/normal.png"};
+const std::string BTN_HIGHLIGHT_FILE{"../assets/buttons/highlight.png"};
+
 sf::Font font;
 
-Button::Button(const std::string &label)
-    : button_(sf::RectangleShape({200.f, 100.f})) {
+Button::Button(const std::string &label) {
 
   if (!font.loadFromFile(FONT_FILE)) {
     std::cout << "unable to load font" << std::endl;
   }
+
+  applyTexture(NORMAL);
 
   label_.setString(label);
   label_.setFont(font);
@@ -25,10 +29,10 @@ Button::Button(const std::string &label)
 }
 
 void Button::setPosition(const sf::Vector2f &pos) {
-  button_.setPosition(pos);
+  buttonSprite_.setPosition(pos);
 
   // position label text to the center of button
-  sf::FloatRect buttonBounds = button_.getGlobalBounds();
+  sf::FloatRect buttonBounds = buttonSprite_.getGlobalBounds();
   sf::FloatRect labelBounds = label_.getGlobalBounds();
 
   label_.setPosition(buttonBounds.left + (buttonBounds.width / 2.f) -
@@ -38,16 +42,39 @@ void Button::setPosition(const sf::Vector2f &pos) {
   label_.move(0.f, -labelBounds.top);
 }
 
-sf::Vector2f Button::getSize() const {
-  return sf::Vector2f(button_.getSize().x, button_.getSize().y);
+void Button::setScale(const sf::Vector2f &factors) {
+  buttonSprite_.setScale(factors);
 }
+
+sf::Vector2f Button::getSize() const {
+  return sf::Vector2f(buttonSprite_.getGlobalBounds().width,
+                      buttonSprite_.getGlobalBounds().height);
+}
+
+sf::Text &Button::getLabel() { return label_; }
 
 void Button::trigger() {
   if (onPress)
     onPress();
 }
 
+void Button::applyTexture(Button::ButtonState state) {
+  if (state == HIGHLIGHT) {
+    if (!highlightTexture_.loadFromFile(BTN_HIGHLIGHT_FILE)) {
+      std::cout << "unable to load highlight texture" << std::endl;
+    }
+    buttonSprite_.setTexture(highlightTexture_);
+  }
+
+  if (state == NORMAL) {
+    if (!normalTexture_.loadFromFile(BTN_NORMAL_FILE)) {
+      std::cout << "unable to load normal texture" << std::endl;
+    }
+    buttonSprite_.setTexture(normalTexture_);
+  }
+}
+
 void Button::render(sf::RenderTarget &renderTarget) {
-  renderTarget.draw(button_);
+  renderTarget.draw(buttonSprite_);
   renderTarget.draw(label_);
 }

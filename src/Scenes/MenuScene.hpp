@@ -1,8 +1,9 @@
 #pragma once
 
+#include "../System/SceneManager.hpp"
 #include "Components/Button/BtnContainer.hpp"
 #include "Scene.hpp"
-#include "SceneManager.hpp"
+#include "System/GameContext.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
@@ -10,7 +11,7 @@
 
 class MenuScene : public Scene {
 public:
-  MenuScene(SceneManager &manager);
+  MenuScene(SceneManager &manager, GameContext &context);
   void handleEvent(const sf::Event &event);
   void update(float dt) {};
   void render();
@@ -20,5 +21,7 @@ private:
   sf::Sprite backgroundSprite_;
   BtnContainer buttonsContainer_;
   int selectedIndex_ = 0;
+
   SceneManager &manager_;
+  GameContext &context_;
 };

@@ -2,6 +2,8 @@
 #include "Components/Button/BtnContainer.hpp"
 #include "Components/Button/Button.hpp"
 #include "RaceScene.hpp"
+#include "System/GameContext.hpp"
+#include "System/SceneManager.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -10,11 +12,13 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <iostream>
+#include <memory>
 #include <string>
 
 const std::string IMAGE_FILE{"../assets/backgrounds/MenuScene.jpg"};
 
-MenuScene::MenuScene(SceneManager &manager) : manager_(manager) {
+MenuScene::MenuScene(SceneManager &manager, GameContext &context)
+    : manager_(manager), context_(context) {
   sf::RenderWindow &window = manager_.getWindow();
 
   if (!backgroundTexture_.loadFromFile(IMAGE_FILE)) {
@@ -34,25 +38,22 @@ MenuScene::MenuScene(SceneManager &manager) : manager_(manager) {
                                 window.getSize().y / 2.f);
 
   // initialize start game and exit buttons
-  Button startGameBtn = Button("Start");
-  Button exitGameBtn = Button("Exit");
+  auto startGameBtn = std::make_unique<Button>("Start");
+  auto exitGameBtn = std::make_unique<Button>("Exit");
 
-  startGameBtn.onPress = [&]() {
-    std::cout << "press start\n";
-    manager.switchScene<RaceScene>(manager_);
-  };
-  exitGameBtn.onPress = [&]() {
-    std::cout << "press exit\n";
-    window.close();
-  };
+  startGameBtn->onPress = [&]() { manager_.switchScene<RaceScene>(context); };
+  exitGameBtn->onPress = [&]() { window.close(); };
 
-  buttonsContainer_.addBtn(startGameBtn);
-  buttonsContainer_.addBtn(exitGameBtn);
+  buttonsContainer_.addBtn(std::move(startGameBtn));
+  buttonsContainer_.addBtn(std::move(exitGameBtn));
 
   // position buttons to the center of the window vertically
+  buttonsContainer_.setScale();
   buttonsContainer_.setPosition(sf::Vector2f(
       window.getSize().x / 2.f - buttonsContainer_.getSize().x / 2.f,
       window.getSize().y / 2.f - buttonsContainer_.getSize().y / 2.f));
+
+  buttonsContainer_.highlightBtn(0);
 }
 
 void MenuScene::handleEvent(const sf::Event &event) {
@@ -61,15 +62,15 @@ void MenuScene::handleEvent(const sf::Event &event) {
       selectedIndex_ =
           (selectedIndex_ + buttonsContainer_.buttons_.size() - 1) %
           buttonsContainer_.buttons_.size();
-      std::cout << selectedIndex_ << '\n';
     }
     if (event.key.code == sf::Keyboard::Down) {
       selectedIndex_ = (selectedIndex_ + 1) % buttonsContainer_.buttons_.size();
-      std::cout << selectedIndex_ << '\n';
     }
+
+    buttonsContainer_.highlightBtn(selectedIndex_);
+
     if (event.key.code == sf::Keyboard::Enter) {
-      buttonsContainer_.buttons_[selectedIndex_].trigger();
-      std::cout << selectedIndex_ << '\n';
+      (*buttonsContainer_.buttons_[selectedIndex_]).trigger();
     }
   }
 }

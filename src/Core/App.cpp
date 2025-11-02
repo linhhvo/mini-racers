@@ -1,20 +1,26 @@
 #include "App.hpp"
 #include "Scenes/MenuScene.hpp"
+#include "System/Config.hpp"
+#include "System/GameContext.hpp"
+#include "System/SceneManager.hpp"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/System/Vector2.hpp>
-#include <Scenes/SceneManager.hpp>
 
-App::App() : window(sf::VideoMode(800, 600), "MicroMachines Skeleton") {
-  window.setFramerateLimit(60);
+App::App(GameContext &context)
+    : window(sf::VideoMode(context.config->windowWidth,
+                           context.config->windowHeight),
+             "MicroMachines Skeleton"),
+      context_(context) {
+  window.setFramerateLimit(context.config->framerate);
 }
 
 void App::run() {
   sf::View view = window.getDefaultView();
 
   SceneManager sceneManager(window);
-  sceneManager.switchScene<MenuScene>(sceneManager);
+  sceneManager.switchScene<MenuScene>(context_);
 
   sf::Clock clock;
 
@@ -32,23 +38,16 @@ void App::run() {
         window.setView(view);
       }
 
-      if (sceneManager.getCurrentScene()) {
-        sceneManager.getCurrentScene()->handleEvent(event);
-      }
+      sceneManager.handleEnvent(event);
     }
 
     float dt = clock.restart().asSeconds();
 
-    if (sceneManager.getCurrentScene()) {
-      sceneManager.getCurrentScene()->update(dt);
-    }
+    sceneManager.update(dt);
 
     window.clear(sf::Color::Black);
 
-    // render menu scene
-    if (sceneManager.getCurrentScene()) {
-      sceneManager.getCurrentScene()->render();
-    }
+    sceneManager.render();
 
     window.display();
   }
