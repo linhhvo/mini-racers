@@ -4,6 +4,7 @@
 #include "Scenes/Components/Button/BtnContainer.hpp"
 #include "System/GameContext.hpp"
 #include <SFML/Graphics/ConvexShape.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
@@ -17,6 +18,7 @@ public:
 private:
   GameContext &context_;
   SceneManager &manager_;
+  sf::RectangleShape background_;
 
   BtnContainer buttonsContainer_;
   int selectedIndex_ = 0;

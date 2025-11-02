@@ -2,6 +2,7 @@
 #include "Scenes/MenuScene.hpp"
 #include "System/GameContext.hpp"
 #include "System/SceneManager.hpp"
+#include <SFML/System/Vector2.hpp>
 #include <iostream>
 
 PauseScene::PauseScene(SceneManager &manager, GameContext &context)
@@ -27,6 +28,10 @@ PauseScene::PauseScene(SceneManager &manager, GameContext &context)
       window.getSize().y / 2.f - buttonsContainer_.getSize().y / 2.f));
 
   buttonsContainer_.highlightBtn(0);
+
+  // create a blurred overlay background
+  background_.setSize(sf::Vector2f(window.getSize().x, window.getSize().y));
+  background_.setFillColor(sf::Color(0, 0, 0, 150));
 }
 
 void PauseScene::handleEvent(const sf::Event &event) {
@@ -49,4 +54,7 @@ void PauseScene::handleEvent(const sf::Event &event) {
   }
 }
 
-void PauseScene::render() { buttonsContainer_.render(manager_.getWindow()); }
+void PauseScene::render() {
+  manager_.getWindow().draw(background_);
+  buttonsContainer_.render(manager_.getWindow());
+}
