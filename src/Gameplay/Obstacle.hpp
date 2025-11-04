@@ -33,6 +33,8 @@ public:
   }
   ~Obstacle() = default;
 
+  b2BodyId GetBody() {return body;}
+  
 private:
   b2BodyId body;
   b2ShapeId obstacle;

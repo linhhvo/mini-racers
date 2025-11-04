@@ -13,7 +13,7 @@
 
 class Vehicle {
 public:
-  Vehicle(b2WorldId world);
+  Vehicle(b2WorldId world, b2Vec2 pos);
   ~Vehicle() = default;
 
   //movement functions

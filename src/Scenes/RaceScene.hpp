@@ -28,6 +28,9 @@ private:
   sf::Sprite carSprite_;
   std::vector<sf::Sprite> carSprites;
 
+  sf::Texture obsTexture_;
+  sf::Sprite obsSprite_;
+
   b2WorldId world_;
   iforce2d_TopdownCar *car_;
   InputManager input_;

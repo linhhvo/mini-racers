@@ -2,6 +2,7 @@
 #include "../System/SceneManager.hpp"
 #include "Scenes/MenuScene.hpp"
 #include "Scenes/PauseScene.hpp"
+#include "Scenes/VictoryScene.hpp"
 #include "System/GameContext.hpp"
 #include "box2d/math_functions.h"
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -13,6 +14,7 @@
 
 const std::string BACKGROUND_IMG{"../assets/backgrounds/RaceScene.png"};
 const std::string CAR_IMG{"../assets/vehicles/car.png"};
+const std::string OBS_IMG("../assets/obstacles/Obstacle.png");
 
 RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     : context_(context), manager_(manager),
@@ -41,8 +43,12 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   if (!carTexture_.loadFromFile(CAR_IMG)) {
     std::cout << "unable to load car image file" << std::endl;
   }
+  if(!obsTexture_.loadFromFile(OBS_IMG)) {
+    std::cout << "unable to load obstacles image file" << std::endl;
+  }
 
   carTexture_.setSmooth(true);
+  obsTexture_.setSmooth(true);
 
   // box2D
   b2WorldDef worldDef = b2DefaultWorldDef();
@@ -60,15 +66,30 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   carSprites.resize(nofCars);
   for (int i = 0; i < nofCars; i++) {
     carSprites[i].setTexture(carTexture_);
+    
+    sf::FloatRect bounds = carSprites[i].getLocalBounds();
+    carSprites[i].setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+
     auto pos = b2Body_GetPosition(car_->GetVehicle(i)->GetBody());
-    carSprites[i].setOrigin(carSprites[i].getLocalBounds().width / 2.f,
-                        carSprites[i].getLocalBounds().height / 2.f);
-    carSprites[i].setPosition(pos.x * scale, pos.y * scale);
+    std::cout << "box2d Car " << i << " position: " << pos.x << ", " << pos.y << "\n";
+    sf::Vector2f sfPos(pos.x * scale, pos.y * scale);
+    std::cout << "sfml Car " << i << " position: " << sfPos.x << ", " << sfPos.y << "\n";
+    carSprites[i].setPosition(sfPos);
   }
+  obsSprite_.setTexture(obsTexture_);
+  obsSprite_.setScale(0.06f, 0.06f);
+  sf::FloatRect bounds = obsSprite_.getLocalBounds();
+  obsSprite_.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+  auto Obpos = b2Body_GetPosition(car_->GetObstacle(0)->GetBody());
+  std::cout << "box2d Obstacle " << " position: " << Obpos.x << ", " << Obpos.y << "\n";
+  sf::Vector2f sfPos(Obpos.x * scale, Obpos.y * scale);
+  std::cout << "sfml Obstacle "<< " position: " << sfPos.x << ", " << sfPos.y << "\n";
+  obsSprite_.setPosition(sfPos);
 
   // start timer
   raceTimer_.start();
 }
+
 
 void RaceScene::handleEvent(const sf::Event &event) {
   if (event.type == sf::Event::KeyPressed) {
@@ -135,12 +156,15 @@ void RaceScene::update(float dt) {
   b2World_Step(world_, dt, 4);
 
   for (int i = 0; i < nofCars; i++) {
+    float scale = 30.0f;
     car_->GetVehicle(i)->update();
     auto carBody = car_->GetVehicle(i)->GetBody();
     auto transform = b2Body_GetTransform(carBody);
     float angleDeg = b2Rot_GetAngle(transform.q) * RADTODEG;
-    carSprites[i].setPosition(400 + car_->GetVehicle(i)->GetPosition().x,
-                              300 + car_->GetVehicle(i)->GetPosition().y);
+    auto pos = car_->GetVehicle(i)->GetPosition();
+    sf::Vector2f sfPos(pos.x * scale, pos.y * scale);
+    carSprites[i].setPosition(sfPos);
+
     carSprites[i].setRotation(angleDeg);
   }
 
@@ -149,7 +173,7 @@ void RaceScene::update(float dt) {
 
   if (raceTimer_.isFinished()) {
     std::cout << "race over" << std::endl;
-    exit(1);
+    manager_.pushScene<VictoryScene>(context_);
   }
 }
 
@@ -161,6 +185,8 @@ void RaceScene::render() {
   for (int i = 0; i < nofCars; i++) {
     manager_.getWindow().draw(carSprites[i]);
   }
+
+  manager_.getWindow().draw(obsSprite_);
 
   // render HUD
   HUD_display_->render(manager_.getWindow());

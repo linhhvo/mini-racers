@@ -4,19 +4,19 @@
 #include <iostream>
 #include <vector>
 
-Vehicle::Vehicle(b2WorldId world): world_(world){
+Vehicle::Vehicle(b2WorldId world, b2Vec2 pos): world_(world){
   // create chassis body
   b2BodyDef bodyDef = b2DefaultBodyDef();
   bodyDef.type = b2_dynamicBody;
   bodyDef.angularDamping = 1.0f;
   bodyDef.linearDamping = 0.3f;
-  bodyDef.position = b2Vec2{5.0f, 5.0f};
+  bodyDef.position = pos;
   body = b2CreateBody(world, &bodyDef);
   b2Body_SetAngularDamping(body, 4.0f);
   b2Body_SetLinearDamping(body, 2.0f);
 
   // Box Polygon shape
-  b2Polygon box = b2MakeBox(1.0f, 2.0f);
+  b2Polygon box = b2MakeBox(0.5f, 1.0f);
   // Tire material (can be changed for future vehicle types)
   b2SurfaceMaterial material = b2SurfaceMaterial();
   material.friction = 0.8f;
@@ -29,6 +29,7 @@ Vehicle::Vehicle(b2WorldId world): world_(world){
   shapeDef.enableHitEvents = true;
   shapeDef.enablePreSolveEvents = false; // true if we want to disable collision (powerup maybe?)
   shapeDef.enableSensorEvents = true;
+  shapeDef.isSensor = false;
   shapeDef.material = material;
 
   // car creator
@@ -62,13 +63,13 @@ void Vehicle::update() {
 
   if (up) {
     b2Vec2 forward = b2Body_GetWorldVector(body, b2Vec2{0.0f, -1.0f});
-    b2Vec2 force = {forward.x * 5200.0f, forward.y * 5200.0f};
+    b2Vec2 force = {forward.x * 100.0f, forward.y * 100.0f};
     b2Vec2 worldHood = b2Body_GetWorldPoint(body, localHood);
     b2Body_ApplyForce(body, force, worldHood, true);
   }
   if (down) {
     b2Vec2 backward = b2Body_GetWorldVector(body, b2Vec2{0.0f, 1.0f});
-    b2Vec2 force = {backward.x * 5200.0f, backward.y * 5200.0f};
+    b2Vec2 force = {backward.x * 100.0f, backward.y * 100.0f};
     b2Vec2 worldHood = b2Body_GetWorldPoint(body, localHood);
     b2Body_ApplyForce(body, force, worldHood, true);
   }
