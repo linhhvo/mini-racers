@@ -76,6 +76,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     std::cout << "sfml Car " << i << " position: " << sfPos.x << ", " << sfPos.y << "\n";
     carSprites[i].setPosition(sfPos);
   }
+  carSprites[1].setColor(sf::Color(255, 0, 0));
   obsSprite_.setTexture(obsTexture_);
   obsSprite_.setScale(0.06f, 0.06f);
   sf::FloatRect bounds = obsSprite_.getLocalBounds();
