@@ -48,15 +48,22 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   b2WorldDef worldDef = b2DefaultWorldDef();
   worldDef.gravity = {0.0f, 0.0f};
   world_ = b2CreateWorld(&worldDef);
+  float scale = 30.0f;
 
-  car_ = iforce2d_TopdownCar::Create(world_, nofCars);
+  float startX = (window.getSize().x / 2.0f) / scale;
+  float startY = (window.getSize().y / 2.0f) / scale;
+  float spacing = 3.0f;
+
+  car_ = iforce2d_TopdownCar::Create(world_, nofCars, startX, startY, spacing);
 
   // b2Vec2 car_pos = car->GetPosition();
   carSprites.resize(nofCars);
   for (int i = 0; i < nofCars; i++) {
     carSprites[i].setTexture(carTexture_);
-    carSprites[i].setPosition(window.getSize().x / 2.f + spacing * i,
-                              window.getSize().y / 2.f + spacing * i);
+    auto pos = b2Body_GetPosition(car_->GetVehicle(i)->GetBody());
+    carSprites[i].setOrigin(carSprites[i].getLocalBounds().width / 2.f,
+                        carSprites[i].getLocalBounds().height / 2.f);
+    carSprites[i].setPosition(pos.x * scale, pos.y * scale);
   }
 
   // start timer
