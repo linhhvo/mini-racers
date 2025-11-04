@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-Vehicle::Vehicle(b2WorldId world, b2Vec2 pos): world_(world){
+Vehicle::Vehicle(b2WorldId world, b2Vec2 pos, std::string idx): world_(world){
   // create chassis body
   b2BodyDef bodyDef = b2DefaultBodyDef();
   bodyDef.type = b2_dynamicBody;
@@ -25,6 +25,8 @@ Vehicle::Vehicle(b2WorldId world, b2Vec2 pos): world_(world){
   // Shape def
   b2ShapeDef shapeDef = b2DefaultShapeDef();
   shapeDef.density = 1;
+  void* data = static_cast<void*>(&idx);
+  shapeDef.userData = data;
   shapeDef.enableContactEvents = true;
   shapeDef.enableHitEvents = true;
   shapeDef.enablePreSolveEvents = false; // true if we want to disable collision (powerup maybe?)
@@ -63,13 +65,13 @@ void Vehicle::update() {
 
   if (up) {
     b2Vec2 forward = b2Body_GetWorldVector(body, b2Vec2{0.0f, -1.0f});
-    b2Vec2 force = {forward.x * 100.0f, forward.y * 100.0f};
+    b2Vec2 force = {forward.x * forceStrength, forward.y * forceStrength};
     b2Vec2 worldHood = b2Body_GetWorldPoint(body, localHood);
     b2Body_ApplyForce(body, force, worldHood, true);
   }
   if (down) {
     b2Vec2 backward = b2Body_GetWorldVector(body, b2Vec2{0.0f, 1.0f});
-    b2Vec2 force = {backward.x * 100.0f, backward.y * 100.0f};
+    b2Vec2 force = {backward.x * forceStrength, backward.y * forceStrength};
     b2Vec2 worldHood = b2Body_GetWorldPoint(body, localHood);
     b2Body_ApplyForce(body, force, worldHood, true);
   }

@@ -15,6 +15,8 @@
 const std::string BACKGROUND_IMG{"../assets/backgrounds/RaceScene.png"};
 const std::string CAR_IMG{"../assets/vehicles/car.png"};
 const std::string OBS_IMG("../assets/obstacles/Obstacle.png");
+const std::string SOF_IMG("../assets/obstacles/oil.png");
+const std::string CHP_IMG("../assets/others/checkpoint.png");
 
 RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     : context_(context), manager_(manager),
@@ -46,9 +48,17 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   if(!obsTexture_.loadFromFile(OBS_IMG)) {
     std::cout << "unable to load obstacles image file" << std::endl;
   }
+  if(!chpTexture_.loadFromFile(CHP_IMG)) {
+    std::cout << "unable to load checkpoint image file" << std::endl;
+  }
+  if(!sofTexture_.loadFromFile(SOF_IMG)) {
+    std::cout << "unable to load oil image file" << std::endl;
+  }
 
   carTexture_.setSmooth(true);
   obsTexture_.setSmooth(true);
+  chpTexture_.setSmooth(true);
+  sofTexture_.setSmooth(true);
 
   // box2D
   b2WorldDef worldDef = b2DefaultWorldDef();
@@ -77,6 +87,8 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     carSprites[i].setPosition(sfPos);
   }
   carSprites[1].setColor(sf::Color(255, 0, 0));
+
+  // obstacles
   obsSprite_.setTexture(obsTexture_);
   obsSprite_.setScale(0.06f, 0.06f);
   sf::FloatRect bounds = obsSprite_.getLocalBounds();
@@ -87,6 +99,27 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   std::cout << "sfml Obstacle "<< " position: " << sfPos.x << ", " << sfPos.y << "\n";
   obsSprite_.setPosition(sfPos);
 
+  //checkpoint
+  chpSprite_.setTexture(chpTexture_);
+  chpSprite_.setScale(0.5f, 0.5f);
+  sf::FloatRect chpbounds = chpSprite_.getLocalBounds();
+  chpSprite_.setOrigin(chpbounds.width / 2.f, chpbounds.height / 2.f);
+  auto chppos = b2Body_GetPosition(car_->GetCheckPoint()->GetBody());
+  std::cout << "box2d checkpoint " << " position: " << chppos.x << ", " << chppos.y << "\n";
+  sf::Vector2f chpsfPos(chppos.x * scale, chppos.y * scale);
+  std::cout << "sfml checkpoint "<< " position: " << chpsfPos.x << ", " << chpsfPos.y << "\n";
+  chpSprite_.setPosition(chpsfPos);
+
+  //soft obstacle
+  sofSprite_.setTexture(sofTexture_);
+  sofSprite_.setScale(0.15f, 0.15f);
+  sf::FloatRect sofbounds = sofSprite_.getLocalBounds();
+  sofSprite_.setOrigin(sofbounds.width / 2.f, sofbounds.height / 2.f);
+  auto sofpos = b2Body_GetPosition(car_->GetSoftObstacle(0)->GetBody());
+  std::cout << "box2d checkpoint " << " position: " << sofpos.x << ", " << sofpos.y << "\n";
+  sf::Vector2f sofsfPos(sofpos.x * scale, sofpos.y * scale);
+  std::cout << "sfml checkpoint "<< " position: " << sofsfPos.x << ", " << sofsfPos.y << "\n";
+  sofSprite_.setPosition(sofsfPos);
   // start timer
   raceTimer_.start();
 }
@@ -155,6 +188,28 @@ void RaceScene::handleEvent(const sf::Event &event) {
 
 void RaceScene::update(float dt) {
   b2World_Step(world_, dt, 4);
+  //Checkpoint, soft obstacle check
+  b2SensorEvents sensorEvents = b2World_GetSensorEvents(world_);
+  for (int i = 0; i < sensorEvents.beginCount; i++) {
+    b2SensorBeginTouchEvent* e = sensorEvents.beginEvents + i;
+    void* sensorData = b2Shape_GetUserData(e->sensorShapeId);
+    void* visitorData = b2Shape_GetUserData(e->visitorShapeId);
+    if (sensorData == (void*)"checkpoint") {
+        std::cout << "Checkpoint triggered!\n";
+    }
+    if (sensorData == (void*)"softObstacle") {
+      for (int i = 0; i <nofCars; i++) {
+        auto data = b2Shape_GetUserData(car_->GetVehicle(i)->GetShape());
+        if (data == visitorData) {
+          car_->GetVehicle(i)->SetForceStrength(20.0f);
+          std::cout <<"oil hit!\n";
+        }
+      }
+    }
+  }
+  for (int i = 0; i <nofCars; i++) {
+    car_->GetVehicle(i)->SetForceStrength(100.0f);
+  }
 
   for (int i = 0; i < nofCars; i++) {
     float scale = 30.0f;
@@ -188,6 +243,8 @@ void RaceScene::render() {
   }
 
   manager_.getWindow().draw(obsSprite_);
+  manager_.getWindow().draw(chpSprite_);
+  manager_.getWindow().draw(sofSprite_);
 
   // render HUD
   HUD_display_->render(manager_.getWindow());

@@ -13,7 +13,7 @@
 
 class Vehicle {
 public:
-  Vehicle(b2WorldId world, b2Vec2 pos);
+  Vehicle(b2WorldId world, b2Vec2 pos, std::string idx);
   ~Vehicle() = default;
 
   //movement functions
@@ -24,6 +24,9 @@ public:
   b2BodyId GetBody() {return body;}
   b2ShapeId GetShape() { return car; };
   b2Vec2 GetPosition() { return b2Body_GetPosition(body); };
+  void SetForceStrength(float strength) {
+    forceStrength = strength;
+  }
 
 private:
   b2Vec2 getLateralVelocity() const {
@@ -53,4 +56,5 @@ private:
   bool left = false;
   bool down = false;
   bool right = false;
+  float forceStrength = 100.0f;
 };
