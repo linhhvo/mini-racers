@@ -9,31 +9,6 @@ class iforce2d_TopdownCar {
 public:
  iforce2d_TopdownCar(b2WorldId world, int nofCars, float startX, float startY, float spacing) : world_(world), nofCars_(nofCars) {
     b2World_SetGravity(world, b2Vec2{0.0f, 0.0f});
-
-    // set up ground areas
-    {
-      b2BodyDef bodyDef = b2DefaultBodyDef();
-      bodyDef.type = b2_staticBody;
-      bodyDef.position = b2Vec2{0.0f, 0.0f};
-      b2BodyId body = b2CreateBody(world, &bodyDef);
-      
-      b2Polygon groundShape = b2MakeBox(9.0f, 7.0f);
-
-      b2SurfaceMaterial material = b2SurfaceMaterial();
-      material.friction = 0.8f;
-      material.restitution = 0.1f;
-      material.rollingResistance = 0.1f;
-
-      // Shape def
-      b2ShapeDef shapeDef = b2DefaultShapeDef();
-      shapeDef.density = 1;
-      shapeDef.enableContactEvents = true;
-      shapeDef.enableHitEvents = true;
-      shapeDef.enableSensorEvents = false;
-      shapeDef.material = material;
-      b2CreatePolygonShape(body, &shapeDef, &groundShape);
-    }
-
     for (int i =0; i < nofCars_; i++) {
       b2Vec2 startPos {startX + i * spacing, startY};
       std::string idx = std::to_string(i);
