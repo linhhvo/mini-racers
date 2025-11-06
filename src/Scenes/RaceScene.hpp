@@ -35,7 +35,8 @@ private:
   sf::Sprite obsSprite_;
 
   sf::Texture chpTexture_;
-  sf::Sprite chpSprite_;
+  std::vector<sf::Sprite> checkpointSprites_;
+
 
   sf::Texture sofTexture_;
   sf::Sprite sofSprite_;
@@ -48,4 +49,8 @@ private:
 
   Timer raceTimer_;
   std::unique_ptr<HUD> HUD_display_;
+
+  std::vector<CarProgress> carProgress_;
+  bool raceFinished_ = false;            // has any car finished the race?
+  int winnerCarID_ = -1;   
 };

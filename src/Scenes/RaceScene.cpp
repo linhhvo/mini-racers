@@ -14,6 +14,7 @@
 #include <iostream>
 #include <memory>
 #include <optional>
+#include <cstring>
 
 const std::string BACKGROUND_IMG{"../assets/backgrounds/RaceScene.png"};
 const std::string CAR_IMG{"../assets/vehicles/car.png"};
@@ -131,6 +132,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     carSprites[i].setPosition(sfPos);
   }
   carSprites[1].setColor(sf::Color(255, 0, 0));
+  carProgress_.resize(nofCars); // one entry per car
 
   // obstacles
   obsSprite_.setTexture(obsTexture_);
@@ -145,19 +147,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
             << "\n";
   obsSprite_.setPosition(sfPos);
 
-  // checkpoint
-  // chpSprite_.setTexture(chpTexture_);
-  // chpSprite_.setScale(0.5f, 0.5f);
-  // sf::FloatRect chpbounds = chpSprite_.getLocalBounds();
-  // chpSprite_.setOrigin(chpbounds.width / 2.f, chpbounds.height / 2.f);
-  // auto chppos = b2Body_GetPosition(car_->GetCheckPoint()->GetBody());
-  // std::cout << "box2d checkpoint " << " position: " << chppos.x << ", "
-  //           << chppos.y << "\n";
-  // sf::Vector2f chpsfPos(chppos.x * scale, chppos.y * scale);
-  // std::cout << "sfml checkpoint " << " position: " << chpsfPos.x << ", "
-  //           << chpsfPos.y << "\n";
-  // chpSprite_.setPosition(chpsfPos);
-
+  
   // soft obstacle
   sofSprite_.setTexture(sofTexture_);
   sofSprite_.setScale(0.15f, 0.15f);
@@ -170,11 +160,26 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   std::cout << "sfml soft obstacle " << " position: " << sofsfPos.x << ", "
             << sofsfPos.y << "\n";
   sofSprite_.setPosition(sofsfPos);
-    // add 4 checkpoints
-  checkpointManager->AddCheckpoint(b2Vec2{13.3333f, 10.0f});
-  checkpointManager->AddCheckpoint(b2Vec2{16.3333, 10.0f});
-  checkpointManager->AddCheckpoint(b2Vec2{15.0f, 5.0f});  
-  checkpointManager->AddCheckpoint(b2Vec2{12.0f, 12.0f});
+  // add 4 checkpoints
+  checkpointManager->AddCheckpoint(b2Vec2{10.0f, 2.0f});
+  checkpointManager->AddCheckpoint(b2Vec2{2.5f, 2.0f});
+  checkpointManager->AddCheckpoint(b2Vec2{2.5f, 18.0f});  
+  checkpointManager->AddCheckpoint(b2Vec2{17.0f, 18.0f});
+  checkpointManager->AddCheckpoint(b2Vec2{26.0f, 18.0f});
+  checkpointManager->AddCheckpoint(b2Vec2{26.0f, 7.0f});
+  // create SFML sprites for each checkpoint
+  checkpointSprites_.resize(checkpointManager->GetCheckpoints().size());
+  for (size_t i = 0; i < checkpointSprites_.size(); i++) {
+    checkpointSprites_[i].setTexture(chpTexture_);
+    checkpointSprites_[i].setScale(0.5f, 0.5f);
+    sf::FloatRect chpbounds = checkpointSprites_[i].getLocalBounds();
+    checkpointSprites_[i].setOrigin(chpbounds.width / 2.f, chpbounds.height / 2.f);
+
+    auto pos = checkpointManager->GetCheckpoints()[i]->GetPosition(); // b2Vec2
+    std::cout << "Checkpoint " << i << " position: " << pos.x << ", " << pos.y << "\n";
+
+    checkpointSprites_[i].setPosition(sf::Vector2f(pos.x * scale, pos.y * scale));
+  }
   // start timer
   raceTimer_.start();
 }
@@ -207,70 +212,123 @@ void RaceScene::handleEvent(const sf::Event &event) {
 }
 
 void RaceScene::update(float dt) {
-  b2World_Step(world_, dt, 4);
-  // Checkpoint, soft obstacle check
-  b2SensorEvents sensorEvents = b2World_GetSensorEvents(world_);
-  for (int i = 0; i < sensorEvents.beginCount; i++) {
-    b2SensorBeginTouchEvent *e = sensorEvents.beginEvents + i;
-    void *sensorData = b2Shape_GetUserData(e->sensorShapeId);
-    void *visitorData = b2Shape_GetUserData(e->visitorShapeId);
-    if (sensorData == (void *)"checkpoint") {
-      std::cout << "Checkpoint triggered!\n";
-      checkpointManager->HandleSensorEvent(e);
-    }
-    if (sensorData == (void *)"softObstacle") {
-      for (int i = 0; i < nofCars; i++) {
-        auto data = b2Shape_GetUserData(car_->GetVehicle(i)->GetShape());
-        if (data == visitorData) {
-          car_->GetVehicle(i)->SetForceStrength(20.0f);
-          std::cout << "oil hit!\n";
-        }
-      }
-    }
-  }
-  for (int i = 0; i < nofCars; i++) {
-    car_->GetVehicle(i)->SetForceStrength(100.0f);
-  }
+    // Step Box2D world
+    b2World_Step(world_, dt, 4);
 
-  for (int i = 0; i < nofCars; i++) {
     float scale = 30.0f;
-    car_->GetVehicle(i)->update();
-    auto carBody = car_->GetVehicle(i)->GetBody();
-    auto transform = b2Body_GetTransform(carBody);
-    float angleDeg = b2Rot_GetAngle(transform.q) * RADTODEG;
-    auto pos = car_->GetVehicle(i)->GetPosition();
-    sf::Vector2f sfPos(pos.x * scale, pos.y * scale);
-    carSprites[i].setPosition(sfPos);
 
-    carSprites[i].setRotation(angleDeg);
-  }
+    // Process sensor events
+    b2SensorEvents sensorEvents = b2World_GetSensorEvents(world_);
+    for (int i = 0; i < sensorEvents.beginCount; i++) {
+        b2SensorBeginTouchEvent* e = sensorEvents.beginEvents + i;
+        void* sensorData = b2Shape_GetUserData(e->sensorShapeId);
+        void* visitorData = b2Shape_GetUserData(e->visitorShapeId);
+        const char* label = static_cast<const char*>(sensorData);
+        if (label && strcmp(label, "checkpoint") == 0) {
+            // Find which checkpoint was triggered
+            int triggeredCheckpoint = -1;
+            for (size_t idx = 0; idx < checkpointManager->GetCheckpoints().size(); idx++) {
+                if (B2_ID_EQUALS(checkpointManager->GetCheckpoints()[idx]->GetShapeId(), e->sensorShapeId)) {
+                    triggeredCheckpoint = static_cast<int>(idx);
+                    break;
+                }
+            }
 
-  raceTimer_.update(dt);
-  HUD_display_->update();
-  if (checkpointManager->IsRaceFinished()) {
-    int winner = checkpointManager->GetWinner();
-    std::cout << "Car " << winner << " wins the race!\n";
-    manager_.pushScene<VictoryScene>(context_);
-  }
-  if (raceTimer_.isFinished()) {
-    std::cout << "race over" << std::endl;
-    manager_.pushScene<VictoryScene>(context_);
-  }
+            // Find which car triggered it
+            int triggeredCar = -1;
+            for (size_t i = 0; i < nofCars; i++) {
+                if (b2Shape_GetUserData(car_->GetVehicle(i)->GetShape()) == visitorData) {
+                    triggeredCar = static_cast<int>(i);
+                    break;
+                }
+            }
+
+            if (triggeredCar != -1 && triggeredCheckpoint != -1) {
+                std::cout << "Car " << triggeredCar 
+                          << " triggered checkpoint " << triggeredCheckpoint << "\n";
+
+                // Update car's checkpoint progress
+                CarProgress& progress = carProgress_[triggeredCar];
+                if (progress.nextCheckpointIndex == triggeredCheckpoint) {
+                    progress.nextCheckpointIndex++;
+                    if (progress.nextCheckpointIndex >= checkpointManager->GetCheckpoints().size()) {
+                        progress.currentLap++;
+                        progress.nextCheckpointIndex = 0;
+                        std::cout << "Car " << triggeredCar 
+                                  << " completed lap " << progress.currentLap << "\n";
+
+                        if (progress.currentLap >= context_.config->numOfLaps) {
+                            raceFinished_ = true;
+                            winnerCarID_ = triggeredCar;
+                            std::cout << "Car " << winnerCarID_ << " wins the race!\n";
+                        }
+                    }
+                }
+            }
+        }
+
+        if (label && strcmp(label, "softObstacle") == 0) {
+            for (int i = 0; i < nofCars; i++) {
+                if (b2Shape_GetUserData(car_->GetVehicle(i)->GetShape()) == visitorData) {
+                    car_->GetVehicle(i)->SetForceStrength(20.0f);
+                    std::cout << "Car " << i << " hit oil!\n";
+                }
+            }
+        }
+    }
+
+    // Reset force for all cars
+    for (int i = 0; i < nofCars; i++) {
+        car_->GetVehicle(i)->SetForceStrength(100.0f);
+    }
+
+    // Update vehicles
+    for (int i = 0; i < nofCars; i++) {
+        car_->GetVehicle(i)->update();
+        auto carBody = car_->GetVehicle(i)->GetBody();
+        auto transform = b2Body_GetTransform(carBody);
+        float angleDeg = b2Rot_GetAngle(transform.q) * RADTODEG;
+        auto pos = car_->GetVehicle(i)->GetPosition();
+        sf::Vector2f sfPos(pos.x * scale, pos.y * scale);
+        carSprites[i].setPosition(sfPos);
+        carSprites[i].setRotation(angleDeg);
+    }
+
+    // Update HUD and timer
+    raceTimer_.update(dt);
+    HUD_display_->update();
+
+    // Race finished
+    if (raceFinished_) {
+        manager_.pushScene<VictoryScene>(context_);
+    }
+
+    // Timer finished
+    if (raceTimer_.isFinished() && !raceFinished_) {
+        std::cout << "Race over!\n";
+        manager_.pushScene<VictoryScene>(context_);
+    }
 }
 
+
 void RaceScene::render() {
-  // render background (map)
-  manager_.getWindow().draw(backgroundSprite_);
+    // render background (map)
+    manager_.getWindow().draw(backgroundSprite_);
 
-  // render vehicles
-  for (int i = 0; i < nofCars; i++) {
-    manager_.getWindow().draw(carSprites[i]);
-  }
+    // render vehicles
+    for (int i = 0; i < nofCars; i++) {
+        manager_.getWindow().draw(carSprites[i]);
+    }
 
-  manager_.getWindow().draw(obsSprite_);
-  manager_.getWindow().draw(chpSprite_);
-  manager_.getWindow().draw(sofSprite_);
+    // render obstacles
+    manager_.getWindow().draw(obsSprite_);
+    manager_.getWindow().draw(sofSprite_);
 
-  // render HUD
-  HUD_display_->render(manager_.getWindow());
+    // render checkpoints
+    for (auto &sprite : checkpointSprites_) {
+        manager_.getWindow().draw(sprite);
+    }
+
+    // render HUD
+    HUD_display_->render(manager_.getWindow());
 }

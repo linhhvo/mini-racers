@@ -21,7 +21,7 @@ public:
     
     bool IsRaceFinished() const { return raceFinished; }
     int GetWinner() const { return winnerCarID; }
-    
+    std::vector<Checkpoint*> GetCheckpoints() const {return checkpoints_;}
 private:
     b2WorldId world_;
     std::vector<Checkpoint*> checkpoints_;
