@@ -136,6 +136,10 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
 
 void RaceScene::handleEvent(const sf::Event &event) {
   if (event.type == sf::Event::KeyPressed) {
+    if (event.key.code == sf::Keyboard::Escape) {
+      manager_.pushScene<PauseScene>(context_);
+    }
+
     std::optional<int> playerIdx =
         context_.input->getPlayerFromKey(event.key.code);
 
@@ -144,6 +148,7 @@ void RaceScene::handleEvent(const sf::Event &event) {
           context_.input->getPlayerAction(event.key.code, playerIdx.value());
       car_->Keyboard(action, playerIdx.value(), true);
     }
+
   } else if (event.type == sf::Event::KeyReleased) {
     std::optional<int> playerIdx =
         context_.input->getPlayerFromKey(event.key.code);
