@@ -4,6 +4,7 @@
 #include "Scenes/PauseScene.hpp"
 #include "Scenes/VictoryScene.hpp"
 #include "System/GameContext.hpp"
+#include "System/InputManager.hpp"
 #include "box2d/math_functions.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -11,6 +12,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <optional>
 
 const std::string BACKGROUND_IMG{"../assets/backgrounds/RaceScene.png"};
 const std::string CAR_IMG{"../assets/vehicles/car.png"};
@@ -45,13 +47,13 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   if (!carTexture_.loadFromFile(CAR_IMG)) {
     std::cout << "unable to load car image file" << std::endl;
   }
-  if(!obsTexture_.loadFromFile(OBS_IMG)) {
+  if (!obsTexture_.loadFromFile(OBS_IMG)) {
     std::cout << "unable to load obstacles image file" << std::endl;
   }
-  if(!chpTexture_.loadFromFile(CHP_IMG)) {
+  if (!chpTexture_.loadFromFile(CHP_IMG)) {
     std::cout << "unable to load checkpoint image file" << std::endl;
   }
-  if(!sofTexture_.loadFromFile(SOF_IMG)) {
+  if (!sofTexture_.loadFromFile(SOF_IMG)) {
     std::cout << "unable to load oil image file" << std::endl;
   }
 
@@ -72,18 +74,19 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
 
   car_ = iforce2d_TopdownCar::Create(world_, nofCars, startX, startY, spacing);
 
-  // b2Vec2 car_pos = car->GetPosition();
   carSprites.resize(nofCars);
   for (int i = 0; i < nofCars; i++) {
     carSprites[i].setTexture(carTexture_);
-    
+
     sf::FloatRect bounds = carSprites[i].getLocalBounds();
     carSprites[i].setOrigin(bounds.width / 2.f, bounds.height / 2.f);
 
     auto pos = b2Body_GetPosition(car_->GetVehicle(i)->GetBody());
-    std::cout << "box2d Car " << i << " position: " << pos.x << ", " << pos.y << "\n";
+    std::cout << "box2d Car " << i << " position: " << pos.x << ", " << pos.y
+              << "\n";
     sf::Vector2f sfPos(pos.x * scale, pos.y * scale);
-    std::cout << "sfml Car " << i << " position: " << sfPos.x << ", " << sfPos.y << "\n";
+    std::cout << "sfml Car " << i << " position: " << sfPos.x << ", " << sfPos.y
+              << "\n";
     carSprites[i].setPosition(sfPos);
   }
   carSprites[1].setColor(sf::Color(255, 0, 0));
@@ -94,120 +97,92 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   sf::FloatRect bounds = obsSprite_.getLocalBounds();
   obsSprite_.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
   auto Obpos = b2Body_GetPosition(car_->GetObstacle(0)->GetBody());
-  std::cout << "box2d Obstacle " << " position: " << Obpos.x << ", " << Obpos.y << "\n";
+  std::cout << "box2d Obstacle " << " position: " << Obpos.x << ", " << Obpos.y
+            << "\n";
   sf::Vector2f sfPos(Obpos.x * scale, Obpos.y * scale);
-  std::cout << "sfml Obstacle "<< " position: " << sfPos.x << ", " << sfPos.y << "\n";
+  std::cout << "sfml Obstacle " << " position: " << sfPos.x << ", " << sfPos.y
+            << "\n";
   obsSprite_.setPosition(sfPos);
 
-  //checkpoint
+  // checkpoint
   chpSprite_.setTexture(chpTexture_);
   chpSprite_.setScale(0.5f, 0.5f);
   sf::FloatRect chpbounds = chpSprite_.getLocalBounds();
   chpSprite_.setOrigin(chpbounds.width / 2.f, chpbounds.height / 2.f);
   auto chppos = b2Body_GetPosition(car_->GetCheckPoint()->GetBody());
-  std::cout << "box2d checkpoint " << " position: " << chppos.x << ", " << chppos.y << "\n";
+  std::cout << "box2d checkpoint " << " position: " << chppos.x << ", "
+            << chppos.y << "\n";
   sf::Vector2f chpsfPos(chppos.x * scale, chppos.y * scale);
-  std::cout << "sfml checkpoint "<< " position: " << chpsfPos.x << ", " << chpsfPos.y << "\n";
+  std::cout << "sfml checkpoint " << " position: " << chpsfPos.x << ", "
+            << chpsfPos.y << "\n";
   chpSprite_.setPosition(chpsfPos);
 
-  //soft obstacle
+  // soft obstacle
   sofSprite_.setTexture(sofTexture_);
   sofSprite_.setScale(0.15f, 0.15f);
   sf::FloatRect sofbounds = sofSprite_.getLocalBounds();
   sofSprite_.setOrigin(sofbounds.width / 2.f, sofbounds.height / 2.f);
   auto sofpos = b2Body_GetPosition(car_->GetSoftObstacle(0)->GetBody());
-  std::cout << "box2d checkpoint " << " position: " << sofpos.x << ", " << sofpos.y << "\n";
+  std::cout << "box2d checkpoint " << " position: " << sofpos.x << ", "
+            << sofpos.y << "\n";
   sf::Vector2f sofsfPos(sofpos.x * scale, sofpos.y * scale);
-  std::cout << "sfml checkpoint "<< " position: " << sofsfPos.x << ", " << sofsfPos.y << "\n";
+  std::cout << "sfml checkpoint " << " position: " << sofsfPos.x << ", "
+            << sofsfPos.y << "\n";
   sofSprite_.setPosition(sofsfPos);
+
   // start timer
   raceTimer_.start();
 }
 
-
 void RaceScene::handleEvent(const sf::Event &event) {
   if (event.type == sf::Event::KeyPressed) {
-    switch (event.key.code) {
-    case sf::Keyboard::W:
-      car_->Keyboard('w', true, 0);
-      break;
-    case sf::Keyboard::A:
-      car_->Keyboard('a', true, 0);
-      break;
-    case sf::Keyboard::S:
-      car_->Keyboard('s', true, 0);
-      break;
-    case sf::Keyboard::D:
-      car_->Keyboard('d', true, 0);
-      break;
-    case sf::Keyboard::Up:
-      car_->Keyboard('w', true, 1);
-      break;
-    case sf::Keyboard::Left:
-      car_->Keyboard('a', true, 1);
-      break;
-    case sf::Keyboard::Down:
-      car_->Keyboard('s', true, 1);
-      break;
-    case sf::Keyboard::Right:
-      car_->Keyboard('d', true, 1);
-      break;
-    case sf::Keyboard::Escape:
+    if (event.key.code == sf::Keyboard::Escape) {
       manager_.pushScene<PauseScene>(context_);
-      break;
     }
+
+    std::optional<int> playerIdx =
+        context_.input->getPlayerFromKey(event.key.code);
+
+    if (playerIdx.has_value()) {
+      InputManager::InputAction action =
+          context_.input->getPlayerAction(event.key.code, playerIdx.value());
+      car_->Keyboard(action, playerIdx.value(), true);
+    }
+
   } else if (event.type == sf::Event::KeyReleased) {
-    switch (event.key.code) {
-    case sf::Keyboard::W:
-      car_->Keyboard('w', false, 0);
-      break;
-    case sf::Keyboard::A:
-      car_->Keyboard('a', false, 0);
-      break;
-    case sf::Keyboard::S:
-      car_->Keyboard('s', false, 0);
-      break;
-    case sf::Keyboard::D:
-      car_->Keyboard('d', false, 0);
-      break;
-    case sf::Keyboard::Up:
-      car_->Keyboard('w', false, 1);
-      break;
-    case sf::Keyboard::Left:
-      car_->Keyboard('a', false, 1);
-      break;
-    case sf::Keyboard::Down:
-      car_->Keyboard('s', false, 1);
-      break;
-    case sf::Keyboard::Right:
-      car_->Keyboard('d', false, 1);
-      break;
+    std::optional<int> playerIdx =
+        context_.input->getPlayerFromKey(event.key.code);
+
+    if (playerIdx.has_value()) {
+      InputManager::InputAction action =
+          context_.input->getPlayerAction(event.key.code, playerIdx.value());
+      car_->Keyboard(action, playerIdx.value(), false);
     }
   }
 }
 
 void RaceScene::update(float dt) {
   b2World_Step(world_, dt, 4);
-  //Checkpoint, soft obstacle check
+  // Checkpoint, soft obstacle check
   b2SensorEvents sensorEvents = b2World_GetSensorEvents(world_);
   for (int i = 0; i < sensorEvents.beginCount; i++) {
-    b2SensorBeginTouchEvent* e = sensorEvents.beginEvents + i;
-    void* sensorData = b2Shape_GetUserData(e->sensorShapeId);
-    void* visitorData = b2Shape_GetUserData(e->visitorShapeId);
-    if (sensorData == (void*)"checkpoint") {
-        std::cout << "Checkpoint triggered!\n";
+    b2SensorBeginTouchEvent *e = sensorEvents.beginEvents + i;
+    void *sensorData = b2Shape_GetUserData(e->sensorShapeId);
+    void *visitorData = b2Shape_GetUserData(e->visitorShapeId);
+    if (sensorData == (void *)"checkpoint") {
+      std::cout << "Checkpoint triggered!\n";
     }
-    if (sensorData == (void*)"softObstacle") {
-      for (int i = 0; i <nofCars; i++) {
+    if (sensorData == (void *)"softObstacle") {
+      for (int i = 0; i < nofCars; i++) {
         auto data = b2Shape_GetUserData(car_->GetVehicle(i)->GetShape());
         if (data == visitorData) {
           car_->GetVehicle(i)->SetForceStrength(20.0f);
-          std::cout <<"oil hit!\n";
+          std::cout << "oil hit!\n";
         }
       }
     }
   }
-  for (int i = 0; i <nofCars; i++) {
+  for (int i = 0; i < nofCars; i++) {
     car_->GetVehicle(i)->SetForceStrength(100.0f);
   }
 

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-Vehicle::Vehicle(b2WorldId world, b2Vec2 pos, std::string idx): world_(world){
+Vehicle::Vehicle(b2WorldId world, b2Vec2 pos, std::string idx) : world_(world) {
   // create chassis body
   b2BodyDef bodyDef = b2DefaultBodyDef();
   bodyDef.type = b2_dynamicBody;
@@ -25,11 +25,12 @@ Vehicle::Vehicle(b2WorldId world, b2Vec2 pos, std::string idx): world_(world){
   // Shape def
   b2ShapeDef shapeDef = b2DefaultShapeDef();
   shapeDef.density = 1;
-  void* data = static_cast<void*>(&idx);
+  void *data = static_cast<void *>(&idx);
   shapeDef.userData = data;
   shapeDef.enableContactEvents = true;
   shapeDef.enableHitEvents = true;
-  shapeDef.enablePreSolveEvents = false; // true if we want to disable collision (powerup maybe?)
+  shapeDef.enablePreSolveEvents =
+      false; // true if we want to disable collision (powerup maybe?)
   shapeDef.enableSensorEvents = true;
   shapeDef.isSensor = false;
   shapeDef.material = material;
@@ -38,16 +39,24 @@ Vehicle::Vehicle(b2WorldId world, b2Vec2 pos, std::string idx): world_(world){
   car = b2CreatePolygonShape(body, &shapeDef, &box);
 };
 
- void Vehicle::updateKey(char key, bool pressed) {
-  switch (key) {
-    case 'w': up = pressed; break;
-    case 'a': left = pressed; break;
-    case 's': down = pressed; break;
-    case 'd': right = pressed; break;
-    default: break;
+void Vehicle::updateKey(InputManager::InputAction action, bool pressed) {
+  switch (action) {
+  case InputManager::UP:
+    up = pressed;
+    break;
+  case InputManager::LEFT:
+    left = pressed;
+    break;
+  case InputManager::DOWN:
+    down = pressed;
+    break;
+  case InputManager::RIGHT:
+    right = pressed;
+    break;
+  default:
+    break;
   }
 }
-
 
 void Vehicle::update() {
   handleDrift();
@@ -57,8 +66,7 @@ void Vehicle::update() {
     b2Body_SetAngularVelocity(body, -1.0f);
   } else if (right) {
     b2Body_SetAngularVelocity(body, 1.0f);
-  }
-  else {
+  } else {
     b2Body_SetAngularVelocity(body, 0.0f);
   }
   b2Vec2 localHood = {0.0f, 2.0f};

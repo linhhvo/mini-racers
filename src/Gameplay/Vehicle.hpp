@@ -3,8 +3,8 @@
 #include "../System/InputManager.hpp"
 #include "box2d/math_functions.h"
 #include <box2d/box2d.h>
-#include <vector>
 #include <iostream>
+#include <vector>
 
 #ifndef DEGTORAD
 #define DEGTORAD 0.0174532925199432957f
@@ -16,17 +16,16 @@ public:
   Vehicle(b2WorldId world, b2Vec2 pos, std::string idx);
   ~Vehicle() = default;
 
-  //movement functions
-  void updateKey(char key, bool pressed);
+  // movement functions
+  //  void updateKey(char key, bool pressed);
+  void updateKey(InputManager::InputAction action, bool pressed);
   void update();
 
-  //getter functions
-  b2BodyId GetBody() {return body;}
+  // getter functions
+  b2BodyId GetBody() { return body; }
   b2ShapeId GetShape() { return car; };
   b2Vec2 GetPosition() { return b2Body_GetPosition(body); };
-  void SetForceStrength(float strength) {
-    forceStrength = strength;
-  }
+  void SetForceStrength(float strength) { forceStrength = strength; }
 
 private:
   b2Vec2 getLateralVelocity() const {
@@ -36,7 +35,8 @@ private:
   }
 
   b2Vec2 getForwardVelocity() const {
-    b2Vec2 currentForwardNormal = b2Body_GetWorldVector(body, b2Vec2{0.0f, 1.0f});
+    b2Vec2 currentForwardNormal =
+        b2Body_GetWorldVector(body, b2Vec2{0.0f, 1.0f});
     b2Vec2 linearVel = b2Body_GetLinearVelocity(body);
     return b2Dot(currentForwardNormal, linearVel) * currentForwardNormal;
   }
@@ -45,7 +45,8 @@ private:
     float drift = 0.0f;
     b2Vec2 forwardSpeed = getForwardVelocity();
     b2Vec2 lateralSpeed = getLateralVelocity();
-    b2Vec2 desiredSpeed = {forwardSpeed.x + lateralSpeed.x * drift, forwardSpeed.y + lateralSpeed.y * drift};
+    b2Vec2 desiredSpeed = {forwardSpeed.x + lateralSpeed.x * drift,
+                           forwardSpeed.y + lateralSpeed.y * drift};
     b2Body_SetLinearVelocity(body, desiredSpeed);
   }
 
