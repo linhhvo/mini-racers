@@ -72,6 +72,41 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   float startY = (window.getSize().y / 2.0f) / scale;
   float spacing = 3.0f;
 
+  float worldWidth = window.getSize().x / scale;
+  float worldHeight = window.getSize().y / scale;
+
+  // left wall
+  b2BodyDef leftDef = b2DefaultBodyDef();
+  leftDef.position = {0.0f, worldHeight / 2.0f};
+  b2BodyId leftWall = b2CreateBody(world_, &leftDef);
+  b2Polygon leftBox = b2MakeBox(0.5f, worldHeight / 2.0f);
+  b2ShapeDef leftShapeDef = b2DefaultShapeDef();
+  b2CreatePolygonShape(leftWall, &leftShapeDef, &leftBox);
+
+  // right wall
+  b2BodyDef rightDef = b2DefaultBodyDef();
+  rightDef.position = {worldWidth, worldHeight / 2.0f};
+  b2BodyId rightWall = b2CreateBody(world_, &rightDef);
+  b2Polygon rightBox = b2MakeBox(0.5f, worldHeight / 2.0f);
+  b2ShapeDef rightShapeDef = b2DefaultShapeDef();
+  b2CreatePolygonShape(rightWall, &rightShapeDef, &rightBox);
+
+  // top wall
+  b2BodyDef topDef =  b2DefaultBodyDef();
+  topDef.position = {worldWidth / 2.0f, 0.0f};
+  b2BodyId topWall = b2CreateBody(world_, &topDef);
+  b2Polygon topBox = b2MakeBox(worldWidth / 2.0f, 0.5f);
+  b2ShapeDef topShapeDef = b2DefaultShapeDef();
+  b2CreatePolygonShape(topWall, &topShapeDef, &topBox);
+
+  // bottom wall
+  b2BodyDef botDef = b2DefaultBodyDef();
+  botDef.position = {worldWidth / 2.0f, worldHeight};
+  b2BodyId bottomWall = b2CreateBody(world_, &botDef);
+  b2Polygon bottomBox = b2MakeBox(worldWidth / 2.0f, 0.5f);
+  b2ShapeDef botShapeDef = b2DefaultShapeDef();
+  b2CreatePolygonShape(bottomWall, &botShapeDef, &bottomBox);
+
   car_ = iforce2d_TopdownCar::Create(world_, nofCars, startX, startY, spacing);
 
   carSprites.resize(nofCars);
