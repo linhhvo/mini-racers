@@ -1,6 +1,6 @@
 #pragma once
 
-#include "System/GameContext.hpp"
+#include "../System/GameContext.hpp"
 #include <SFML/Graphics.hpp>
 
 class App {

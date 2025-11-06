@@ -9,10 +9,10 @@
 
 class Checkpoint {
 public:
-  Checkpoint(b2WorldId world, b2Vec2 position): postion_(position) {
+  Checkpoint(b2WorldId world, b2Vec2 position): position_(position) {
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_staticBody;
-    bodyDef.position = postion_;
+    bodyDef.position = position_;
     body = b2CreateBody(world, &bodyDef);
 
     // Box Polygon shape
@@ -24,7 +24,7 @@ public:
     material.rollingResistance = 0.0f;
     // Shape def
     b2ShapeDef shapeDef = b2DefaultShapeDef();
-    shapeDef.enableContactEvents = false;
+    shapeDef.enableContactEvents = true;
     shapeDef.enableHitEvents = false;
     shapeDef.enableSensorEvents = true;
     shapeDef.isSensor = true;
@@ -35,9 +35,10 @@ public:
   ~Checkpoint() = default;
 
   b2BodyId GetBody() {return body;}
-  
+  b2ShapeId GetShapeId() const { return checkpoint; }
+  b2Vec2 GetPosition() {return position_;}
 private:
   b2BodyId body;
   b2ShapeId checkpoint;
-  b2Vec2 postion_;
+  b2Vec2 position_;
 };

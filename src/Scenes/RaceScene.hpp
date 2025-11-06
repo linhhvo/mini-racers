@@ -1,4 +1,5 @@
 #pragma once
+#include "Race/CheckpointManager.hpp"
 #include "../System/SceneManager.hpp"
 #include "Gameplay/iforce2d_car.hpp"
 #include "Race/HUD.hpp"
@@ -19,6 +20,8 @@ public:
 
 private:
   GameContext &context_;
+  std::unique_ptr<CheckpointManager> checkpointManager;
+
 
   sf::Texture backgroundTexture_;
   sf::Sprite backgroundSprite_;
@@ -32,7 +35,8 @@ private:
   sf::Sprite obsSprite_;
 
   sf::Texture chpTexture_;
-  sf::Sprite chpSprite_;
+  std::vector<sf::Sprite> checkpointSprites_;
+
 
   sf::Texture sofTexture_;
   sf::Sprite sofSprite_;
@@ -45,4 +49,8 @@ private:
 
   Timer raceTimer_;
   std::unique_ptr<HUD> HUD_display_;
+
+  std::vector<CarProgress> carProgress_;
+  bool raceFinished_ = false;            // has any car finished the race?
+  int winnerCarID_ = -1;   
 };
