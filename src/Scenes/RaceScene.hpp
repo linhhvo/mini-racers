@@ -1,4 +1,5 @@
 #pragma once
+#include "Race/CheckpointManager.hpp"
 #include "../System/SceneManager.hpp"
 #include "Gameplay/iforce2d_car.hpp"
 #include "Race/HUD.hpp"
@@ -19,6 +20,8 @@ public:
 
 private:
   GameContext &context_;
+  std::unique_ptr<CheckpointManager> checkpointManager;
+
 
   sf::Texture backgroundTexture_;
   sf::Sprite backgroundSprite_;

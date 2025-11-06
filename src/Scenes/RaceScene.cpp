@@ -1,5 +1,6 @@
 #include "RaceScene.hpp"
 #include "../System/SceneManager.hpp"
+#include "System/Config.hpp"
 #include "Scenes/MenuScene.hpp"
 #include "Scenes/PauseScene.hpp"
 #include "Scenes/VictoryScene.hpp"
@@ -24,6 +25,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     : context_(context), manager_(manager),
       raceTimer_(context.config->raceDuration),
       HUD_display_(std::make_unique<HUD>(raceTimer_, context)) {
+  
   sf::RenderWindow &window = manager_.getWindow();
 
   // apply scene background image
@@ -66,6 +68,10 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   b2WorldDef worldDef = b2DefaultWorldDef();
   worldDef.gravity = {0.0f, 0.0f};
   world_ = b2CreateWorld(&worldDef);
+  checkpointManager = std::make_unique<CheckpointManager>(
+    world_, context.config->numOfLaps, context.config->numOfPlayers
+  );
+
   float scale = 30.0f;
 
   float startX = (window.getSize().x / 2.0f) / scale;
@@ -164,7 +170,11 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   std::cout << "sfml checkpoint " << " position: " << sofsfPos.x << ", "
             << sofsfPos.y << "\n";
   sofSprite_.setPosition(sofsfPos);
-
+    // add 2 checkpoint
+  checkpointManager->AddCheckpoint(b2Vec2{13.3333f, 10.0f});
+  checkpointManager->AddCheckpoint(b2Vec2{16.3333, 10.0f});
+  checkpointManager->AddCheckpoint(b2Vec2{15.0f, 5.0f});  
+  checkpointManager->AddCheckpoint(b2Vec2{12.0f, 12.0f});
   // start timer
   raceTimer_.start();
 }
@@ -236,7 +246,11 @@ void RaceScene::update(float dt) {
 
   raceTimer_.update(dt);
   HUD_display_->update();
-
+  if (checkpointManager->IsRaceFinished()) {
+    int winner = checkpointManager->GetWinner();
+    std::cout << "Car " << winner << " wins the race!\n";
+    manager_.pushScene<VictoryScene>(context_);
+  }
   if (raceTimer_.isFinished()) {
     std::cout << "race over" << std::endl;
     manager_.pushScene<VictoryScene>(context_);

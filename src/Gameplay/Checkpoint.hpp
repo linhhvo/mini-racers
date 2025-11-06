@@ -35,7 +35,8 @@ public:
   ~Checkpoint() = default;
 
   b2BodyId GetBody() {return body;}
-  
+  b2ShapeId GetShapeId() const { return checkpoint; }
+
 private:
   b2BodyId body;
   b2ShapeId checkpoint;

@@ -25,8 +25,9 @@ Vehicle::Vehicle(b2WorldId world, b2Vec2 pos, std::string idx) : world_(world) {
   // Shape def
   b2ShapeDef shapeDef = b2DefaultShapeDef();
   shapeDef.density = 1;
-  void *data = static_cast<void *>(&idx);
-  shapeDef.userData = data;
+  // void *data = static_cast<void *>(&idx);
+  // shapeDef.userData = data;
+  shapeDef.userData = this;
   shapeDef.enableContactEvents = true;
   shapeDef.enableHitEvents = true;
   shapeDef.enablePreSolveEvents =
