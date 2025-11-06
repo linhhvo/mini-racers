@@ -25,7 +25,7 @@ public:
     obstacles.push_back(obstacle);
 
     b2Vec2 checkpointPos{startX + 5, startY - 4};
-    checkpoint = new Checkpoint(world_, checkpointPos);
+    // checkpoint = new Checkpoint(world_, checkpointPos);
 
     b2Vec2 sobPos{startX - 2, startY - 3};
     auto softObstacle = new SoftObstacle(world_, sobPos);
@@ -42,7 +42,7 @@ public:
 
   Obstacle *GetObstacle(int idx) { return obstacles[idx]; }
 
-  Checkpoint *GetCheckPoint() { return checkpoint; }
+  // Checkpoint *GetCheckPoint() { return checkpoint; }
 
   SoftObstacle *GetSoftObstacle(int idx) { return softObstacles[idx]; }
 
@@ -62,7 +62,7 @@ private:
   std::vector<Vehicle *> cars;
   std::vector<Obstacle *> obstacles;
   std::vector<SoftObstacle *> softObstacles;
-  Checkpoint *checkpoint;
+  // Checkpoint *checkpoint;
   int m_controlState;
   b2WorldId world_;
 };

@@ -146,17 +146,17 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   obsSprite_.setPosition(sfPos);
 
   // checkpoint
-  chpSprite_.setTexture(chpTexture_);
-  chpSprite_.setScale(0.5f, 0.5f);
-  sf::FloatRect chpbounds = chpSprite_.getLocalBounds();
-  chpSprite_.setOrigin(chpbounds.width / 2.f, chpbounds.height / 2.f);
-  auto chppos = b2Body_GetPosition(car_->GetCheckPoint()->GetBody());
-  std::cout << "box2d checkpoint " << " position: " << chppos.x << ", "
-            << chppos.y << "\n";
-  sf::Vector2f chpsfPos(chppos.x * scale, chppos.y * scale);
-  std::cout << "sfml checkpoint " << " position: " << chpsfPos.x << ", "
-            << chpsfPos.y << "\n";
-  chpSprite_.setPosition(chpsfPos);
+  // chpSprite_.setTexture(chpTexture_);
+  // chpSprite_.setScale(0.5f, 0.5f);
+  // sf::FloatRect chpbounds = chpSprite_.getLocalBounds();
+  // chpSprite_.setOrigin(chpbounds.width / 2.f, chpbounds.height / 2.f);
+  // auto chppos = b2Body_GetPosition(car_->GetCheckPoint()->GetBody());
+  // std::cout << "box2d checkpoint " << " position: " << chppos.x << ", "
+  //           << chppos.y << "\n";
+  // sf::Vector2f chpsfPos(chppos.x * scale, chppos.y * scale);
+  // std::cout << "sfml checkpoint " << " position: " << chpsfPos.x << ", "
+  //           << chpsfPos.y << "\n";
+  // chpSprite_.setPosition(chpsfPos);
 
   // soft obstacle
   sofSprite_.setTexture(sofTexture_);
@@ -164,13 +164,13 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   sf::FloatRect sofbounds = sofSprite_.getLocalBounds();
   sofSprite_.setOrigin(sofbounds.width / 2.f, sofbounds.height / 2.f);
   auto sofpos = b2Body_GetPosition(car_->GetSoftObstacle(0)->GetBody());
-  std::cout << "box2d checkpoint " << " position: " << sofpos.x << ", "
+  std::cout << "box2d soft obstacle " << " position: " << sofpos.x << ", "
             << sofpos.y << "\n";
   sf::Vector2f sofsfPos(sofpos.x * scale, sofpos.y * scale);
-  std::cout << "sfml checkpoint " << " position: " << sofsfPos.x << ", "
+  std::cout << "sfml soft obstacle " << " position: " << sofsfPos.x << ", "
             << sofsfPos.y << "\n";
   sofSprite_.setPosition(sofsfPos);
-    // add 2 checkpoint
+    // add 4 checkpoints
   checkpointManager->AddCheckpoint(b2Vec2{13.3333f, 10.0f});
   checkpointManager->AddCheckpoint(b2Vec2{16.3333, 10.0f});
   checkpointManager->AddCheckpoint(b2Vec2{15.0f, 5.0f});  
@@ -216,6 +216,7 @@ void RaceScene::update(float dt) {
     void *visitorData = b2Shape_GetUserData(e->visitorShapeId);
     if (sensorData == (void *)"checkpoint") {
       std::cout << "Checkpoint triggered!\n";
+      checkpointManager->HandleSensorEvent(e);
     }
     if (sensorData == (void *)"softObstacle") {
       for (int i = 0; i < nofCars; i++) {

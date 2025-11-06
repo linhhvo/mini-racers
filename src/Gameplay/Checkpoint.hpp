@@ -24,7 +24,7 @@ public:
     material.rollingResistance = 0.0f;
     // Shape def
     b2ShapeDef shapeDef = b2DefaultShapeDef();
-    shapeDef.enableContactEvents = false;
+    shapeDef.enableContactEvents = true;
     shapeDef.enableHitEvents = false;
     shapeDef.enableSensorEvents = true;
     shapeDef.isSensor = true;
