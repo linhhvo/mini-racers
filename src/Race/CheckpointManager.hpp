@@ -15,12 +15,7 @@ class CheckpointManager {
 public:
     CheckpointManager(b2WorldId world, int totalLaps, int numCars);
     ~CheckpointManager();
-
     void AddCheckpoint(const b2Vec2& position);
-    void HandleSensorEvent(b2SensorBeginTouchEvent* e);
-    
-    bool IsRaceFinished() const { return raceFinished; }
-    int GetWinner() const { return winnerCarID; }
     std::vector<Checkpoint*> GetCheckpoints() const {return checkpoints_;}
 private:
     b2WorldId world_;
