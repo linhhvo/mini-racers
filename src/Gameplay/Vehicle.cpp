@@ -59,14 +59,19 @@ void Vehicle::updateKey(InputManager::InputAction action, bool pressed) {
   }
 }
 
-void Vehicle::update() {
+void Vehicle::update(float dt) {
   handleDrift();
-  b2Vec2 baseVector = {0.0f, 0.0f};
+  if (forceStrength < targetForceStrength) {
+    forceStrength = std::min(forceStrength + accelerationRate * dt, targetForceStrength);
+  }
+  else if (forceStrength > targetForceStrength) {
+    forceStrength = std::max(forceStrength - brakeRate * dt, targetForceStrength);
+  }
 
   if (left) {
-    b2Body_SetAngularVelocity(body, -1.0f);
+    b2Body_SetAngularVelocity(body, -2.0f);
   } else if (right) {
-    b2Body_SetAngularVelocity(body, 1.0f);
+    b2Body_SetAngularVelocity(body, 2.0f);
   } else {
     b2Body_SetAngularVelocity(body, 0.0f);
   }

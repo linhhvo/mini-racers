@@ -12,6 +12,12 @@
 #include <memory>
 
 class RaceScene : public Scene {
+
+struct CarStatus {
+  bool inSoftObstacle = false;
+  float timer = 0.0f;
+};
+
 public:
   RaceScene(SceneManager &manager, GameContext &context);
   void handleEvent(const sf::Event &event);
@@ -28,24 +34,30 @@ private:
   SceneManager &manager_;
 
   sf::Texture carTexture_;
-  sf::Sprite carSprite_;
   std::vector<sf::Sprite> carSprites;
 
   sf::Texture obsTexture_;
-  sf::Sprite obsSprite_;
+  std::vector<sf::Sprite> obsSprites;
 
   sf::Texture chpTexture_;
   std::vector<sf::Sprite> checkpointSprites_;
 
 
   sf::Texture sofTexture_;
-  sf::Sprite sofSprite_;
+  std::vector<sf::Sprite> sofSprites;
+
+  sf::Texture bosTexture_;
+  std::vector<sf::Sprite> bosSprites;
 
   b2WorldId world_;
   iforce2d_TopdownCar *car_;
+  std::vector<CarStatus> CarStatus_;
   InputManager input_;
   int nofCars = context_.config->numOfPlayers;
-  int spacing = 100;
+  int nofSoft_ = 2;
+  int nofObstacles_ = 2;
+  int nofBoosters_ = 3;
+  int spacing = 10;
 
   Timer raceTimer_;
   std::unique_ptr<HUD> HUD_display_;

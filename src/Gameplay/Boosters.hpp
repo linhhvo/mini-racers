@@ -1,0 +1,46 @@
+#pragma once
+
+#include "../System/InputManager.hpp"
+#include "box2d/math_functions.h"
+#include <box2d/box2d.h>
+#include <vector>
+#include <iostream>
+
+
+class Booster {
+public:
+  Booster(b2WorldId world, b2Vec2 position, float strength): postion_(position), strength_(strength) {
+    b2BodyDef bodyDef = b2DefaultBodyDef();
+    bodyDef.type = b2_staticBody;
+    bodyDef.position = postion_;
+    body = b2CreateBody(world, &bodyDef);
+
+    // Box Polygon shape
+    b2Polygon box = b2MakeBox(0.5f, 0.5f);
+    // Tire material (can be changed for future vehicle types)
+    b2SurfaceMaterial material = b2SurfaceMaterial();
+    material.friction = 0.8f;
+    material.restitution = 0.0f;
+    material.rollingResistance = 0.0f;
+    // Shape def
+    b2ShapeDef shapeDef = b2DefaultShapeDef();
+    shapeDef.enableContactEvents = false;
+    shapeDef.enableHitEvents = false;
+    shapeDef.enableSensorEvents = true;
+    shapeDef.isSensor = true;
+    shapeDef.userData = (void*)"booster";
+    // car creator
+    booster = b2CreatePolygonShape(body, &shapeDef, &box);
+  }
+  ~Booster() = default;
+
+  b2BodyId GetBody() {return body;}
+  b2ShapeId GetShapeId() {return booster;}
+  float GetStrength() {return strength_;}
+  
+private:
+  float strength_;
+  b2BodyId body;
+  b2ShapeId booster;
+  b2Vec2 postion_;
+};
