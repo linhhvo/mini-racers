@@ -188,6 +188,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     sf::Vector2f bossfPos(bospos.x * scale, bospos.y * scale);
     bosSprites[i].setPosition(bossfPos);
   }
+
   // add 4 checkpoints
   checkpointManager->AddCheckpoint(b2Vec2{10.0f, 2.0f});
   checkpointManager->AddCheckpoint(b2Vec2{2.5f, 2.0f});
@@ -195,6 +196,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   checkpointManager->AddCheckpoint(b2Vec2{17.0f, 18.0f});
   checkpointManager->AddCheckpoint(b2Vec2{26.0f, 18.0f});
   checkpointManager->AddCheckpoint(b2Vec2{26.0f, 7.0f});
+
   // create SFML sprites for each checkpoint
   checkpointSprites_.resize(checkpointManager->GetCheckpoints().size());
   for (size_t i = 0; i < checkpointSprites_.size(); i++) {
@@ -290,7 +292,6 @@ void RaceScene::update(float dt) {
               checkpointManager->GetCheckpoints().size()) {
             progress.currentLap++;
             progress.nextCheckpointIndex = 0;
-            // HUD_display_->updateRemainingLap(carProgress_);
             std::cout << "Car " << triggeredCar << " completed lap "
                       << progress.currentLap << "\n";
 
@@ -345,15 +346,10 @@ void RaceScene::update(float dt) {
   raceTimer_.update(dt);
   HUD_display_->update();
 
-  // Race finished
-  if (raceFinished_) {
-    manager_.pushScene<VictoryScene>(context_);
-  }
-
-  // Timer finished
-  if (raceTimer_.isFinished() && !raceFinished_) {
+  // Race finished when either timer runs out or a player finishes all laps
+  if (raceTimer_.isFinished() || raceFinished_) {
     std::cout << "Race over!\n";
-    manager_.pushScene<VictoryScene>(context_);
+    manager_.pushScene<VictoryScene>(context_, winnerCarID_);
   }
 }
 

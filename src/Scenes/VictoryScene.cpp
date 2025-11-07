@@ -4,12 +4,14 @@
 #include "System/SceneManager.hpp"
 #include <SFML/System/Vector2.hpp>
 #include <iostream>
+#include <sstream>
 
 const std::string BANNER_IMG{"../assets/others/banner.png"};
 const std::string FONT_FILE{"../assets/fonts/MenuScenceFont.ttf"};
 sf::Font VictoryFont;
 
-VictoryScene::VictoryScene(SceneManager &manager, GameContext &context)
+VictoryScene::VictoryScene(SceneManager &manager, GameContext &context,
+                           int winner)
     : manager_(manager), context_(context) {
   sf::RenderWindow &window = manager_.getWindow();
 
@@ -41,6 +43,17 @@ VictoryScene::VictoryScene(SceneManager &manager, GameContext &context)
       window.getSize().x / 2.f - infoText_.getGlobalBounds().width / 2.f,
       (bannerSprite_.getPosition().y + bannerSprite_.getGlobalBounds().height) +
           20);
+
+  // display race result
+  std::stringstream result_ss;
+  result_ss << "Player " << winner + 1 << " won the race";
+
+  raceResult_.setFont(VictoryFont);
+  raceResult_.setString(result_ss.str());
+  raceResult_.setCharacterSize(13);
+  raceResult_.setFillColor(sf::Color::Black);
+  raceResult_.setPosition(bannerSprite_.getPosition().x + 100,
+                          bannerSprite_.getPosition().y + 100);
 }
 
 void VictoryScene::handleEvent(const sf::Event &event) {
@@ -55,4 +68,5 @@ void VictoryScene::render() {
   manager_.getWindow().draw(background_);
   manager_.getWindow().draw(bannerSprite_);
   manager_.getWindow().draw(infoText_);
+  manager_.getWindow().draw(raceResult_);
 }

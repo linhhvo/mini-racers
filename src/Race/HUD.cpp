@@ -45,7 +45,7 @@ void HUD::update() {
   std::ostringstream lap_ss;
   for (unsigned int i = 0; i < context_.config->numOfPlayers; i++) {
     remainingNofLap_ = context_.config->numOfLaps - progresses_[i].currentLap;
-    lap_ss << "P" << i << ": " << remainingNofLap_ << "/"
+    lap_ss << "P" << i + 1 << ": " << remainingNofLap_ << "/"
            << context_.config->numOfLaps << "\n";
   }
   lapText_.setString(lap_ss.str());

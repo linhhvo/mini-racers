@@ -10,7 +10,7 @@
 
 class VictoryScene : public Scene {
 public:
-  VictoryScene(SceneManager &manager, GameContext &context);
+  VictoryScene(SceneManager &manager, GameContext &context, int winner);
   void handleEvent(const sf::Event &event);
   void update(float dt) {};
   void render();
@@ -22,4 +22,5 @@ private:
   sf::Texture bannerTexture_;
   sf::Sprite bannerSprite_;
   sf::Text infoText_;
+  sf::Text raceResult_;
 };
