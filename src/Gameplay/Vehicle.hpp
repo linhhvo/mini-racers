@@ -19,13 +19,14 @@ public:
   // movement functions
   //  void updateKey(char key, bool pressed);
   void updateKey(InputManager::InputAction action, bool pressed);
-  void update();
+  void update(float dt);
+  void SetTargetForceStrength(float strength) { targetForceStrength = strength; }
+  void SetAccelerationRate(float rate) {accelerationRate = rate;}
 
   // getter functions
   b2BodyId GetBody() { return body; }
   b2ShapeId GetShape() { return car; };
   b2Vec2 GetPosition() { return b2Body_GetPosition(body); };
-  void SetForceStrength(float strength) { forceStrength = strength; }
 
 private:
   b2Vec2 getLateralVelocity() const {
@@ -57,5 +58,9 @@ private:
   bool left = false;
   bool down = false;
   bool right = false;
-  float forceStrength = 100.0f;
+
+  float forceStrength = 0.0f;
+  float targetForceStrength = 30.0f;
+  float accelerationRate = 10.0f;
+  float brakeRate = 30.0f;
 };

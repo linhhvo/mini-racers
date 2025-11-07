@@ -9,7 +9,7 @@
 
 class SoftObstacle {
 public:
-  SoftObstacle(b2WorldId world, b2Vec2 position): postion_(position) {
+  SoftObstacle(b2WorldId world, b2Vec2 position, float strength): postion_(position), strength_(strength) {
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_staticBody;
     bodyDef.position = postion_;
@@ -35,8 +35,11 @@ public:
   ~SoftObstacle() = default;
 
   b2BodyId GetBody() {return body;}
+  b2ShapeId GetShapeId() {return softObstacle;}
+  float GetStrength() {return strength_;}
   
 private:
+  float strength_;
   b2BodyId body;
   b2ShapeId softObstacle;
   b2Vec2 postion_;

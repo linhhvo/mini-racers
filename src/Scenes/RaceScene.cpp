@@ -21,6 +21,8 @@ const std::string CAR_IMG{"../assets/vehicles/car.png"};
 const std::string OBS_IMG("../assets/obstacles/Obstacle.png");
 const std::string SOF_IMG("../assets/obstacles/oil.png");
 const std::string CHP_IMG("../assets/others/checkpoint.png");
+const std::string BOS_IMG("../assets/obstacles/booster.png");
+
 
 RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     : context_(context), manager_(manager),
@@ -59,11 +61,15 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   if (!sofTexture_.loadFromFile(SOF_IMG)) {
     std::cout << "unable to load oil image file" << std::endl;
   }
+  if (!bosTexture_.loadFromFile(BOS_IMG)) {
+    std::cout << "unable to load booster image file" << std::endl;
+  }
 
   carTexture_.setSmooth(true);
   obsTexture_.setSmooth(true);
   chpTexture_.setSmooth(true);
   sofTexture_.setSmooth(true);
+  bosTexture_.setSmooth(true);
 
   // box2D
   b2WorldDef worldDef = b2DefaultWorldDef();
@@ -114,9 +120,17 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   b2ShapeDef botShapeDef = b2DefaultShapeDef();
   b2CreatePolygonShape(bottomWall, &botShapeDef, &bottomBox);
 
-  car_ = iforce2d_TopdownCar::Create(world_, nofCars, startX, startY, spacing);
+  car_ = iforce2d_TopdownCar::Create(world_, nofCars, nofObstacles_, nofSoft_, nofBoosters_, startX, startY, spacing);
+  std::cout << "test created" << std::endl;
+  if (!car_) {
+    std::cerr << "error with test creation" << std::endl;
+    return;
+  }
+  std::cout << "nofCars:" << nofCars << "nofObstacles:" << nofObstacles_
+            << "nofSoft:" << nofSoft_ << "nofBoosters:" << nofBoosters_ << std::endl;
 
   carSprites.resize(nofCars);
+  CarStatus_.resize(nofCars);
   for (int i = 0; i < nofCars; i++) {
     carSprites[i].setTexture(carTexture_);
 
@@ -124,42 +138,56 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     carSprites[i].setOrigin(bounds.width / 2.f, bounds.height / 2.f);
 
     auto pos = b2Body_GetPosition(car_->GetVehicle(i)->GetBody());
-    std::cout << "box2d Car " << i << " position: " << pos.x << ", " << pos.y
-              << "\n";
+    //std::cout << "box2d Car " << i << " position: " << pos.x << ", " << pos.y
+      //        << "\n";
     sf::Vector2f sfPos(pos.x * scale, pos.y * scale);
-    std::cout << "sfml Car " << i << " position: " << sfPos.x << ", " << sfPos.y
-              << "\n";
     carSprites[i].setPosition(sfPos);
   }
   carSprites[1].setColor(sf::Color(255, 0, 0));
   carProgress_.resize(nofCars); // one entry per car
 
   // obstacles
-  obsSprite_.setTexture(obsTexture_);
-  obsSprite_.setScale(0.06f, 0.06f);
-  sf::FloatRect bounds = obsSprite_.getLocalBounds();
-  obsSprite_.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
-  auto Obpos = b2Body_GetPosition(car_->GetObstacle(0)->GetBody());
-  std::cout << "box2d Obstacle " << " position: " << Obpos.x << ", " << Obpos.y
-            << "\n";
-  sf::Vector2f sfPos(Obpos.x * scale, Obpos.y * scale);
-  std::cout << "sfml Obstacle " << " position: " << sfPos.x << ", " << sfPos.y
-            << "\n";
-  obsSprite_.setPosition(sfPos);
+  obsSprites.resize(nofObstacles_);
+  for (int i = 0; i < nofObstacles_; i++) {
+    obsSprites[i].setTexture(obsTexture_);
+    obsSprites[i].setScale(0.06f, 0.06f);
+    sf::FloatRect bounds = obsSprites[i].getLocalBounds();
+    obsSprites[i].setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+    auto Obpos = b2Body_GetPosition(car_->GetObstacle(i)->GetBody());
+    //std::cout << "box2d Obstacle " << " position: " << Obpos.x << ", " << Obpos.y
+    //         << "\n";
+    sf::Vector2f sfPos(Obpos.x * scale, Obpos.y * scale);
+    obsSprites[i].setPosition(sfPos);
+    }
 
   
   // soft obstacle
-  sofSprite_.setTexture(sofTexture_);
-  sofSprite_.setScale(0.15f, 0.15f);
-  sf::FloatRect sofbounds = sofSprite_.getLocalBounds();
-  sofSprite_.setOrigin(sofbounds.width / 2.f, sofbounds.height / 2.f);
-  auto sofpos = b2Body_GetPosition(car_->GetSoftObstacle(0)->GetBody());
-  std::cout << "box2d soft obstacle " << " position: " << sofpos.x << ", "
-            << sofpos.y << "\n";
-  sf::Vector2f sofsfPos(sofpos.x * scale, sofpos.y * scale);
-  std::cout << "sfml soft obstacle " << " position: " << sofsfPos.x << ", "
-            << sofsfPos.y << "\n";
-  sofSprite_.setPosition(sofsfPos);
+  sofSprites.resize(nofSoft_);
+  for (int i = 0; i < nofSoft_; i++) {
+    sofSprites[i].setTexture(sofTexture_);
+    sofSprites[i].setScale(0.15f, 0.15f);
+    sf::FloatRect sofbounds = sofSprites[i].getLocalBounds();
+    sofSprites[i].setOrigin(sofbounds.width / 2.f, sofbounds.height / 2.f);
+    auto sofpos = b2Body_GetPosition(car_->GetSoftObstacle(i)->GetBody());
+    //std::cout << "box2d soft obstacle " << " position: " << sofpos.x << ", "
+    //          << sofpos.y << "\n";
+    sf::Vector2f sofsfPos(sofpos.x * scale, sofpos.y * scale);
+    sofSprites[i].setPosition(sofsfPos);
+  }
+
+  // booster
+  bosSprites.resize(nofBoosters_);
+  for (int i = 0; i < nofBoosters_; i++) {
+    bosSprites[i].setTexture(bosTexture_);
+    bosSprites[i].setScale(0.15f, 0.15f);
+    sf::FloatRect bosbounds = bosSprites[i].getLocalBounds();
+    bosSprites[i].setOrigin(bosbounds.width / 2.f, bosbounds.height / 2.f);
+    auto bospos = b2Body_GetPosition(car_->GetBooster(i)->GetBody());
+    //std::cout << "box2d booster " << " position: " << bospos.x << ", "
+    //          << bospos.y << "\n";
+    sf::Vector2f bossfPos(bospos.x * scale, bospos.y * scale);
+    bosSprites[i].setPosition(bossfPos);
+  }
   // add 4 checkpoints
   checkpointManager->AddCheckpoint(b2Vec2{10.0f, 2.0f});
   checkpointManager->AddCheckpoint(b2Vec2{2.5f, 2.0f});
@@ -224,21 +252,23 @@ void RaceScene::update(float dt) {
         void* sensorData = b2Shape_GetUserData(e->sensorShapeId);
         void* visitorData = b2Shape_GetUserData(e->visitorShapeId);
         const char* label = static_cast<const char*>(sensorData);
+        // Find which car triggered it
+        int triggeredCar = -1;
+        for (int i = 0; i < nofCars; i++) {
+            if (b2Shape_GetUserData(car_->GetVehicle(i)->GetShape()) == visitorData) {
+                triggeredCar = i;
+                break;
+            }
+        }
+        if (triggeredCar == -1) {
+          continue;
+        }
         if (label && strcmp(label, "checkpoint") == 0) {
             // Find which checkpoint was triggered
             int triggeredCheckpoint = -1;
             for (size_t idx = 0; idx < checkpointManager->GetCheckpoints().size(); idx++) {
                 if (B2_ID_EQUALS(checkpointManager->GetCheckpoints()[idx]->GetShapeId(), e->sensorShapeId)) {
                     triggeredCheckpoint = static_cast<int>(idx);
-                    break;
-                }
-            }
-
-            // Find which car triggered it
-            int triggeredCar = -1;
-            for (size_t i = 0; i < nofCars; i++) {
-                if (b2Shape_GetUserData(car_->GetVehicle(i)->GetShape()) == visitorData) {
-                    triggeredCar = static_cast<int>(i);
                     break;
                 }
             }
@@ -266,32 +296,42 @@ void RaceScene::update(float dt) {
                 }
             }
         }
-
-        if (label && strcmp(label, "softObstacle") == 0) {
-            for (int i = 0; i < nofCars; i++) {
-                if (b2Shape_GetUserData(car_->GetVehicle(i)->GetShape()) == visitorData) {
-                    car_->GetVehicle(i)->SetForceStrength(20.0f);
-                    std::cout << "Car " << i << " hit oil!\n";
-                }
-            }
+        // soft obstacle
+        else if (label && strcmp(label, "softObstacle") == 0) {
+          CarStatus_[triggeredCar].inSoftObstacle = true;
+          CarStatus_[triggeredCar].timer = 1.0f;
+          car_->GetVehicle(triggeredCar)->SetTargetForceStrength(5.0f);
+          std::cout << "Car " << triggeredCar << " hit oil!\n";
         }
-    }
 
-    // Reset force for all cars
-    for (int i = 0; i < nofCars; i++) {
-        car_->GetVehicle(i)->SetForceStrength(100.0f);
+        else if (label && strcmp(label, "booster") == 0) {
+          CarStatus_[triggeredCar].inSoftObstacle = true;
+          CarStatus_[triggeredCar].timer = 2.0f;
+          car_->GetVehicle(triggeredCar)->SetTargetForceStrength(60.0f);
+          car_->GetVehicle(triggeredCar)->SetAccelerationRate(20.0f);
+          std::cout << "Car " << triggeredCar << " hit booster!\n";
+        }
     }
 
     // Update vehicles
     for (int i = 0; i < nofCars; i++) {
-        car_->GetVehicle(i)->update();
-        auto carBody = car_->GetVehicle(i)->GetBody();
-        auto transform = b2Body_GetTransform(carBody);
-        float angleDeg = b2Rot_GetAngle(transform.q) * RADTODEG;
-        auto pos = car_->GetVehicle(i)->GetPosition();
-        sf::Vector2f sfPos(pos.x * scale, pos.y * scale);
-        carSprites[i].setPosition(sfPos);
-        carSprites[i].setRotation(angleDeg);
+      if (CarStatus_[i].inSoftObstacle) {
+        CarStatus_[i].timer -= dt;
+        if (CarStatus_[i].timer <= 0.0f) {
+          CarStatus_[i].inSoftObstacle = false;
+          car_->GetVehicle(i)->SetTargetForceStrength(30.0f);
+          car_->GetVehicle(i)->SetAccelerationRate(5.0f);
+          std::cout << "car" << i << "returns to normal!" << std::endl;
+        }
+      }
+      car_->GetVehicle(i)->update(dt);
+      auto carBody = car_->GetVehicle(i)->GetBody();
+      auto transform = b2Body_GetTransform(carBody);
+      float angleDeg = b2Rot_GetAngle(transform.q) * RADTODEG;
+      auto pos = car_->GetVehicle(i)->GetPosition();
+      sf::Vector2f sfPos(pos.x * scale, pos.y * scale);
+      carSprites[i].setPosition(sfPos);
+      carSprites[i].setRotation(angleDeg);
     }
 
     // Update HUD and timer
@@ -315,18 +355,29 @@ void RaceScene::render() {
     // render background (map)
     manager_.getWindow().draw(backgroundSprite_);
 
-    // render vehicles
-    for (int i = 0; i < nofCars; i++) {
-        manager_.getWindow().draw(carSprites[i]);
+    // render obstacles
+    for (auto& obstacle : obsSprites) {
+      manager_.getWindow().draw(obstacle);
     }
 
-    // render obstacles
-    manager_.getWindow().draw(obsSprite_);
-    manager_.getWindow().draw(sofSprite_);
+    // render soft obstacles
+    for (auto& softObstacle : sofSprites) {
+      manager_.getWindow().draw(softObstacle);
+    }
+    
+    //render boosters
+    for (auto& booster : bosSprites) {
+      manager_.getWindow().draw(booster);
+    }
 
     // render checkpoints
     for (auto &sprite : checkpointSprites_) {
         manager_.getWindow().draw(sprite);
+    }
+
+    // render vehicles
+    for (auto &car : carSprites) {
+        manager_.getWindow().draw(car);
     }
 
     // render HUD
