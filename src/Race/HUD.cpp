@@ -1,28 +1,31 @@
 #include "HUD.hpp"
+#include "Race/CheckpointManager.hpp"
 #include "System/GameContext.hpp"
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <iomanip>
 #include <iostream>
+#include <ostream>
 #include <sstream>
 
 const std::string FONT_FILE{"../assets/fonts/MenuScenceFont.ttf"};
 sf::Font HUDfont;
 
-HUD::HUD(Timer &timer, GameContext &context)
-    : timer_(timer), context_(context) {
+HUD::HUD(Timer &timer, GameContext &context,
+         std::vector<CarProgress> &progresses)
+    : timer_(timer), context_(context), progresses_(progresses) {
   if (!HUDfont.loadFromFile(FONT_FILE)) {
     std::cout << "unable to load font" << std::endl;
   }
 
   // initialize race timer text
   timerText_.setFont(HUDfont);
-  timerText_.setCharacterSize(20);
+  timerText_.setCharacterSize(15);
   timerText_.setFillColor(sf::Color::White);
 
   // initialize remaining lap text
   lapText_.setFont(HUDfont);
-  lapText_.setCharacterSize(20);
+  lapText_.setCharacterSize(15);
   lapText_.setFillColor(sf::Color::White);
 }
 
@@ -39,15 +42,12 @@ void HUD::update() {
   timerText_.setString(timer_ss.str());
 
   // update remaining lap text
-  // the remaining lap calculation is just placeholder for now until checkpoints
-  // are implemented
-  int remainingLaps =
-      static_cast<int>(remaining) /
-          (context_.config->raceDuration / context_.config->numOfLaps) +
-      1;
-
   std::ostringstream lap_ss;
-  lap_ss << remainingLaps << "/" << context_.config->numOfLaps;
+  for (unsigned int i = 0; i < context_.config->numOfPlayers; i++) {
+    remainingNofLap_ = context_.config->numOfLaps - progresses_[i].currentLap;
+    lap_ss << "P" << i + 1 << ": " << remainingNofLap_ << "/"
+           << context_.config->numOfLaps << "\n";
+  }
   lapText_.setString(lap_ss.str());
 }
 
