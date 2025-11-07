@@ -12,7 +12,7 @@ Vehicle::Vehicle(b2WorldId world, b2Vec2 pos, std::string idx) : world_(world) {
   bodyDef.linearDamping = 0.3f;
   bodyDef.position = pos;
   body = b2CreateBody(world, &bodyDef);
-  b2Body_SetAngularDamping(body, 4.0f);
+  b2Body_SetAngularDamping(body, 1.5f); // Reduced from 4.0f for faster turning
   b2Body_SetLinearDamping(body, 2.0f);
 
   // Box Polygon shape
@@ -62,16 +62,18 @@ void Vehicle::updateKey(InputManager::InputAction action, bool pressed) {
 void Vehicle::update(float dt) {
   handleDrift();
   if (forceStrength < targetForceStrength) {
-    forceStrength = std::min(forceStrength + accelerationRate * dt, targetForceStrength);
-  }
-  else if (forceStrength > targetForceStrength) {
-    forceStrength = std::max(forceStrength - brakeRate * dt, targetForceStrength);
+    forceStrength =
+        std::min(forceStrength + accelerationRate * dt, targetForceStrength);
+  } else if (forceStrength > targetForceStrength) {
+    forceStrength =
+        std::max(forceStrength - brakeRate * dt, targetForceStrength);
   }
 
+  // Increased angular velocity for faster turning (was 1.0f, now 4.0f)
   if (left) {
-    b2Body_SetAngularVelocity(body, -2.0f);
+    b2Body_SetAngularVelocity(body, -4.0f);
   } else if (right) {
-    b2Body_SetAngularVelocity(body, 2.0f);
+    b2Body_SetAngularVelocity(body, 4.0f);
   } else {
     b2Body_SetAngularVelocity(body, 0.0f);
   }

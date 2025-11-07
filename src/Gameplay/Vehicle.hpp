@@ -20,8 +20,10 @@ public:
   //  void updateKey(char key, bool pressed);
   void updateKey(InputManager::InputAction action, bool pressed);
   void update(float dt);
-  void SetTargetForceStrength(float strength) { targetForceStrength = strength; }
-  void SetAccelerationRate(float rate) {accelerationRate = rate;}
+  void SetTargetForceStrength(float strength) {
+    targetForceStrength = strength;
+  }
+  void SetAccelerationRate(float rate) { accelerationRate = rate; }
 
   // getter functions
   b2BodyId GetBody() { return body; }
@@ -58,9 +60,8 @@ private:
   bool left = false;
   bool down = false;
   bool right = false;
-
-  float forceStrength = 0.0f;
   float targetForceStrength = 30.0f;
   float accelerationRate = 10.0f;
   float brakeRate = 30.0f;
+  float forceStrength = 60.0f; // Reduced from 100.0f for slower speed
 };
