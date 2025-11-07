@@ -12,7 +12,7 @@ sf::Font VictoryFont;
 
 VictoryScene::VictoryScene(SceneManager &manager, GameContext &context,
                            int winner)
-    : manager_(manager), context_(context) {
+    : manager_(manager), context_(context), winner_(winner) {
   sf::RenderWindow &window = manager_.getWindow();
 
   // create a blurred overlay background
@@ -46,7 +46,9 @@ VictoryScene::VictoryScene(SceneManager &manager, GameContext &context,
 
   // display race result
   std::stringstream result_ss;
-  result_ss << "Player " << winner + 1 << " won the race";
+  if (winner > -1) {
+    result_ss << "Player " << winner + 1 << " won the race";
+  }
 
   raceResult_.setFont(VictoryFont);
   raceResult_.setString(result_ss.str());
@@ -66,7 +68,9 @@ void VictoryScene::handleEvent(const sf::Event &event) {
 
 void VictoryScene::render() {
   manager_.getWindow().draw(background_);
-  manager_.getWindow().draw(bannerSprite_);
+  if (winner_ > -1) {
+    manager_.getWindow().draw(bannerSprite_);
+  }
   manager_.getWindow().draw(infoText_);
   manager_.getWindow().draw(raceResult_);
 }

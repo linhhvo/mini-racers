@@ -23,4 +23,5 @@ private:
   sf::Sprite bannerSprite_;
   sf::Text infoText_;
   sf::Text raceResult_;
+  int winner_;
 };
