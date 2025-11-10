@@ -35,12 +35,23 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   // Load TMX map
   if (track_.loadFromFile(TMX_MAP)) {
     useTmxMap_ = true;
-    std::cout << "Using TMX map: " << TMX_MAP << std::endl;
+    std::cout << "✓ Successfully loaded TMX map: " << TMX_MAP << std::endl;
+    std::cout << "  Map size: " << track_.getMapSize().x << "x"
+              << track_.getMapSize().y << std::endl;
+    std::cout << "  Tile size: " << track_.getTileSize().x << "x"
+              << track_.getTileSize().y << std::endl;
   } else {
     useTmxMap_ = false;
-    std::cout << "Failed to load TMX map: " << TMX_MAP << std::endl;
-    std::cout << "Game will continue but map may not display correctly."
+    std::cerr << "✗ ERROR: Failed to load TMX map: " << TMX_MAP << std::endl;
+    std::cerr << "  Make sure you're running from the project root directory "
+                 "(where CMakeLists.txt is)"
               << std::endl;
+    std::cerr << "  Or that the path '../assets/maps/stas_map.tmx' is correct "
+                 "relative to your working directory."
+              << std::endl;
+    std::cerr
+        << "  Game will continue but screen will be black without the map!"
+        << std::endl;
   }
 
   if (!defaultCarTexture_.loadFromFile(DEFAULT_CAR_TEXTURE)) {
@@ -58,23 +69,31 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
 
   if (!spawnPoints.empty()) {
     nofCars = std::min(static_cast<int>(spawnPoints.size()), desiredPlayers);
-    std::cout << "Using " << nofCars << " cars from TMX spawn points"
+    std::cout << "✓ Using " << nofCars << " cars from TMX spawn points"
               << std::endl;
     if (desiredPlayers > static_cast<int>(spawnPoints.size())) {
-      std::cout << "Warning: Only " << spawnPoints.size()
+      std::cout << "⚠ Warning: Only " << spawnPoints.size()
                 << " vehicle spawn point(s) defined in TMX, but "
                 << desiredPlayers << " player(s) configured." << std::endl;
     }
   } else {
     nofCars = desiredPlayers;
-    std::cout << "No vehicle spawn points found in TMX map. Falling back to "
-                 "default positions."
+    std::cout << "⚠ Warning: No vehicle spawn points found in TMX map. Falling "
+                 "back to default positions."
               << std::endl;
+    if (!useTmxMap_) {
+      std::cerr << "  ERROR: TMX map not loaded AND no spawn points = cars may "
+                   "not be visible!"
+                << std::endl;
+    }
   }
 
   if (nofCars <= 0) {
     nofCars = 1;
+    std::cout << "⚠ Warning: nofCars was 0, setting to 1" << std::endl;
   }
+
+  std::cout << "Final car count: " << nofCars << std::endl;
 
   // box2D
   b2WorldDef worldDef = b2DefaultWorldDef();
@@ -332,11 +351,19 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
 
   // Set initial centers (will be updated in update() to follow cars)
   if (nofCars > 0) {
-    leftView_.setCenter(carSprites[0].getPosition());
+    sf::Vector2f car0Pos = carSprites[0].getPosition();
+    leftView_.setCenter(car0Pos);
+    std::cout << "✓ Left view initialized at car 0 position: (" << car0Pos.x
+              << ", " << car0Pos.y << ")" << std::endl;
   }
   if (nofCars > 1) {
-    rightView_.setCenter(carSprites[1].getPosition());
+    sf::Vector2f car1Pos = carSprites[1].getPosition();
+    rightView_.setCenter(car1Pos);
+    std::cout << "✓ Right view initialized at car 1 position: (" << car1Pos.x
+              << ", " << car1Pos.y << ")" << std::endl;
   }
+
+  std::cout << "RaceScene initialization complete." << std::endl;
 }
 
 void RaceScene::handleEvent(const sf::Event &event) {
@@ -583,6 +610,16 @@ void RaceScene::render() {
   sf::Color bgColor =
       useTmxMap_ ? track_.getBackgroundColor() : sf::Color::Black;
   window.clear(bgColor);
+
+  // Debug: Print warning if map not loaded (only once)
+  static bool warnedAboutBlackScreen = false;
+  if (!useTmxMap_ && !warnedAboutBlackScreen) {
+    std::cerr << "⚠ RENDER WARNING: TMX map not loaded - screen will be black!"
+              << std::endl;
+    std::cerr << "  Check console output above for map loading errors."
+              << std::endl;
+    warnedAboutBlackScreen = true;
+  }
 
   // // render obstacles
   // for (auto &obstacle : obsSprites) {
