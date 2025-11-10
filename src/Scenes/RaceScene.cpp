@@ -123,9 +123,6 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   // b2ShapeDef botShapeDef = b2DefaultShapeDef();
   // b2CreatePolygonShape(bottomWall, &botShapeDef, &bottomBox);
   //
-  // car_ = iforce2d_TopdownCar::Create(world_, nofCars, nofObstacles_,
-  // nofSoft_,
-  //                                    nofBoosters_, startX, startY, spacing);
   // std::cout << "test created" << std::endl;
   // if (!car_) {
   //   std::cerr << "error with test creation" << std::endl;
@@ -150,7 +147,11 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     startY = center.y / PIXELS_PER_METER;
   }
 
-  car_ = iforce2d_TopdownCar::Create(world_, nofCars, startX, startY, spacing);
+  // car_ = iforce2d_TopdownCar::Create(world_, nofCars, startX, startY,
+  // spacing);
+
+  car_ = iforce2d_TopdownCar::Create(world_, nofCars, nofObstacles_, nofSoft_,
+                                     nofBoosters_, startX, startY, spacing);
 
   carSprites.clear();
   carSprites.resize(nofCars);
@@ -497,7 +498,6 @@ void RaceScene::update(float dt) {
         }
       }
     }
-
     // soft obstacle
     else if (label && strcmp(label, "softObstacle") == 0) {
       CarStatus_[triggeredCar].inSoftObstacle = true;
@@ -513,6 +513,11 @@ void RaceScene::update(float dt) {
       car_->GetVehicle(triggeredCar)->SetAccelerationRate(20.0f);
       std::cout << "Car " << triggeredCar << " hit booster!\n";
     }
+  }
+
+  for (int i = 0; i < nofCars; i++) {
+    car_->GetVehicle(i)->SetTargetForceStrength(
+        25.0f); // Reduced from 100.0f for slower speed
   }
 
   // for (int i = 0; i < nofCars; i++) {
@@ -540,6 +545,15 @@ void RaceScene::update(float dt) {
     sf::Vector2f sfPos(pos.x * PIXELS_PER_METER, pos.y * PIXELS_PER_METER);
     carSprites[i].setPosition(sfPos);
     carSprites[i].setRotation(angleDeg);
+
+    // Check checkpoint zones for this car
+    if (useTmxMap_) {
+      int activatedId = track_.checkAndActivateCheckpoint(sfPos);
+      if (activatedId >= 0) {
+        // Checkpoint activated - the Track class will handle showing the
+        // activated layer
+      }
+    }
 
     // Update camera views to follow cars
     if (i == 0) {
