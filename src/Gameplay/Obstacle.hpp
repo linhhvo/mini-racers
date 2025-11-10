@@ -9,14 +9,14 @@
 
 class Obstacle {
 public:
-  Obstacle(b2WorldId world, b2Vec2 position): postion_(position) {
+  Obstacle(b2WorldId world, b2Vec2 position, float height, float width): postion_(position) {
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_staticBody;
     bodyDef.position = postion_;
     body = b2CreateBody(world, &bodyDef);
 
     // Box Polygon shape
-    b2Polygon box = b2MakeBox(0.5f, 0.5f);
+    b2Polygon box = b2MakeBox(height, width);
     // Tire material (can be changed for future vehicle types)
     b2SurfaceMaterial material = b2SurfaceMaterial();
     material.friction = 0.8f;

@@ -103,10 +103,10 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   checkpointManager = std::make_unique<CheckpointManager>(
       world_, context.config->numOfLaps, context.config->numOfPlayers);
 
-  float startX = (window.getSize().x / 2.0f) / PIXELS_PER_METER;
-  float startY = (window.getSize().y / 2.0f) / PIXELS_PER_METER;
-  float spacing = 3.0f;
-
+  // float startX = (window.getSize().x / 2.0f) / PIXELS_PER_METER;
+  // float startY = (window.getSize().y / 2.0f) / PIXELS_PER_METER;
+  // float spacing = 3.0f;
+  //
   // float worldWidth = window.getSize().x / scale;
   // float worldHeight = window.getSize().y / scale;
   //
@@ -156,21 +156,30 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   // for (int i = 0; i < nofCars; i++) {
   //   carSprites[i].setTexture(carTexture_);
 
+  std::vector<b2Vec2> spawnPointsVec;
+  std::vector<std::pair<float, float>> sizes;
+
   if (!spawnPoints.empty()) {
-    sf::Vector2f size = spawnPoints[0].size;
-    if (size.x <= 0.f || size.y <= 0.f) {
-      size = {static_cast<float>(tileSize.x), static_cast<float>(tileSize.y)};
+    for (int i = 0; i < nofCars; i++) {
+      sf::Vector2f size = spawnPoints[i].size;
+      if (size.x <= 0.f || size.y <= 0.f) {
+        size = {static_cast<float>(tileSize.x), static_cast<float>(tileSize.y)};
+      }
+      float halfWidth = (size.x / 2.0f) / PIXELS_PER_METER;
+      float halfHeight = (size.y / 2.0f) / PIXELS_PER_METER;
+      sizes.push_back(std::pair<float, float>(halfWidth, halfHeight));
+      sf::Vector2f center = spawnPoints[0].position + size * 0.5f;
+      float startX = center.x / PIXELS_PER_METER;
+      float startY = center.y / PIXELS_PER_METER;
+      spawnPointsVec.push_back(b2Vec2{startX, startY});
     }
-    sf::Vector2f center = spawnPoints[0].position + size * 0.5f;
-    startX = center.x / PIXELS_PER_METER;
-    startY = center.y / PIXELS_PER_METER;
   }
 
-  // car_ = iforce2d_TopdownCar::Create(world_, nofCars, startX, startY,
-  // spacing);
-
-  car_ = iforce2d_TopdownCar::Create(world_, nofCars, nofObstacles_, nofSoft_,
-                                     nofBoosters_, startX, startY, spacing);
+  // car_ = iforce2d_TopdownCar::Create(world_, nofCars, nofObstacles_,
+  // nofSoft_,
+  //                                    nofBoosters_, startX, startY, spacing);
+  car_ = iforce2d_TopdownCar::Create(world_);
+  car_->VehicleFactory(nofCars, spawnPointsVec, sizes);
 
   carSprites.clear();
   carSprites.resize(nofCars);
@@ -339,7 +348,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   // Zoom factor - smaller value = more zoomed in (shows less area)
   // Adjust this value to change zoom level (0.5 = 2x zoom, 0.25 = 4x zoom,
   // etc.)
-  float zoomFactor = 0.4f; // Shows a smaller area around each car
+  float zoomFactor = 0.5f; // Shows a smaller area around each car
 
   // Left view (car 0 - WASD) - left half of screen
   leftView_.setViewport(sf::FloatRect(0.0f, 0.0f, 0.5f, 1.0f));
@@ -369,39 +378,6 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
 void RaceScene::handleEvent(const sf::Event &event) {
   if (event.type == sf::Event::KeyPressed) {
     if (event.key.code == sf::Keyboard::Escape) {
-      // =======
-      //     switch (event.key.code) {
-      //     case sf::Keyboard::W:
-      //       car_->Keyboard('w', true, 0);
-      //       break;
-      //     case sf::Keyboard::A:
-      //       car_->Keyboard('a', true, 0);
-      //       break;
-      //     case sf::Keyboard::S:
-      //       car_->Keyboard('s', true, 0);
-      //       break;
-      //     case sf::Keyboard::D:
-      //       car_->Keyboard('d', true, 0);
-      //       break;
-      //     case sf::Keyboard::Up:
-      //       if (nofCars > 1)
-      //         car_->Keyboard('w', true, 1);
-      //       break;
-      //     case sf::Keyboard::Left:
-      //       if (nofCars > 1)
-      //         car_->Keyboard('a', true, 1);
-      //       break;
-      //     case sf::Keyboard::Down:
-      //       if (nofCars > 1)
-      //         car_->Keyboard('s', true, 1);
-      //       break;
-      //     case sf::Keyboard::Right:
-      //       if (nofCars > 1)
-      //         car_->Keyboard('d', true, 1);
-      //       break;
-      //     case sf::Keyboard::Escape:
-      // >>>>>>> 2edc667 (Add TMX map support, split-screen views, and physics
-      // adjustments)
       manager_.pushScene<PauseScene>(context_);
     }
 
@@ -422,38 +398,6 @@ void RaceScene::handleEvent(const sf::Event &event) {
       InputManager::InputAction action =
           context_.input->getPlayerAction(event.key.code, playerIdx.value());
       car_->Keyboard(action, playerIdx.value(), false);
-      // =======
-      //     switch (event.key.code) {
-      //     case sf::Keyboard::W:
-      //       car_->Keyboard('w', false, 0);
-      //       break;
-      //     case sf::Keyboard::A:
-      //       car_->Keyboard('a', false, 0);
-      //       break;
-      //     case sf::Keyboard::S:
-      //       car_->Keyboard('s', false, 0);
-      //       break;
-      //     case sf::Keyboard::D:
-      //       car_->Keyboard('d', false, 0);
-      //       break;
-      //     case sf::Keyboard::Up:
-      //       if (nofCars > 1)
-      //         car_->Keyboard('w', false, 1);
-      //       break;
-      //     case sf::Keyboard::Left:
-      //       if (nofCars > 1)
-      //         car_->Keyboard('a', false, 1);
-      //       break;
-      //     case sf::Keyboard::Down:
-      //       if (nofCars > 1)
-      //         car_->Keyboard('s', false, 1);
-      //       break;
-      //     case sf::Keyboard::Right:
-      //       if (nofCars > 1)
-      //         car_->Keyboard('d', false, 1);
-      //       break;
-      // >>>>>>> 2edc667 (Add TMX map support, split-screen views, and physics
-      // adjustments)
     }
   }
 }

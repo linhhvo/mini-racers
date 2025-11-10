@@ -13,7 +13,7 @@
 
 class Vehicle {
 public:
-  Vehicle(b2WorldId world, b2Vec2 pos, std::string idx);
+  Vehicle(b2WorldId world, b2Vec2 pos, float width, float height);
   ~Vehicle() = default;
 
   // movement functions
@@ -24,7 +24,6 @@ public:
     targetForceStrength = strength;
   }
   void SetAccelerationRate(float rate) { accelerationRate = rate; }
-
   // getter functions
   b2BodyId GetBody() { return body; }
   b2ShapeId GetShape() { return car; };
@@ -60,8 +59,8 @@ private:
   bool left = false;
   bool down = false;
   bool right = false;
-  float targetForceStrength = 30.0f;
-  float accelerationRate = 10.0f;
+  float forceStrength = 0.0f;
+  float targetForceStrength = 5.0f;
+  float accelerationRate = 1.0f;
   float brakeRate = 30.0f;
-  float forceStrength = 60.0f; // Reduced from 100.0f for slower speed
 };
