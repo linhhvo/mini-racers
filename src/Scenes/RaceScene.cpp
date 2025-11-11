@@ -160,6 +160,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   std::vector<std::pair<float, float>> sizes;
 
   if (!spawnPoints.empty()) {
+    CarStatus_.resize(nofCars);
     for (int i = 0; i < nofCars; i++) {
       sf::Vector2f size = spawnPoints[i].size;
       if (size.x <= 0.f || size.y <= 0.f) {
@@ -487,23 +488,11 @@ void RaceScene::update(float dt) {
   }
 
   for (int i = 0; i < nofCars; i++) {
-    car_->GetVehicle(i)->SetTargetForceStrength(
-        25.0f); // Reduced from 100.0f for slower speed
-  }
-
-  // for (int i = 0; i < nofCars; i++) {
-  //   car_->GetVehicle(i)->SetForceStrength(
-  //       40.0f); // Reduced from 100.0f for slower speed
-  // }
-
-  // Update vehicles
-  for (int i = 0; i < nofCars; i++) {
     if (CarStatus_[i].inSoftObstacle) {
       CarStatus_[i].timer -= dt;
       if (CarStatus_[i].timer <= 0.0f) {
         CarStatus_[i].inSoftObstacle = false;
-        car_->GetVehicle(i)->SetTargetForceStrength(30.0f);
-        car_->GetVehicle(i)->SetAccelerationRate(5.0f);
+        car_->GetVehicle(i)->Reset();
         std::cout << "car" << i << "returns to normal!" << std::endl;
       }
     }
@@ -525,6 +514,17 @@ void RaceScene::update(float dt) {
         // activated layer
       }
     }
+
+    // TODO: Check Soft Obstacle zones for this car
+    /*
+    if (useTmxMap_) {
+      int activatedId = track_.checkAndActivateSoft(sfPos);
+      if (activatedId >= 0) {
+        // Checkpoint activated - the Track class will handle showing the
+    activated layer
+      }
+    }
+    */
 
     // Update camera views to follow cars
     if (i == 0) {

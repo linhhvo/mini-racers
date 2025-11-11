@@ -21,9 +21,16 @@ public:
   void updateKey(InputManager::InputAction action, bool pressed);
   void update(float dt);
   void SetTargetForceStrength(float strength) {
-    targetForceStrength = strength;
+    targetForceStrength *strength;
+  } // for soft obstacles
+  void SetAccelerationRate(float rate) {
+    accelerationRate *rate;
+  } // for soft obstacles
+  void Reset() {
+    this->SetTargetForceStrength(baseTargetForceStrength);
+    this->SetAccelerationRate(baseAccelerationRate);
   }
-  void SetAccelerationRate(float rate) { accelerationRate = rate; }
+
   // getter functions
   b2BodyId GetBody() { return body; }
   b2ShapeId GetShape() { return car; };
@@ -62,5 +69,7 @@ private:
   float forceStrength = 0.0f;
   float targetForceStrength = 5.0f;
   float accelerationRate = 1.0f;
-  float brakeRate = 30.0f;
+  float brakeRate = 1.0f;
+  float baseTargetForceStrength = 5.0f;
+  float baseAccelerationRate = 1.0f;
 };

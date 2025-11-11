@@ -63,6 +63,35 @@ public:
     
     // Get activated checkpoint IDs
     std::vector<int> getActivatedCheckpoints() const;
+
+    // TODO: Stas can you do the tmx stuff for soft obstacle?
+    /*
+    struct SoftObstacleZone {
+        int id;                    // Unique checkpoint ID
+        sf::Vector2f position;     // Top-left position in pixels
+        sf::Vector2f size;         // Width/height in pixels
+        bool activated = false;    // Whether this checkpoint has been passed
+        float activationTimer = 0.0f; // Timer for how long checkpoint has been activated (in seconds)
+        float DesiredStrength; // how strong the effect of the obstacle is on vehicle's desired speed: 0.5 to halves speed, 2.0 to doubles speed
+        float accelerationStrength; //how strong the effect of the obstacle is on the vehicle's acceleration
+        float ACTIVATION_DURATION; // Stay active for how long after activation
+    };
+
+    const std::vector<SoftObstacleZone>& getSoftObstacleZones() const { return softObstacleZone_;}
+
+    // Check if a point (in pixels) is inside a soft obstacle zone and activate it
+    // Also updates activation timers and deactivates obstacles when car leaves
+    // Returns the checkpoint ID if newly activated, or -1 if none
+    int checkAndActivateSoft(const sf::Vector2f& position);
+    
+    // Update soft obstacle timers (call this in update())
+    void updateSoftObstacle(float dt);
+    
+    // Get activated checkpoint IDs
+    std::vector<int> getActivatedSofts() const;
+    */
+
+
     
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -88,5 +117,6 @@ private:
     std::map<std::string, std::unique_ptr<sf::Texture>> textures_;
     std::vector<SpawnPoint> vehicleSpawns_;
     std::vector<CheckpointZone> checkpointZones_;
+    // TODO: std::vector<SoftObstacleZone> softObstacleZone_;
 };
 

@@ -18,12 +18,11 @@
 
 class RaceScene : public Scene {
 
+public:
   struct CarStatus {
     bool inSoftObstacle = false;
     float timer = 0.0f;
   };
-
-public:
   RaceScene(SceneManager &manager, GameContext &context);
   void handleEvent(const sf::Event &event);
   void update(float dt);
@@ -41,11 +40,11 @@ private:
   std::vector<sf::Sprite> carSprites;
   std::unordered_map<std::string, std::unique_ptr<sf::Texture>>
       carTextureCache_;
+  std::vector<CarStatus> CarStatus_;
   sf::Texture defaultCarTexture_;
 
   b2WorldId world_;
   iforce2d_TopdownCar *car_;
-  std::vector<CarStatus> CarStatus_;
   InputManager input_;
   int nofSoft_ = 2;
   int nofObstacles_ = 2;
