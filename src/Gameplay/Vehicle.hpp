@@ -21,14 +21,17 @@ public:
   void updateKey(InputManager::InputAction action, bool pressed);
   void update(float dt);
   void SetTargetForceStrength(float strength) {
-    targetForceStrength *strength;
-  } // for soft obstacles
-  void SetAccelerationRate(float rate) {
-    accelerationRate *rate;
-  } // for soft obstacles
+    targetForceStrength = strength;
+  }
+  void SetAccelerationRate(float rate) { accelerationRate = rate; }
   void Reset() {
     this->SetTargetForceStrength(baseTargetForceStrength);
     this->SetAccelerationRate(baseAccelerationRate);
+  }
+
+  void HitSoftObstacle(float desiredStrength, float accelerationStrength) {
+    this->SetTargetForceStrength(targetForceStrength * desiredStrength);
+    this->SetAccelerationRate(accelerationRate * accelerationStrength);
   }
 
   // getter functions

@@ -488,6 +488,7 @@ void RaceScene::update(float dt) {
   }
 
   for (int i = 0; i < nofCars; i++) {
+    // TODO: Reset car to normal, possibly can be moved to Track?
     if (CarStatus_[i].inSoftObstacle) {
       CarStatus_[i].timer -= dt;
       if (CarStatus_[i].timer <= 0.0f) {

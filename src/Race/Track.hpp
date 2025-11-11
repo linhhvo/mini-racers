@@ -82,6 +82,8 @@ public:
     // Check if a point (in pixels) is inside a soft obstacle zone and activate it
     // Also updates activation timers and deactivates obstacles when car leaves
     // Returns the checkpoint ID if newly activated, or -1 if none
+    // if a car hits a softObstacle, call car.hitSoftObstacle ONCE
+    // when it leaves, after the activation duration, the call car.reset() (currently handled in RaceScene update)
     int checkAndActivateSoft(const sf::Vector2f& position);
     
     // Update soft obstacle timers (call this in update())
