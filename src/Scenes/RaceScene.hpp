@@ -60,8 +60,11 @@ private:
   bool raceFinished_ = false; // has any car finished the race?
   int winnerCarID_ = -1;
   // Split screen views
-  sf::View leftView_;  // For car 0 (WASD)
-  sf::View rightView_; // For car 1 (Arrow keys)
+  sf::View leftView_;  // For car 1 (WASD)
+  sf::View rightView_; // For car 0 (Arrow keys)
+
+  int redCarIndex_ = -1;  // Which car index is red (uses WASD)
+  int blueCarIndex_ = -1; // Which car index is blue (uses Arrow keys)
 
   sf::Texture *getCarTexture(const std::string &textureId);
 };

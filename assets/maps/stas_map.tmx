@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#ffff7f" nextlayerid="24" nextobjectid="64">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#ffff7f" nextlayerid="24" nextobjectid="84">
  <tileset firstgid="1" source="track.tsx"/>
  <layer id="1" name="Track" width="100" height="100">
   <data encoding="csv">
@@ -1430,22 +1430,137 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="21" name="oil">
-  <object id="43" x="304" y="416" width="16" height="16"/>
-  <object id="44" x="400" y="192" width="16" height="16"/>
-  <object id="45" x="656" y="528" width="16" height="16"/>
-  <object id="46" x="816" y="576" width="16" height="16"/>
-  <object id="47" x="1168" y="320" width="16" height="16"/>
-  <object id="48" x="1280" y="544" width="16" height="16"/>
-  <object id="49" x="1232" y="736" width="16" height="16"/>
-  <object id="50" x="1280" y="880" width="16" height="16"/>
-  <object id="51" x="1200" y="1104" width="16" height="16"/>
-  <object id="52" x="1120" y="1136" width="16" height="16"/>
-  <object id="53" x="1072" y="928" width="16" height="16"/>
-  <object id="54" x="720" y="864" width="16" height="16"/>
-  <object id="55" x="608" y="1024" width="16" height="16"/>
-  <object id="56" x="352" y="1104" width="16" height="16"/>
-  <object id="59" x="288" y="928" width="16" height="16"/>
+ <objectgroup id="21" name="softObstacles">
+  <object id="43" x="304" y="416" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="44" x="400" y="192" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="45" x="656" y="528" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="46" x="816" y="576" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="47" x="1168" y="320" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="48" x="1280" y="544" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="49" x="1232" y="736" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="50" x="1280" y="880" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="51" x="1200" y="1104" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="52" x="1120" y="1136" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="53" x="1072" y="928" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="54" x="720" y="864" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="55" x="608" y="1024" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="56" x="352" y="1104" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="59" x="288" y="928" width="16" height="16">
+   <properties>
+    <property name="type" value="oil"/>
+   </properties>
+  </object>
+  <object id="64" x="499" y="337" width="40" height="27">
+   <properties>
+    <property name="type" value="booster"/>
+   </properties>
+  </object>
+  <object id="66" x="373" y="372" width="40" height="27">
+   <properties>
+    <property name="type" value="booster"/>
+   </properties>
+  </object>
+  <object id="71" x="657" y="581" width="27" height="40">
+   <properties>
+    <property name="type" value="booster"/>
+   </properties>
+  </object>
+  <object id="72" x="961" y="309" width="27" height="40">
+   <properties>
+    <property name="type" value="booster"/>
+   </properties>
+  </object>
+  <object id="74" x="1267" y="465" width="40" height="27">
+   <properties>
+    <property name="type" value="booster"/>
+   </properties>
+  </object>
+  <object id="76" x="1219" y="625" width="40" height="27">
+   <properties>
+    <property name="type" value="booster"/>
+   </properties>
+  </object>
+  <object id="77" x="1267" y="801" width="40" height="27">
+   <properties>
+    <property name="type" value="booster"/>
+   </properties>
+  </object>
+  <object id="79" x="1219" y="961" width="40" height="27">
+   <properties>
+    <property name="type" value="booster"/>
+   </properties>
+  </object>
+  <object id="81" x="900" y="899" width="27" height="40">
+   <properties>
+    <property name="type" value="booster"/>
+   </properties>
+  </object>
+  <object id="82" x="516" y="1075" width="27" height="40">
+   <properties>
+    <property name="type" value="booster"/>
+   </properties>
+  </object>
+  <object id="83" x="357" y="1012" width="40" height="27">
+   <properties>
+    <property name="type" value="booster"/>
+   </properties>
+  </object>
  </objectgroup>
  <layer id="16" name="boosters" width="100" height="100">
   <data encoding="csv">

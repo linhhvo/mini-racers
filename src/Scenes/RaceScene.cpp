@@ -336,6 +336,19 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
           {pos.x * PIXELS_PER_METER, pos.y * PIXELS_PER_METER});
       carSprites[i].setRotation(rotationDeg);
     }
+
+    // Find which car is red/blue
+    if (spawn) {
+      std::string textureIdLower = spawn->textureId;
+      std::transform(
+          textureIdLower.begin(), textureIdLower.end(), textureIdLower.begin(),
+          [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+      if (textureIdLower == "red") {
+        redCarIndex_ = i;
+      } else if (textureIdLower == "blue") {
+        blueCarIndex_ = i;
+      }
+    }
   }
 
   // start timer
@@ -351,26 +364,26 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   // etc.)
   float zoomFactor = 0.5f; // Shows a smaller area around each car
 
-  // Left view (car 0 - WASD) - left half of screen
+  // Left view (car 1 - WASD) - left half of screen
   leftView_.setViewport(sf::FloatRect(0.0f, 0.0f, 0.5f, 1.0f));
   leftView_.setSize(viewWidth * zoomFactor, viewHeight * zoomFactor);
 
-  // Right view (car 1 - Arrow keys) - right half of screen
+  // Right view (car 0 - Arrow keys) - right half of screen
   rightView_.setViewport(sf::FloatRect(0.5f, 0.0f, 0.5f, 1.0f));
   rightView_.setSize(viewWidth * zoomFactor, viewHeight * zoomFactor);
 
   // Set initial centers (will be updated in update() to follow cars)
-  if (nofCars > 0) {
-    sf::Vector2f car0Pos = carSprites[0].getPosition();
-    leftView_.setCenter(car0Pos);
-    std::cout << "✓ Left view initialized at car 0 position: (" << car0Pos.x
-              << ", " << car0Pos.y << ")" << std::endl;
-  }
   if (nofCars > 1) {
     sf::Vector2f car1Pos = carSprites[1].getPosition();
-    rightView_.setCenter(car1Pos);
-    std::cout << "✓ Right view initialized at car 1 position: (" << car1Pos.x
-              << ", " << car1Pos.y << ")" << std::endl;
+    leftView_.setCenter(car1Pos);
+    std::cout << "✓ Left view initialized at car 1 position (WASD): ("
+              << car1Pos.x << ", " << car1Pos.y << ")" << std::endl;
+  }
+  if (nofCars > 0) {
+    sf::Vector2f car0Pos = carSprites[0].getPosition();
+    rightView_.setCenter(car0Pos);
+    std::cout << "✓ Right view initialized at car 0 position (Arrow keys): ("
+              << car0Pos.x << ", " << car0Pos.y << ")" << std::endl;
   }
 
   std::cout << "RaceScene initialization complete." << std::endl;
@@ -388,7 +401,13 @@ void RaceScene::handleEvent(const sf::Event &event) {
     if (playerIdx.has_value()) {
       InputManager::InputAction action =
           context_.input->getPlayerAction(event.key.code, playerIdx.value());
-      car_->Keyboard(action, playerIdx.value(), true);
+      // Player 1 (WASD) controls red car, Player 0 (Arrow keys) controls blue
+      // car
+      int carIndex =
+          (playerIdx.value() == 1 && redCarIndex_ >= 0)    ? redCarIndex_
+          : (playerIdx.value() == 0 && blueCarIndex_ >= 0) ? blueCarIndex_
+                                                           : playerIdx.value();
+      car_->Keyboard(action, carIndex, true);
     }
 
   } else if (event.type == sf::Event::KeyReleased) {
@@ -398,7 +417,13 @@ void RaceScene::handleEvent(const sf::Event &event) {
     if (playerIdx.has_value()) {
       InputManager::InputAction action =
           context_.input->getPlayerAction(event.key.code, playerIdx.value());
-      car_->Keyboard(action, playerIdx.value(), false);
+      // Player 1 (WASD) controls red car, Player 0 (Arrow keys) controls blue
+      // car
+      int carIndex =
+          (playerIdx.value() == 1 && redCarIndex_ >= 0)    ? redCarIndex_
+          : (playerIdx.value() == 0 && blueCarIndex_ >= 0) ? blueCarIndex_
+                                                           : playerIdx.value();
+      car_->Keyboard(action, carIndex, false);
     }
   }
 }
@@ -516,23 +541,64 @@ void RaceScene::update(float dt) {
       }
     }
 
-    // TODO: Check Soft Obstacle zones for this car
-    /*
+    // Check Soft Obstacle zones for this car
     if (useTmxMap_) {
       int activatedId = track_.checkAndActivateSoft(sfPos);
       if (activatedId >= 0) {
-        // Checkpoint activated - the Track class will handle showing the
-    activated layer
+        // Soft obstacle newly activated - apply effect to car
+        const auto &softObstacles = track_.getSoftObstacleZones();
+        for (const auto &obstacle : softObstacles) {
+          if (obstacle.id == activatedId) {
+            // Car just entered this soft obstacle - apply effect
+            if (!CarStatus_[i].inSoftObstacle) {
+              car_->GetVehicle(i)->HitSoftObstacle(
+                  obstacle.desiredStrength, obstacle.accelerationStrength);
+              CarStatus_[i].inSoftObstacle = true;
+              CarStatus_[i].timer = obstacle.activationDuration;
+              std::cout << "Car " << i << " hit soft obstacle " << activatedId
+                        << " (desiredStrength: " << obstacle.desiredStrength
+                        << ", accelerationStrength: "
+                        << obstacle.accelerationStrength << ")" << std::endl;
+            }
+            break;
+          }
+        }
+      }
+
+      // Check if car is still in any soft obstacle (to keep timer reset)
+      // We check by seeing if checkAndActivateSoft returns -1 but car is marked
+      // as in obstacle If car is still in, the Track will keep the obstacle
+      // activated and reset its timer We need to check if car's position is
+      // currently in any activated soft obstacle
+      if (CarStatus_[i].inSoftObstacle) {
+        const auto &softObstacles = track_.getSoftObstacleZones();
+        bool stillInObstacle = false;
+        for (const auto &obstacle : softObstacles) {
+          if (obstacle.activated) {
+            // Check if car position is inside this activated obstacle
+            bool isInside = (sfPos.x >= obstacle.position.x &&
+                             sfPos.x <= obstacle.position.x + obstacle.size.x &&
+                             sfPos.y >= obstacle.position.y &&
+                             sfPos.y <= obstacle.position.y + obstacle.size.y);
+            if (isInside) {
+              stillInObstacle = true;
+              // Reset timer while car is still in obstacle
+              CarStatus_[i].timer = obstacle.activationDuration;
+              break;
+            }
+          }
+        }
+        // If car left all obstacles, timer will count down in the existing
+        // logic below
       }
     }
-    */
 
     // Update camera views to follow cars
-    if (i == 0) {
-      // Left view follows car 0 (WASD)
+    if (i == 1) {
+      // Left view follows car 1 (WASD)
       leftView_.setCenter(sfPos);
-    } else if (i == 1) {
-      // Right view follows car 1 (Arrow keys)
+    } else if (i == 0) {
+      // Right view follows car 0 (Arrow keys)
       rightView_.setCenter(sfPos);
     }
   }
@@ -566,33 +632,8 @@ void RaceScene::render() {
     warnedAboutBlackScreen = true;
   }
 
-  // // render obstacles
-  // for (auto &obstacle : obsSprites) {
-  //   manager_.getWindow().draw(obstacle);
-  // }
-  //
-  // // render soft obstacles
-  // for (auto &softObstacle : sofSprites) {
-  //   manager_.getWindow().draw(softObstacle);
-  // }
-  //
-  // // render boosters
-  // for (auto &booster : bosSprites) {
-  //   manager_.getWindow().draw(booster);
-  // }
-  //
-  // // render checkpoints
-  // for (auto &sprite : checkpointSprites_) {
-  //   manager_.getWindow().draw(sprite);
-  // }
-  //
-  // // render vehicles
-  // for (auto &car : carSprites) {
-  //   manager_.getWindow().draw(car);
-  // }
-
-  // Render left view (car 0 - WASD)
-  if (nofCars > 0) {
+  // Render left view (car 1 - WASD)
+  if (nofCars > 1) {
     window.setView(leftView_);
 
     // render TMX map
@@ -606,8 +647,8 @@ void RaceScene::render() {
     }
   }
 
-  // Render right view (car 1 - Arrow keys)
-  if (nofCars > 1) {
+  // Render right view (car 0 - Arrow keys)
+  if (nofCars > 0) {
     window.setView(rightView_);
 
     // render TMX map
