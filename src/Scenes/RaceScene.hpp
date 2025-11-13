@@ -43,6 +43,12 @@ private:
   std::vector<CarStatus> CarStatus_;
   sf::Texture defaultCarTexture_;
 
+  std::vector<sf::Sprite> obstacleSprites;
+  std::unordered_map<std::string, std::unique_ptr<sf::Texture>>
+      obstacleTextureCache_;
+  std::vector<CarStatus> obstacleStatus_;
+  sf::Texture defaultObstacleTexture_;
+
   b2WorldId world_;
   iforce2d_TopdownCar *car_;
   InputManager input_;
@@ -52,6 +58,7 @@ private:
   int spacing = 10;
   int nofCars = 0;
   // int nofCars = context_.config->numOfPlayers;
+  int nofObstacles = 0;
 
   Timer raceTimer_;
   std::unique_ptr<HUD> HUD_display_;
@@ -67,4 +74,5 @@ private:
   int blueCarIndex_ = -1; // Which car index is blue (uses Arrow keys)
 
   sf::Texture *getCarTexture(const std::string &textureId);
+  sf::Texture *getObstacleTexture(const std::string &textureId);
 };

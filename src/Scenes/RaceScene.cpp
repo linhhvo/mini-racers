@@ -61,11 +61,13 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   defaultCarTexture_.setSmooth(true);
 
   const auto &spawnPoints = track_.getVehicleSpawnPoints();
+  const auto &obstacleSpawns = track_.getObstacleSpawnPoints();
   const auto tileSize = track_.getTileSize();
   const int desiredPlayers = context_.config->numOfPlayers;
 
   std::cout << "RaceScene: Found " << spawnPoints.size()
-            << " spawn points from TMX map" << std::endl;
+            << " car spawn points, " << obstacleSpawns.size()
+            << "obstacle spawn points from TMX map." << std::endl;
 
   if (!spawnPoints.empty()) {
     nofCars = std::min(static_cast<int>(spawnPoints.size()), desiredPlayers);
@@ -94,6 +96,9 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   }
 
   std::cout << "Final car count: " << nofCars << std::endl;
+
+  // obstacle
+  nofObstacles = obstacleSpawns.size();
 
   // box2D
   b2WorldDef worldDef = b2DefaultWorldDef();
@@ -159,6 +164,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   std::vector<b2Vec2> spawnPointsVec;
   std::vector<std::pair<float, float>> sizes;
 
+  // Vehicles
   if (!spawnPoints.empty()) {
     CarStatus_.resize(nofCars);
     for (int i = 0; i < nofCars; i++) {
@@ -347,6 +353,101 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
         redCarIndex_ = i;
       } else if (textureIdLower == "blue") {
         blueCarIndex_ = i;
+      }
+    }
+  }
+
+  // obstacles
+  if (nofObstacles > 0) {
+    std::vector<b2Vec2> ObstacleSpawnVec;
+    std::vector<std::pair<float, float>> Obstaclesizes;
+
+    for (int i = 0; i < nofObstacles; i++) {
+      sf::Vector2f size = obstacleSpawns[i].size;
+      if (size.x <= 0.f || size.y <= 0.f) {
+        size = {static_cast<float>(tileSize.x), static_cast<float>(tileSize.y)};
+      }
+      float halfWidth = (size.x / 2.0f) / PIXELS_PER_METER;
+      float halfHeight = (size.y / 2.0f) / PIXELS_PER_METER;
+      sizes.push_back(std::pair<float, float>(halfWidth, halfHeight));
+      sf::Vector2f center = spawnPoints[0].position + size * 0.5f;
+      float startX = center.x / PIXELS_PER_METER;
+      float startY = center.y / PIXELS_PER_METER;
+      ObstacleSpawnVec.push_back(b2Vec2{startX, startY});
+    }
+    car_->ObstacleFactory(nofObstacles, ObstacleSpawnVec, Obstaclesizes);
+    obstacleSprites.clear();
+    obstacleSprites.resize(nofObstacles);
+
+    for (int i = 0; i < nofObstacles; i++) {
+      const Track::SpawnPoint *obstacleSpawn = &spawnPoints[i];
+
+      sf::Texture *texture = &defaultObstacleTexture_;
+      if (obstacleSpawn) {
+        std::cout << "Obstacle " << i << ": tileID=" << obstacleSpawn->tileID
+                  << ", textureId='" << obstacleSpawn->textureId << "'"
+                  << std::endl;
+
+        // If object has a tile ID, use that (it will extract from tileset)
+        if (obstacleSpawn->tileID > 0) {
+          std::string tileKey = "tile_" + std::to_string(obstacleSpawn->tileID);
+          std::cout << "  Extracting tile texture for GID: "
+                    << obstacleSpawn->tileID << std::endl;
+          texture = getObstacleTexture(tileKey);
+        } else if (!obstacleSpawn->textureId.empty()) {
+          // Otherwise use the texture property (blue/red or file path)
+          std::cout << "  Using texture property: " << obstacleSpawn->textureId
+                    << std::endl;
+          texture = getObstacleTexture(obstacleSpawn->textureId);
+        } else {
+          std::cout << "  No tileID or texture property, using default texture"
+                    << std::endl;
+        }
+      } else {
+        std::cout << "Obstacle " << i
+                  << ": No spawn point, using default texture" << std::endl;
+      }
+      obstacleSprites[i].setTexture(*texture);
+
+      sf::FloatRect bounds = obstacleSprites[i].getLocalBounds();
+      obstacleSprites[i].setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+
+      sf::Vector2f targetSize = {static_cast<float>(tileSize.x),
+                                 static_cast<float>(tileSize.y)};
+      if (obstacleSpawn &&
+          (obstacleSpawn->size.x > 0.f && obstacleSpawn->size.y > 0.f)) {
+        targetSize = obstacleSpawn->size;
+      }
+
+      if (bounds.width > 0.f && bounds.height > 0.f) {
+        obstacleSprites[i].setScale(targetSize.x / bounds.width,
+                                    targetSize.y / bounds.height);
+      }
+
+      float rotationDeg = obstacleSpawn ? obstacleSpawn->rotation : 0.f;
+      float rotationRad = rotationDeg * DEG2RAD;
+
+      b2BodyId body = car_->GetObstacle(i)->GetBody();
+
+      if (obstacleSpawn) {
+        sf::Vector2f center = obstacleSpawn->position;
+        if (obstacleSpawn->size.x > 0.f && obstacleSpawn->size.y > 0.f) {
+          center += obstacleSpawn->size * 0.5f;
+        } else {
+          center += targetSize * 0.5f;
+        }
+
+        b2Vec2 position{center.x / PIXELS_PER_METER,
+                        center.y / PIXELS_PER_METER};
+        b2Rot rotation = b2MakeRot(rotationRad);
+        b2Body_SetTransform(body, position, rotation);
+        obstacleSprites[i].setPosition(center);
+        obstacleSprites[i].setRotation(rotationDeg);
+      } else {
+        auto pos = b2Body_GetPosition(body);
+        obstacleSprites[i].setPosition(
+            {pos.x * PIXELS_PER_METER, pos.y * PIXELS_PER_METER});
+        obstacleSprites[i].setRotation(rotationDeg);
       }
     }
   }
@@ -759,5 +860,90 @@ sf::Texture *RaceScene::getCarTexture(const std::string &textureId) {
   texture->setSmooth(true);
   sf::Texture *result = texture.get();
   carTextureCache_.emplace(path, std::move(texture));
+  return result;
+}
+// TODO: no clue if this works
+sf::Texture *RaceScene::getObstacleTexture(const std::string &textureId) {
+  std::string trimmed = textureId;
+  trimmed.erase(trimmed.begin(), std::find_if(trimmed.begin(), trimmed.end(),
+                                              [](unsigned char ch) {
+                                                return !std::isspace(ch);
+                                              }));
+  trimmed.erase(std::find_if(trimmed.rbegin(), trimmed.rend(),
+                             [](unsigned char ch) { return !std::isspace(ch); })
+                    .base(),
+                trimmed.end());
+
+  if (trimmed.empty()) {
+    return &defaultObstacleTexture_;
+  }
+
+  // Check if this is a tile ID reference (starts with "tile_")
+  if (trimmed.substr(0, 5) == "tile_") {
+    std::string tileIDStr = trimmed.substr(5);
+    try {
+      std::uint32_t tileGID = std::stoul(tileIDStr);
+      std::string cacheKey = "tile_" + tileIDStr;
+
+      // Check cache first
+      auto cached = obstacleTextureCache_.find(cacheKey);
+      if (cached != obstacleTextureCache_.end()) {
+        return cached->second.get();
+      }
+
+      // Extract tile from tileset
+      auto extracted = track_.extractTileTexture(tileGID);
+      if (extracted) {
+        extracted->setSmooth(true);
+        sf::Texture *result = extracted.get();
+        obstacleTextureCache_.emplace(cacheKey, std::move(extracted));
+        std::cout << "Extracted tile texture from tileset for GID: " << tileGID
+                  << std::endl;
+        return result;
+      } else {
+        std::cout << "Warning: Could not extract tile " << tileGID
+                  << " from tileset." << std::endl;
+      }
+    } catch (...) {
+      std::cout << "Warning: Invalid tile ID format: " << tileIDStr
+                << std::endl;
+    }
+  }
+
+  std::string path = trimmed;
+  // Ensure we have a relative path to the vehicles directory if none provided
+  if (path.find('/') == std::string::npos &&
+      path.find('\\') == std::string::npos) {
+    std::string lowered = path;
+    std::transform(
+        lowered.begin(), lowered.end(), lowered.begin(),
+        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+    // Replace spaces with underscores for convenience
+    std::replace(lowered.begin(), lowered.end(), ' ', '_');
+    path = "../assets/vehicles/" + lowered;
+  }
+
+  // Append extension if missing
+  if (path.find('.') == std::string::npos) {
+    path += ".png";
+  }
+
+  auto cached = obstacleTextureCache_.find(path);
+  if (cached != obstacleTextureCache_.end()) {
+    return cached->second.get();
+  }
+
+  auto texture = std::make_unique<sf::Texture>();
+  if (!texture->loadFromFile(path)) {
+    std::cout << "Warning: unable to load car texture '" << textureId
+              << "' (attempted path: " << path << "). Using fallback texture."
+              << std::endl;
+    return &defaultObstacleTexture_;
+  }
+
+  texture->setSmooth(true);
+  sf::Texture *result = texture.get();
+  obstacleTextureCache_.emplace(path, std::move(texture));
   return result;
 }

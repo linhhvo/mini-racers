@@ -37,6 +37,9 @@ public:
     };
 
     const std::vector<SpawnPoint>& getVehicleSpawnPoints() const { return vehicleSpawns_; }
+
+    //TODO: 
+    const std::vector<SpawnPoint>& getObstacleSpawnPoints() const { return obstacleSpawns_; }
     
     // Extract a tile texture from the tileset by GID
     std::unique_ptr<sf::Texture> extractTileTexture(std::uint32_t tileGID) const;
@@ -116,6 +119,7 @@ private:
     std::vector<TileQuad> tiles_; // Keep for backward compatibility, contains all tiles
     std::map<std::string, std::unique_ptr<sf::Texture>> textures_;
     std::vector<SpawnPoint> vehicleSpawns_;
+    std::vector<SpawnPoint> obstacleSpawns_;
     std::vector<CheckpointZone> checkpointZones_;
     std::vector<SoftObstacleZone> softObstacleZones_;
 };

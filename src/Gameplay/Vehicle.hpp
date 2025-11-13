@@ -38,6 +38,7 @@ public:
   b2BodyId GetBody() { return body; }
   b2ShapeId GetShape() { return car; };
   b2Vec2 GetPosition() { return b2Body_GetPosition(body); };
+  float GetSpeed() {return forceStrength;}
 
 private:
   b2Vec2 getLateralVelocity() const {
@@ -72,7 +73,7 @@ private:
   float forceStrength = 0.0f;
   float targetForceStrength = 5.0f;
   float accelerationRate = 1.0f;
-  float brakeRate = 1.0f;
+  float brakeRate = 5.0f;
   float baseTargetForceStrength = 5.0f;
   float baseAccelerationRate = 1.0f;
 };

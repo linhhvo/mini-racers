@@ -24,6 +24,13 @@ public:
     b2World_SetGravity(world, b2Vec2{0.0f, 0.0f});
   }
 
+  ~iforce2d_TopdownCar() {
+    for (int i = 0; i < nofCars_; i++) {
+      delete cars[i];
+    }
+    cars.clear();
+  }
+
   void VehicleFactory(int nofCars, std::vector<b2Vec2> startPos,
                       std::vector<std::pair<float, float>> sizes) {
     nofCars_ = nofCars;
@@ -32,23 +39,27 @@ public:
           new Vehicle(world_, startPos[i], sizes[i].first, sizes[i].second);
       cars.push_back(car);
     }
-  };
-
-  ~iforce2d_TopdownCar() {
-    for (int i = 0; i < nofCars_; i++) {
-      delete cars[i];
-    }
-    cars.clear();
   }
+
+  void ObstacleFactory(int nofObstacles, std::vector<b2Vec2> startPos,
+                       std::vector<std::pair<float, float>> sizes) {
+    nofObstacles_ = nofObstacles;
+    for (int i = 0; i < nofObstacles; i++) {
+      auto obstacle =
+          new Obstacle(world_, startPos[i], sizes[i].first, sizes[i].second);
+      obstacles.push_back(obstacle);
+    }
+  }
+
   Vehicle *GetVehicle(int idx) { return cars[idx]; }
 
   Obstacle *GetObstacle(int idx) { return obstacles[idx]; }
 
   // Checkpoint *GetCheckPoint() { return checkpoint; }
 
-  SoftObstacle *GetSoftObstacle(int idx) { return softObstacles[idx]; }
+  // SoftObstacle *GetSoftObstacle(int idx) { return softObstacles[idx]; }
 
-  Booster *GetBooster(int idx) { return boosters[idx]; }
+  // Booster *GetBooster(int idx) { return boosters[idx]; }
 
   void Keyboard(InputManager::InputAction action, int idx, bool pressed) {
     cars[idx]->updateKey(action, pressed);
@@ -66,15 +77,17 @@ public:
 
 private:
   int nofCars_;
-  int nofSoft_;
-  int nofObstacles_;
-  int nofBoosters_;
+  // int nofSoft_;
+  // int nofBoosters_;
   // Checkpoint *checkpoint;
+  int nofObstacles_;
+  std::vector<Vehicle *> cars;
+  std::vector<Obstacle *> obstacles;
   int m_controlState;
   b2WorldId world_;
 
-  std::vector<Vehicle *> cars;
-  std::vector<Obstacle *> obstacles;
-  std::vector<SoftObstacle *> softObstacles;
-  std::vector<Booster *> boosters;
+  // std::vector<Vehicle *> cars;
+  // std::vector<Obstacle *> obstacles;
+  // std::vector<SoftObstacle *> softObstacles;
+  // std::vector<Booster *> boosters;
 };
