@@ -43,15 +43,17 @@ void HUD::update() {
 
   // update remaining lap text
   std::ostringstream lap_ss;
-  for (unsigned int i = 0; i < context_.config->numOfPlayers; i++) {
-    remainingNofLap_ = context_.config->numOfLaps - progresses_[i].currentLap;
-    lap_ss << "P" << i + 1 << ": " << remainingNofLap_ << "/"
-           << context_.config->numOfLaps << "\n";
-  }
-  lapText_.setString(lap_ss.str());
+  //   for (unsigned int i = 0; i < context_.config->numOfPlayers; i++) {
+  //     remainingNofLap_ = context_.config->numOfLaps -
+  //     progresses_[i].currentLap; lap_ss << "P" << i + 1 << ": " <<
+  //     remainingNofLap_ << "/"
+  //            << context_.config->numOfLaps << "\n";
+  //   }
+  //   lapText_.setString(lap_ss.str());
 }
 
-void HUD::setPosition(const sf::Vector2f &pos) { timerText_.setPosition(pos); }
+// void HUD::setPosition(const sf::Vector2f &pos) { timerText_.setPosition(pos);
+// }
 
 void HUD::render(sf::RenderTarget &target) {
   // set text positions
@@ -63,4 +65,4 @@ void HUD::render(sf::RenderTarget &target) {
   target.draw(lapText_);
 }
 
-sf::Text &HUD::getText() { return timerText_; }
+// sf::Text &HUD::getText() { return timerText_; }

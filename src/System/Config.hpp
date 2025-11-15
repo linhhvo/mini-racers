@@ -7,6 +7,6 @@ public:
   int windowHeight = 600;
   int framerate = 60;
   int numOfLaps = 3;
-  float raceDuration = 90;
+  float raceDuration = 300;
   int numOfPlayers = 2;
 };

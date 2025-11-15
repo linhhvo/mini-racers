@@ -695,10 +695,10 @@ void RaceScene::update(float dt) {
     }
 
     // Update camera views to follow cars
-    if (i == 1) {
+    if (i == 0) {
       // Left view follows car 1 (WASD)
       leftView_.setCenter(sfPos);
-    } else if (i == 0) {
+    } else if (i == 1) {
       // Right view follows car 0 (Arrow keys)
       rightView_.setCenter(sfPos);
     }
