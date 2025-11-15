@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(
     "${CMAKE_SOURCE_DIR}/src"
     "${CMAKE_SOURCE_DIR}/libs/json"
+    "${CMAKE_SOURCE_DIR}/libs/tmxlite/tmxlite/include"
 )
 # Set the name of the executable to be produced
 set(EXECUTABLE_NAME MicroMachines)
@@ -19,6 +20,10 @@ set(CMAKE_BUILD_TYPE Debug)
 # Find Box2D library
 add_subdirectory(libs/box2d)
 target_link_libraries(${EXECUTABLE_NAME} box2d)
+
+# Add tmxlite library
+add_subdirectory(libs/tmxlite/tmxlite)
+target_link_libraries(${EXECUTABLE_NAME} tmxlite)
 
 # Detect and add SFML
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules" ${CMAKE_MODULE_PATH})
