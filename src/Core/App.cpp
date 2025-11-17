@@ -45,6 +45,7 @@ void App::run() {
 
     sceneManager.update(dt);
 
+    // Clear to black by default - scenes can override if needed
     window.clear(sf::Color::Black);
 
     sceneManager.render();

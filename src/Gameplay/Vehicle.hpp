@@ -13,20 +13,32 @@
 
 class Vehicle {
 public:
-  Vehicle(b2WorldId world, b2Vec2 pos, std::string idx);
+  Vehicle(b2WorldId world, b2Vec2 pos, float width, float height);
   ~Vehicle() = default;
 
   // movement functions
   //  void updateKey(char key, bool pressed);
   void updateKey(InputManager::InputAction action, bool pressed);
   void update(float dt);
-  void SetTargetForceStrength(float strength) { targetForceStrength = strength; }
-  void SetAccelerationRate(float rate) {accelerationRate = rate;}
+  void SetTargetForceStrength(float strength) {
+    targetForceStrength = strength;
+  }
+  void SetAccelerationRate(float rate) { accelerationRate = rate; }
+  void Reset() {
+    this->SetTargetForceStrength(baseTargetForceStrength);
+    this->SetAccelerationRate(baseAccelerationRate);
+  }
+
+  void HitSoftObstacle(float desiredStrength, float accelerationStrength) {
+    this->SetTargetForceStrength(targetForceStrength * desiredStrength);
+    this->SetAccelerationRate(accelerationRate * accelerationStrength);
+  }
 
   // getter functions
   b2BodyId GetBody() { return body; }
   b2ShapeId GetShape() { return car; };
   b2Vec2 GetPosition() { return b2Body_GetPosition(body); };
+  float GetSpeed() {return forceStrength;}
 
 private:
   b2Vec2 getLateralVelocity() const {
@@ -58,9 +70,10 @@ private:
   bool left = false;
   bool down = false;
   bool right = false;
-
   float forceStrength = 0.0f;
-  float targetForceStrength = 30.0f;
-  float accelerationRate = 10.0f;
-  float brakeRate = 30.0f;
+  float targetForceStrength = 5.0f;
+  float accelerationRate = 1.0f;
+  float brakeRate = 5.0f;
+  float baseTargetForceStrength = 5.0f;
+  float baseAccelerationRate = 1.0f;
 };

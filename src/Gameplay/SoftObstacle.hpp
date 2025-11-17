@@ -3,20 +3,21 @@
 #include "../System/InputManager.hpp"
 #include "box2d/math_functions.h"
 #include <box2d/box2d.h>
-#include <vector>
 #include <iostream>
-
+#include <vector>
 
 class SoftObstacle {
 public:
-  SoftObstacle(b2WorldId world, b2Vec2 position, float strength): postion_(position), strength_(strength) {
+  SoftObstacle(b2WorldId world, b2Vec2 position, float height, float width,
+               float strength)
+      : postion_(position), strength_(strength) {
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_staticBody;
     bodyDef.position = postion_;
     body = b2CreateBody(world, &bodyDef);
 
     // Box Polygon shape
-    b2Polygon box = b2MakeBox(0.5f, 0.5f);
+    b2Polygon box = b2MakeBox(height, width);
     // Tire material (can be changed for future vehicle types)
     b2SurfaceMaterial material = b2SurfaceMaterial();
     material.friction = 0.8f;
@@ -28,16 +29,16 @@ public:
     shapeDef.enableHitEvents = false;
     shapeDef.enableSensorEvents = true;
     shapeDef.isSensor = true;
-    shapeDef.userData = (void*)"softObstacle";
+    shapeDef.userData = (void *)"softObstacle";
     // car creator
     softObstacle = b2CreatePolygonShape(body, &shapeDef, &box);
   }
   ~SoftObstacle() = default;
 
-  b2BodyId GetBody() {return body;}
-  b2ShapeId GetShapeId() {return softObstacle;}
-  float GetStrength() {return strength_;}
-  
+  b2BodyId GetBody() { return body; }
+  b2ShapeId GetShapeId() { return softObstacle; }
+  float GetStrength() { return strength_; }
+
 private:
   float strength_;
   b2BodyId body;

@@ -4,7 +4,8 @@
 #include <iostream>
 #include <vector>
 
-Vehicle::Vehicle(b2WorldId world, b2Vec2 pos, std::string idx) : world_(world) {
+Vehicle::Vehicle(b2WorldId world, b2Vec2 pos, float height, float width)
+    : world_(world) {
   // create chassis body
   b2BodyDef bodyDef = b2DefaultBodyDef();
   bodyDef.type = b2_dynamicBody;
@@ -12,11 +13,12 @@ Vehicle::Vehicle(b2WorldId world, b2Vec2 pos, std::string idx) : world_(world) {
   bodyDef.linearDamping = 0.3f;
   bodyDef.position = pos;
   body = b2CreateBody(world, &bodyDef);
-  b2Body_SetAngularDamping(body, 4.0f);
-  b2Body_SetLinearDamping(body, 2.0f);
+  b2Body_SetAngularDamping(body,
+                           0.6f); // Reduced from 4.0f for faster turning
+  b2Body_SetLinearDamping(body, 3.0f);
 
   // Box Polygon shape
-  b2Polygon box = b2MakeBox(0.5f, 1.0f);
+  b2Polygon box = b2MakeBox(height, width);
   // Tire material (can be changed for future vehicle types)
   b2SurfaceMaterial material = b2SurfaceMaterial();
   material.friction = 0.8f;
@@ -62,16 +64,17 @@ void Vehicle::updateKey(InputManager::InputAction action, bool pressed) {
 void Vehicle::update(float dt) {
   handleDrift();
   if (forceStrength < targetForceStrength) {
-    forceStrength = std::min(forceStrength + accelerationRate * dt, targetForceStrength);
-  }
-  else if (forceStrength > targetForceStrength) {
-    forceStrength = std::max(forceStrength - brakeRate * dt, targetForceStrength);
+    forceStrength =
+        std::min(forceStrength + accelerationRate * dt, targetForceStrength);
+  } else if (forceStrength > targetForceStrength) {
+    forceStrength =
+        std::max(forceStrength - brakeRate * dt, targetForceStrength);
   }
 
   if (left) {
-    b2Body_SetAngularVelocity(body, -2.0f);
+    b2Body_SetAngularVelocity(body, -3.0f);
   } else if (right) {
-    b2Body_SetAngularVelocity(body, 2.0f);
+    b2Body_SetAngularVelocity(body, 3.0f);
   } else {
     b2Body_SetAngularVelocity(body, 0.0f);
   }
