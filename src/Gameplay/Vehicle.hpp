@@ -4,8 +4,6 @@
 #include "VehicleSpec.hpp"
 #include "box2d/math_functions.h"
 #include <box2d/box2d.h>
-#include <iostream>
-#include <vector>
 
 #ifndef DEGTORAD
 #define DEGTORAD 0.0174532925199432957f
@@ -14,17 +12,20 @@
 
 class Vehicle {
 public:
-  Vehicle(b2WorldId world, b2Vec2 pos, float width, float height, VehicleSpec specs);
+  Vehicle(b2WorldId world, b2Vec2 pos, float width, float height,
+          VehicleSpec specs);
   ~Vehicle() = default;
 
   // movement functions
   //  void updateKey(char key, bool pressed);
   void updateKey(InputManager::InputAction action, bool pressed);
   void update(float dt);
+
   void SetTargetForceStrength(float strength) {
     targetForceStrength = strength;
   }
   void SetAccelerationRate(float rate) { accelerationRate = rate; }
+
   void Reset() {
     this->SetTargetForceStrength(baseTargetForceStrength);
     this->SetAccelerationRate(baseAccelerationRate);
@@ -39,7 +40,7 @@ public:
   b2BodyId GetBody() { return body; }
   b2ShapeId GetShape() { return car; };
   b2Vec2 GetPosition() { return b2Body_GetPosition(body); };
-  float GetSpeed() {return forceStrength;}
+  float GetSpeed() { return forceStrength; }
 
 private:
   b2Vec2 getLateralVelocity() const {
@@ -73,7 +74,7 @@ private:
   bool right = false;
   float forceStrength = 0.0f;
   float brakeRate = 5.0f;
-  float baseTargetForceStrength = 5.0f;
+  float baseTargetForceStrength = 3.0f;
   float baseAccelerationRate = 1.0f;
   float targetForceStrength = baseTargetForceStrength;
   float accelerationRate = baseAccelerationRate;
