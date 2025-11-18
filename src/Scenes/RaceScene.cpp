@@ -105,7 +105,12 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   world_ = b2CreateWorld(&worldDef);
 
   checkpointManager = std::make_unique<CheckpointManager>(
-      world_, context.config->numOfLaps, context.config->numOfPlayers);
+      world_, context.config->numOfLaps, nofCars_);
+  carProgress_.resize(nofCars_); // one entry per car
+
+  if (useTmxMap_) {
+    checkpointManager->LoadFromMap(track_.getTmxMap(), PIXELS_PER_METER);
+  }
 
   std::vector<b2Vec2> spawnPointsVec;
   std::vector<std::pair<float, float>> sizes;
@@ -439,40 +444,42 @@ void RaceScene::update(float dt) {
     }
     if (label && strcmp(label, "checkpoint") == 0) {
       // Find which checkpoint was triggered
-      int triggeredCheckpoint = -1;
-      for (size_t idx = 0; idx < checkpointManager->GetCheckpoints().size();
-           idx++) {
-        if (B2_ID_EQUALS(checkpointManager->GetCheckpoints()[idx]->GetShapeId(),
-                         e->sensorShapeId)) {
-          triggeredCheckpoint = static_cast<int>(idx);
-          break;
-        }
-      }
+      Checkpoint *cp =
+          checkpointManager->FindCheckpointByShapeId(e->sensorShapeId);
+      if (!cp)
+        continue;
 
-      if (triggeredCar != -1 && triggeredCheckpoint != -1) {
-        std::cout << "Car " << triggeredCar << " triggered checkpoint "
-                  << triggeredCheckpoint << "\n";
+      int triggeredCheckpoint = checkpointManager->GetCheckpointIndex(cp);
+      std::cout << "triggered checkpoint: " << triggeredCheckpoint << std::endl;
+      if (triggeredCheckpoint < 0)
+        continue;
 
-        // Update car's checkpoint progress
-        CarProgress &progress = carProgress_[triggeredCar];
-        if (progress.nextCheckpointIndex == triggeredCheckpoint) {
-          progress.nextCheckpointIndex++;
-          if (progress.nextCheckpointIndex >=
-              checkpointManager->GetCheckpoints().size()) {
-            progress.currentLap++;
-            progress.nextCheckpointIndex = 0;
-            std::cout << "Car " << triggeredCar << " completed lap "
-                      << progress.currentLap << "\n";
+      // Update car's checkpoint progress
+      CarProgress &progress = carProgress_[triggeredCar];
+      progress.passedCheckpoints.insert(triggeredCheckpoint);
+      // if (progress.nextCheckpointIndex == triggeredCheckpoint - 1) {
+      //   progress.nextCheckpointIndex++;
+      //   std::cout << "next checkpoint " << progress.nextCheckpointIndex
+      //             << std::endl;
+      //   if (progress.nextCheckpointIndex >=
+      //       checkpointManager->GetCheckpoints().size()) {
+      if (progress.passedCheckpoints.size() ==
+          checkpointManager->GetCheckpoints().size()) {
+        progress.currentLap++;
+        progress.passedCheckpoints.clear();
+        // progress.nextCheckpointIndex = 0;
+        std::cout << "Car " << triggeredCar << " completed lap "
+                  << progress.currentLap << "\n";
 
-            if (progress.currentLap >= context_.config->numOfLaps) {
-              raceFinished_ = true;
-              winnerCarID_ = triggeredCar;
-              std::cout << "Car " << winnerCarID_ << " wins the race!\n";
-            }
-          }
+        if (progress.currentLap >= context_.config->numOfLaps) {
+          raceFinished_ = true;
+          winnerCarID_ = triggeredCar;
+          std::cout << "Car " << winnerCarID_ << " wins the race!\n";
         }
       }
     }
+
+    // }
     // soft obstacle
     // else if (label && strcmp(label, "softObstacle") == 0) {
     //   CarStatus_[triggeredCar].inSoftObstacle = true;

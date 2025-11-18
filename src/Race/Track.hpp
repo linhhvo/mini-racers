@@ -25,6 +25,7 @@ public:
   sf::Vector2u getMapSize() const { return mapSize_; }
   sf::Vector2u getTileSize() const { return tileSize_; }
   sf::Color getBackgroundColor() const;
+  const tmx::Map &getTmxMap() const { return map_; }
 
   struct SpawnPoint {
     sf::Vector2f position;    // top-left position in pixels

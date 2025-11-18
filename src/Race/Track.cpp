@@ -451,7 +451,7 @@ void Track::parseObjectLayers(const tmx::Map &map) {
               obstacle.accelerationStrength = prop.getFloatValue();
             }
           } else if (prop.getType() == tmx::Property::Type::String) {
-            std::cout << prop.getStringValue() << std::endl;
+            // std::cout << prop.getStringValue() << std::endl;
             if (prop.getName() == "type") {
               obstacleType = prop.getStringValue();
               std::transform(obstacleType.begin(), obstacleType.end(),
@@ -499,46 +499,47 @@ void Track::parseObjectLayers(const tmx::Map &map) {
       }
 
       // Parse checkpoint zones
-      if (layerIsCheckpoints) {
-        CheckpointZone checkpoint;
-        auto position = object.getPosition();
-        auto aabb = object.getAABB();
-        checkpoint.position = {position.x, position.y};
-        checkpoint.size = {aabb.width, aabb.height};
-        checkpoint.activated = false;
-        checkpoint.id = -1; // Default invalid ID
-
-        // Parse properties
-        for (const auto &prop : object.getProperties()) {
-          std::cout << "    Checkpoint Property: " << prop.getName() << " = ";
-          if (prop.getType() == tmx::Property::Type::Int) {
-            std::cout << prop.getIntValue() << std::endl;
-            if (prop.getName() == "id") {
-              checkpoint.id = prop.getIntValue();
-            }
-          } else if (prop.getType() == tmx::Property::Type::Boolean) {
-            std::cout << (prop.getBoolValue() ? "true" : "false") << std::endl;
-            if (prop.getName() == "activated") {
-              checkpoint.activated = prop.getBoolValue();
-            }
-          } else if (prop.getType() == tmx::Property::Type::String) {
-            std::cout << prop.getStringValue() << std::endl;
-            if (prop.getName() == "type" &&
-                prop.getStringValue() == "checkpoint") {
-              // Valid checkpoint type
-            }
-          }
-        }
-
-        if (checkpoint.id >= 0) {
-          std::cout << "    -> INCLUDED as checkpoint zone (ID: "
-                    << checkpoint.id << ")" << std::endl;
-          checkpointZones_.push_back(std::move(checkpoint));
-        } else {
-          std::cout << "    -> SKIPPED (no valid checkpoint ID)" << std::endl;
-        }
-        continue; // Skip vehicle parsing for checkpoint objects
-      }
+      // if (layerIsCheckpoints) {
+      //   CheckpointZone checkpoint;
+      //   auto position = object.getPosition();
+      //   auto aabb = object.getAABB();
+      //   checkpoint.position = {position.x, position.y};
+      //   checkpoint.size = {aabb.width, aabb.height};
+      //   checkpoint.activated = false;
+      //   checkpoint.id = -1; // Default invalid ID
+      //
+      //   // Parse properties
+      //   for (const auto &prop : object.getProperties()) {
+      //     std::cout << "    Checkpoint Property: " << prop.getName() << " =
+      //     "; if (prop.getType() == tmx::Property::Type::Int) {
+      //       std::cout << prop.getIntValue() << std::endl;
+      //       if (prop.getName() == "id") {
+      //         checkpoint.id = prop.getIntValue();
+      //       }
+      //     } else if (prop.getType() == tmx::Property::Type::Boolean) {
+      //       std::cout << (prop.getBoolValue() ? "true" : "false") <<
+      //       std::endl; if (prop.getName() == "activated") {
+      //         checkpoint.activated = prop.getBoolValue();
+      //       }
+      //     } else if (prop.getType() == tmx::Property::Type::String) {
+      //       std::cout << prop.getStringValue() << std::endl;
+      //       if (prop.getName() == "type" &&
+      //           prop.getStringValue() == "checkpoint") {
+      //         // Valid checkpoint type
+      //       }
+      //     }
+      //   }
+      //
+      //   if (checkpoint.id >= 0) {
+      //     std::cout << "    -> INCLUDED as checkpoint zone (ID: "
+      //               << checkpoint.id << ")" << std::endl;
+      //     checkpointZones_.push_back(std::move(checkpoint));
+      //   } else {
+      //     std::cout << "    -> SKIPPED (no valid checkpoint ID)" <<
+      //     std::endl;
+      //   }
+      //   continue; // Skip vehicle parsing for checkpoint objects
+      // }
 
       // Parse vehicle spawns (existing logic)
       SpawnPoint spawn;
@@ -558,8 +559,8 @@ void Track::parseObjectLayers(const tmx::Map &map) {
                 << std::endl;
 
       for (const auto &prop : object.getProperties()) {
-        std::cout << "    Property: " << prop.getName() << " = "
-                  << prop.getStringValue() << std::endl;
+        // std::cout << "    Property: " << prop.getName() << " = "
+        //           << prop.getStringValue() << std::endl;
         if (prop.getName() == "texture" &&
             prop.getType() == tmx::Property::Type::String) {
           spawn.textureId = prop.getStringValue();
