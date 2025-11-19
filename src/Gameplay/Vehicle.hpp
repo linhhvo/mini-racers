@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../System/InputManager.hpp"
+#include "VehicleSpec.hpp"
 #include "box2d/math_functions.h"
 #include <box2d/box2d.h>
 #include <iostream>
@@ -13,7 +14,7 @@
 
 class Vehicle {
 public:
-  Vehicle(b2WorldId world, b2Vec2 pos, float width, float height);
+  Vehicle(b2WorldId world, b2Vec2 pos, float width, float height, VehicleSpec specs);
   ~Vehicle() = default;
 
   // movement functions
@@ -71,9 +72,9 @@ private:
   bool down = false;
   bool right = false;
   float forceStrength = 0.0f;
-  float targetForceStrength = 5.0f;
-  float accelerationRate = 1.0f;
   float brakeRate = 5.0f;
   float baseTargetForceStrength = 5.0f;
   float baseAccelerationRate = 1.0f;
+  float targetForceStrength = baseTargetForceStrength;
+  float accelerationRate = baseAccelerationRate;
 };

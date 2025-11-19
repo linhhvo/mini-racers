@@ -32,11 +32,11 @@ public:
   }
 
   void VehicleFactory(int nofCars, std::vector<b2Vec2> startPos,
-                      std::vector<std::pair<float, float>> sizes) {
+                      std::vector<std::pair<float, float>> sizes, std::vector<VehicleSpec> specs) {
     nofCars_ = nofCars;
     for (int i = 0; i < nofCars; i++) {
       auto car =
-          new Vehicle(world_, startPos[i], sizes[i].first, sizes[i].second);
+          new Vehicle(world_, startPos[i], sizes[i].first, sizes[i].second, specs[i]);
       cars.push_back(car);
     }
   }
