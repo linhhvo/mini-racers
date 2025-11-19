@@ -1,15 +1,12 @@
 #pragma once
 
-#include "../System/InputManager.hpp"
 #include "box2d/math_functions.h"
 #include <box2d/box2d.h>
-#include <vector>
-#include <iostream>
-
 
 class Obstacle {
 public:
-  Obstacle(b2WorldId world, b2Vec2 position, float height, float width): postion_(position) {
+  Obstacle(b2WorldId world, b2Vec2 position, float height, float width)
+      : postion_(position) {
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_staticBody;
     bodyDef.position = postion_;
@@ -26,15 +23,16 @@ public:
     b2ShapeDef shapeDef = b2DefaultShapeDef();
     shapeDef.enableContactEvents = true;
     shapeDef.enableHitEvents = true;
-    shapeDef.enablePreSolveEvents = false; // true if we want to disable collision (powerup maybe?)
+    shapeDef.enablePreSolveEvents =
+        false; // true if we want to disable collision (powerup maybe?)
 
     // car creator
     obstacle = b2CreatePolygonShape(body, &shapeDef, &box);
   }
   ~Obstacle() = default;
 
-  b2BodyId GetBody() {return body;}
-  
+  b2BodyId GetBody() { return body; }
+
 private:
   b2BodyId body;
   b2ShapeId obstacle;

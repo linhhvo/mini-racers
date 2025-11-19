@@ -1,7 +1,7 @@
 #pragma once
 #include "../System/SceneManager.hpp"
+#include "Gameplay/Checkpoints/CheckpointManager.hpp"
 #include "Gameplay/iforce2d_car.hpp"
-#include "Race/CheckpointManager.hpp"
 #include "Race/HUD.hpp"
 #include "Race/Timer.hpp"
 #include "Race/Track.hpp"

@@ -1,13 +1,12 @@
 #pragma once
 
-#include "Gameplay/Checkpoint.hpp"
+#include "Gameplay/Checkpoints/Checkpoint.hpp"
 #include "tmxlite/Map.hpp"
 #include <box2d/box2d.h>
 #include <set>
 #include <vector>
 
 struct CarProgress {
-  // int nextCheckpointIndex = 0; // next checkpoint in order
   std::set<int> passedCheckpoints;
   int currentLap = 0;
   bool finished = false;
@@ -19,23 +18,39 @@ public:
   ~CheckpointManager();
 
   void AddCheckpoint(const b2Vec2 &position);
-  const std::vector<Checkpoint *> &GetCheckpoints() const {
-    return checkpoints_;
-  }
 
   // Load all checkpoints from TMX object layers whose name contains
   // "checkpoint"
   void LoadFromMap(const tmx::Map &map, float pixelsPerMeter);
 
+  // Called by RaceScene when a sensor triggers
+  void onCarHitCheckpoint(int carID, Checkpoint *checkpoint);
+
   Checkpoint *FindCheckpointByShapeId(b2ShapeId shape) const;
 
+  int checkAndActivateCheckpoint(int carID, const b2Vec2 &carPos);
+
   int GetCheckpointIndex(const Checkpoint *cp) const;
+
+  const std::vector<Checkpoint *> &GetCheckpoints() const;
+
+  // Reset check activation (e.g., every lap)
+  void ResetCheckpoints();
+
+  void update(float dt);
+
+  // detect race finish
+  bool isRaceFinished() const { return raceFinished_; }
+  int getWinnerCarID() const { return winnerCarID_; }
+
+  std::vector<CarProgress> &getProgresses() { return carProgress_; }
+  int getLapCount(int carID) const;
 
 private:
   b2WorldId world_;
   std::vector<Checkpoint *> checkpoints_;
-  // std::vector<CarProgress> carProgress_;
+  std::vector<CarProgress> carProgress_;
   int totalLaps_;
-  bool raceFinished = false;
-  int winnerCarID = -1;
+  bool raceFinished_ = false;
+  int winnerCarID_ = -1;
 };
