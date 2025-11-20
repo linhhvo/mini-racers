@@ -501,13 +501,13 @@ void RaceScene::update(float dt) {
     carSprites[i].setRotation(angleDeg);
 
     // Check checkpoint zones for this car
-    if (useTmxMap_) {
-      int activatedId = track_.checkAndActivateCheckpoint(sfPos);
-      if (activatedId >= 0) {
-        // Checkpoint activated - the Track class will handle showing the
-        // activated layer
-      }
-    }
+    // if (useTmxMap_) {
+    // int activatedId = track_.checkAndActivateCheckpoint(sfPos);
+    // if (activatedId >= 0) {
+    // Checkpoint activated - the Track class will handle showing the
+    // activated layer
+    // }
+    // }
 
     // Check Soft Obstacle zones for this car
     if (useTmxMap_) {

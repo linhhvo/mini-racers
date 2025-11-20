@@ -241,7 +241,7 @@ void Track::createLayer(const tmx::Map &map, const tmx::TileLayer &layer,
 
 void Track::update(float dt) {
   // Update checkpoint activation timers
-  updateCheckpoints(dt);
+  // updateCheckpoints(dt);
   // Update soft obstacle activation timers
   updateSoftObstacle(dt);
 }
@@ -266,7 +266,7 @@ void Track::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     return;
 
   // Get activated checkpoint IDs
-  std::vector<int> activatedCheckpoints = getActivatedCheckpoints();
+  // std::vector<int> activatedCheckpoints = getActivatedCheckpoints();
 
   // Group tiles by texture for efficient rendering
   std::map<const sf::Texture *, std::vector<sf::Vertex>> textureGroups;
@@ -287,24 +287,26 @@ void Track::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     // Skip checkpoint activation layers (checkpoint_1, checkpoint_2, etc.)
     // unless activated
     bool isCheckpointLayer = layerNameLower.find("checkpoint_") == 0;
-    if (isCheckpointLayer) {
-      // Extract checkpoint ID from layer name (e.g., "checkpoint_1" -> 1)
-      try {
-        std::string idStr =
-            layerNameLower.substr(11); // "checkpoint_" is 11 chars
-        int checkpointId = std::stoi(idStr);
-        // Only render if this checkpoint is activated
-        bool isActivated =
-            std::find(activatedCheckpoints.begin(), activatedCheckpoints.end(),
-                      checkpointId) != activatedCheckpoints.end();
-        if (!isActivated) {
-          continue; // Skip this layer
-        }
-      } catch (...) {
-        // If we can't parse the ID, skip this layer
-        continue;
-      }
-    }
+
+    // if (isCheckpointLayer) {
+    //   // Extract checkpoint ID from layer name (e.g., "checkpoint_1" -> 1)
+    //   try {
+    //     std::string idStr =
+    //         layerNameLower.substr(11); // "checkpoint_" is 11 chars
+    //     int checkpointId = std::stoi(idStr);
+    //     // Only render if this checkpoint is activated
+    //     bool isActivated =
+    //         std::find(activatedCheckpoints.begin(),
+    //         activatedCheckpoints.end(),
+    //                   checkpointId) != activatedCheckpoints.end();
+    //     if (!isActivated) {
+    //       continue; // Skip this layer
+    //     }
+    //   } catch (...) {
+    //     // If we can't parse the ID, skip this layer
+    //     continue;
+    //   }
+    // }
 
     // Add tiles from this layer to the render groups
     for (const auto &quad : layerIt->second) {
@@ -388,7 +390,7 @@ Track::extractTileTexture(std::uint32_t tileGID) const {
 
 void Track::parseObjectLayers(const tmx::Map &map) {
   vehicleSpawns_.clear();
-  checkpointZones_.clear();
+  // checkpointZones_.clear();
 
   const auto &layers = map.getLayers();
   std::cout << "Parsing object layers... Found " << layers.size()
@@ -414,8 +416,8 @@ void Track::parseObjectLayers(const tmx::Map &map) {
         layerNameLower.find("car") != std::string::npos ||
         layerNameLower.find("spawn") != std::string::npos;
 
-    bool layerIsCheckpoints =
-        layerNameLower.find("checkpoint") != std::string::npos;
+    // bool layerIsCheckpoints =
+    //     layerNameLower.find("checkpoint") != std::string::npos;
     bool layerIsSoftObstacle =
         layerNameLower.find("softobstacle") != std::string::npos;
 
@@ -590,66 +592,66 @@ void Track::parseObjectLayers(const tmx::Map &map) {
 
   std::cout << "Total vehicle spawns found: " << vehicleSpawns_.size()
             << std::endl;
-  std::cout << "Total checkpoint zones found: " << checkpointZones_.size()
-            << std::endl;
+  // std::cout << "Total checkpoint zones found: " << checkpointZones_.size()
+  //           << std::endl;
 }
 
-int Track::checkAndActivateCheckpoint(const sf::Vector2f &position) {
-  int newlyActivated = -1;
-
-  for (auto &checkpoint : checkpointZones_) {
-    // Check if position is inside the checkpoint zone
-    bool isInside = (position.x >= checkpoint.position.x &&
-                     position.x <= checkpoint.position.x + checkpoint.size.x &&
-                     position.y >= checkpoint.position.y &&
-                     position.y <= checkpoint.position.y + checkpoint.size.y);
-
-    if (isInside) {
-      // Car is in the zone - activate or keep activated, reset timer
-      if (!checkpoint.activated) {
-        // Newly activated
-        checkpoint.activated = true;
-        checkpoint.activationTimer = CheckpointZone::ACTIVATION_DURATION;
-        newlyActivated = checkpoint.id;
-        std::cout << "Checkpoint " << checkpoint.id << " activated!"
-                  << std::endl;
-      } else {
-        // Already activated, reset timer to full duration
-        checkpoint.activationTimer = CheckpointZone::ACTIVATION_DURATION;
-      }
-    }
-    // If car is not in zone, timer will count down in updateCheckpoints()
-  }
-
-  return newlyActivated; // Return -1 if no new checkpoint activated
-}
-
-void Track::updateCheckpoints(float dt) {
-  for (auto &checkpoint : checkpointZones_) {
-    if (checkpoint.activated) {
-      // Count down the timer
-      checkpoint.activationTimer -= dt;
-
-      // If timer expires, deactivate the checkpoint
-      if (checkpoint.activationTimer <= 0.0f) {
-        checkpoint.activated = false;
-        checkpoint.activationTimer = 0.0f;
-        std::cout << "Checkpoint " << checkpoint.id
-                  << " deactivated (timer expired)" << std::endl;
-      }
-    }
-  }
-}
-
-std::vector<int> Track::getActivatedCheckpoints() const {
-  std::vector<int> activated;
-  for (const auto &checkpoint : checkpointZones_) {
-    if (checkpoint.activated) {
-      activated.push_back(checkpoint.id);
-    }
-  }
-  return activated;
-}
+// int Track::checkAndActivateCheckpoint(const sf::Vector2f &position) {
+//   int newlyActivated = -1;
+//
+//   for (auto &checkpoint : checkpointZones_) {
+//     // Check if position is inside the checkpoint zone
+//     bool isInside = (position.x >= checkpoint.position.x &&
+//                      position.x <= checkpoint.position.x + checkpoint.size.x
+//                      && position.y >= checkpoint.position.y && position.y <=
+//                      checkpoint.position.y + checkpoint.size.y);
+//
+//     if (isInside) {
+//       // Car is in the zone - activate or keep activated, reset timer
+//       if (!checkpoint.activated) {
+//         // Newly activated
+//         checkpoint.activated = true;
+//         checkpoint.activationTimer = CheckpointZone::ACTIVATION_DURATION;
+//         newlyActivated = checkpoint.id;
+//         std::cout << "Checkpoint " << checkpoint.id << " activated!"
+//                   << std::endl;
+//       } else {
+//         // Already activated, reset timer to full duration
+//         checkpoint.activationTimer = CheckpointZone::ACTIVATION_DURATION;
+//       }
+//     }
+//     // If car is not in zone, timer will count down in updateCheckpoints()
+//   }
+//
+//   return newlyActivated; // Return -1 if no new checkpoint activated
+// }
+//
+// void Track::updateCheckpoints(float dt) {
+//   for (auto &checkpoint : checkpointZones_) {
+//     if (checkpoint.activated) {
+//       // Count down the timer
+//       checkpoint.activationTimer -= dt;
+//
+//       // If timer expires, deactivate the checkpoint
+//       if (checkpoint.activationTimer <= 0.0f) {
+//         checkpoint.activated = false;
+//         checkpoint.activationTimer = 0.0f;
+//         std::cout << "Checkpoint " << checkpoint.id
+//                   << " deactivated (timer expired)" << std::endl;
+//       }
+//     }
+//   }
+// }
+//
+// std::vector<int> Track::getActivatedCheckpoints() const {
+//   std::vector<int> activated;
+//   for (const auto &checkpoint : checkpointZones_) {
+//     if (checkpoint.activated) {
+//       activated.push_back(checkpoint.id);
+//     }
+//   }
+//   return activated;
+// }
 
 int Track::checkAndActivateSoft(const sf::Vector2f &position) {
   int newlyActivated = -1;

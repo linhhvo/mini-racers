@@ -16,11 +16,6 @@ CheckpointManager::~CheckpointManager() {
   checkpoints_.clear();
 }
 
-// void CheckpointManager::AddCheckpoint(const b2Vec2 &position) {
-//   Checkpoint *cp = new Checkpoint(world_, position);
-//   checkpoints_.push_back(cp);
-// }
-
 // load checkpoints from tmx map
 void CheckpointManager::LoadFromMap(const tmx::Map &map, float pixelsPerMeter) {
   const auto &layers = map.getLayers();
@@ -62,41 +57,6 @@ void CheckpointManager::LoadFromMap(const tmx::Map &map, float pixelsPerMeter) {
           new Checkpoint(world_, worldPos, cpWidth / pixelsPerMeter,
                          cpHeight / pixelsPerMeter);
       checkpoints_.push_back(cp);
-
-      // Animation loading
-      uint32_t gid = obj.getTileID();
-      if (gid != 0) {
-        const tmx::Tileset *usedSet = nullptr;
-        for (const auto &ts : tilesets) {
-          if (gid >= ts.getFirstGID() &&
-              gid < ts.getFirstGID() + ts.getTileCount()) {
-            usedSet = &ts;
-            break;
-          }
-        }
-
-        if (usedSet) {
-          int localID = static_cast<int>(gid - usedSet->getFirstGID());
-          const auto *tile = usedSet->getTile(localID);
-          if (tile && !tile->animation.frames.empty()) {
-            std::vector<uint32_t> frameGIDs;
-            std::vector<float> frameDurations;
-
-            frameGIDs.reserve(tile->animation.frames.size());
-            frameDurations.reserve(tile->animation.frames.size());
-
-            for (const auto &f : tile->animation.frames) {
-              frameGIDs.push_back(f.tileID + usedSet->getFirstGID());
-              frameDurations.push_back(f.duration / 1000.0f);
-            }
-
-            cp->setAnimationFrames(frameGIDs, frameDurations);
-
-            std::cout << "    Loaded " << frameGIDs.size()
-                      << " frames for checkpoint animation.\n";
-          }
-        }
-      }
     }
   }
 

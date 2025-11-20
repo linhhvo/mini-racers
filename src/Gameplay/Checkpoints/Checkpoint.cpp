@@ -64,15 +64,3 @@ void Checkpoint::update(float dt) {
     currentTileID_ = frames_[currentFrame_];
   }
 };
-
-void Checkpoint::setAnimationFrames(const std::vector<uint32_t> &frames,
-                                    const std::vector<float> &durations) {
-  frames_ = frames;
-  frameDurations_ = durations;
-
-  currentFrame_ = 0;
-  timer_ = 0;
-
-  if (!frames_.empty())
-    currentTileID_ = frames_[0];
-}
