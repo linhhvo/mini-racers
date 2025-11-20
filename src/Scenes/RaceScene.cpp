@@ -181,12 +181,23 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       spawnPointsVec.push_back(b2Vec2{startX, startY});
     }
   }
+  //Testing car specs
+  std::vector<VehicleSpec> specs;
+  specs.push_back(VehicleSpec());
+  VehicleSpec second {
+    .angularDamping = 0.6f,
+    .linearDamping = 3.0f,
+    .friction = 0.5f,
+    .restitution = 0.0f,
+    .rollingResistance = 0.0f,
+    .brakeRate = 5.0f,
+    .baseTargetForceStrength = 10.0f,
+    .baseAccelerationRate = 1.0f,
+  };
+  specs.push_back(second);
 
-  // car_ = iforce2d_TopdownCar::Create(world_, nofCars, nofObstacles_,
-  // nofSoft_,
-  //                                    nofBoosters_, startX, startY, spacing);
   car_ = iforce2d_TopdownCar::Create(world_);
-  car_->VehicleFactory(nofCars, spawnPointsVec, sizes);
+  car_->VehicleFactory(nofCars, spawnPointsVec, sizes, specs);
 
   carSprites.clear();
   carSprites.resize(nofCars);

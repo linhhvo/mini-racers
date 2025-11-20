@@ -1,29 +1,30 @@
 #include "Vehicle.hpp"
+#include "VehicleSpec.hpp"
 #include "System/InputManager.hpp"
 #include <box2d/box2d.h>
 #include <iostream>
 #include <vector>
 
-Vehicle::Vehicle(b2WorldId world, b2Vec2 pos, float height, float width)
-    : world_(world) {
+Vehicle::Vehicle(b2WorldId world, b2Vec2 pos, float height, float width, VehicleSpec specs)
+    : world_(world), brakeRate(specs.brakeRate), baseTargetForceStrength(specs.baseTargetForceStrength), baseAccelerationRate(specs.baseAccelerationRate) {
   // create chassis body
   b2BodyDef bodyDef = b2DefaultBodyDef();
   bodyDef.type = b2_dynamicBody;
-  bodyDef.angularDamping = 1.0f;
-  bodyDef.linearDamping = 0.3f;
+  bodyDef.angularDamping = specs.angularDamping;
+  bodyDef.linearDamping = specs.linearDamping;
   bodyDef.position = pos;
   body = b2CreateBody(world, &bodyDef);
-  b2Body_SetAngularDamping(body,
-                           0.6f); // Reduced from 4.0f for faster turning
-  b2Body_SetLinearDamping(body, 3.0f);
+  //b2Body_SetAngularDamping(body,
+  //                         0.6f); // Reduced from 4.0f for faster turning
+  //b2Body_SetLinearDamping(body, 3.0f);
 
   // Box Polygon shape
   b2Polygon box = b2MakeBox(height, width);
   // Tire material (can be changed for future vehicle types)
   b2SurfaceMaterial material = b2SurfaceMaterial();
-  material.friction = 0.8f;
-  material.restitution = 0.0f;
-  material.rollingResistance = 0.0f;
+  material.friction = specs.friction;
+  material.restitution = specs.restitution;
+  material.rollingResistance = specs.rollingResistance;
   // Shape def
   b2ShapeDef shapeDef = b2DefaultShapeDef();
   shapeDef.density = 1;
