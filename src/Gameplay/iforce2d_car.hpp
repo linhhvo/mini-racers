@@ -1,11 +1,10 @@
 #pragma once
-#include "Boosters.hpp"
-#include "Obstacle.hpp"
-#include "SoftObstacle.hpp"
+// #include "Obstacles/Boosters.hpp"
+#include "Obstacles/Obstacle.hpp"
+// #include "Obstacles/SoftObstacle.hpp"
 #include "System/InputManager.hpp"
 #include "Vehicle.hpp"
 #include <box2d/box2d.h>
-#include <iostream>
 
 // Testing world for MicroMachine
 class iforce2d_TopdownCar {

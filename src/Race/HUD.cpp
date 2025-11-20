@@ -1,5 +1,5 @@
 #include "HUD.hpp"
-#include "Race/CheckpointManager.hpp"
+#include "../Gameplay/Checkpoints/CheckpointManager.hpp"
 #include "System/GameContext.hpp"
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/System/Vector2.hpp>
@@ -11,9 +11,9 @@
 const std::string FONT_FILE{"../assets/fonts/MenuScenceFont.ttf"};
 sf::Font HUDfont;
 
-HUD::HUD(Timer &timer, GameContext &context,
-         std::vector<CarProgress> &progresses)
-    : timer_(timer), context_(context), progresses_(progresses) {
+HUD::HUD(Timer &timer, GameContext &context)
+    : timer_(timer), context_(context) {
+
   if (!HUDfont.loadFromFile(FONT_FILE)) {
     std::cout << "unable to load font" << std::endl;
   }
@@ -21,12 +21,12 @@ HUD::HUD(Timer &timer, GameContext &context,
   // initialize race timer text
   timerText_.setFont(HUDfont);
   timerText_.setCharacterSize(15);
-  timerText_.setFillColor(sf::Color::White);
+  timerText_.setFillColor(sf::Color::Black);
 
   // initialize remaining lap text
   lapText_.setFont(HUDfont);
   lapText_.setCharacterSize(15);
-  lapText_.setFillColor(sf::Color::White);
+  lapText_.setFillColor(sf::Color::Black);
 }
 
 void HUD::update() {
@@ -43,17 +43,28 @@ void HUD::update() {
 
   // update remaining lap text
   std::ostringstream lap_ss;
-  //   for (unsigned int i = 0; i < context_.config->numOfPlayers; i++) {
-  //     remainingNofLap_ = context_.config->numOfLaps -
-  //     progresses_[i].currentLap; lap_ss << "P" << i + 1 << ": " <<
-  //     remainingNofLap_ << "/"
-  //            << context_.config->numOfLaps << "\n";
-  //   }
-  //   lapText_.setString(lap_ss.str());
+
+  if (checkpointManager_) {
+    int totalLaps = context_.config->numOfLaps;
+    int numPlayers = context_.config->numOfPlayers;
+
+    for (int i = 0; i < numPlayers; i++) {
+
+      int currentLap = checkpointManager_->getLapCount(i);
+
+      int remainingLaps = totalLaps - currentLap;
+
+      lap_ss << "P" << (i + 1) << ": " << remainingLaps << "/" << totalLaps
+             << "\n";
+    }
+  } else {
+    lap_ss << "No checkpoint manager.\n";
+  }
+
+  lapText_.setString(lap_ss.str());
 }
 
-// void HUD::setPosition(const sf::Vector2f &pos) { timerText_.setPosition(pos);
-// }
+void HUD::setPosition(const sf::Vector2f &pos) { timerText_.setPosition(pos); }
 
 void HUD::render(sf::RenderTarget &target) {
   // set text positions

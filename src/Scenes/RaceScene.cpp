@@ -1,6 +1,6 @@
 #include "RaceScene.hpp"
 #include "../System/SceneManager.hpp"
-#include "Scenes/MenuScene.hpp"
+#include "Race/Track.hpp"
 #include "Scenes/PauseScene.hpp"
 #include "Scenes/VictoryScene.hpp"
 #include "System/Config.hpp"
@@ -12,7 +12,6 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -28,21 +27,21 @@ const std::string DEFAULT_CAR_TEXTURE{"../assets/vehicles/car.png"};
 RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     : context_(context), manager_(manager),
       raceTimer_(context.config->raceDuration),
-      HUD_display_(std::make_unique<HUD>(raceTimer_, context_, carProgress_)),
-      useTmxMap_(false) {
+      HUD_display_(std::make_unique<HUD>(raceTimer_, context_)),
+      useTmxMap_(false), track_() {
   sf::RenderWindow &window = manager_.getWindow();
 
   // Load TMX map
   if (track_.loadFromFile(TMX_MAP)) {
     useTmxMap_ = true;
-    std::cout << "✓ Successfully loaded TMX map: " << TMX_MAP << std::endl;
+    std::cout << "  Successfully loaded TMX map: " << TMX_MAP << std::endl;
     std::cout << "  Map size: " << track_.getMapSize().x << "x"
               << track_.getMapSize().y << std::endl;
     std::cout << "  Tile size: " << track_.getTileSize().x << "x"
               << track_.getTileSize().y << std::endl;
   } else {
     useTmxMap_ = false;
-    std::cerr << "✗ ERROR: Failed to load TMX map: " << TMX_MAP << std::endl;
+    std::cerr << "  ERROR: Failed to load TMX map: " << TMX_MAP << std::endl;
     std::cerr << "  Make sure you're running from the project root directory "
                  "(where CMakeLists.txt is)"
               << std::endl;
@@ -70,104 +69,60 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
             << "obstacle spawn points from TMX map." << std::endl;
 
   if (!spawnPoints.empty()) {
-    nofCars = std::min(static_cast<int>(spawnPoints.size()), desiredPlayers);
-    std::cout << "✓ Using " << nofCars << " cars from TMX spawn points"
+    nofCars_ = std::min(static_cast<int>(spawnPoints.size()), desiredPlayers);
+    std::cout << "Using " << nofCars_ << " cars from TMX spawn points"
               << std::endl;
     if (desiredPlayers > static_cast<int>(spawnPoints.size())) {
-      std::cout << "⚠ Warning: Only " << spawnPoints.size()
+      std::cout << "Warning: Only " << spawnPoints.size()
                 << " vehicle spawn point(s) defined in TMX, but "
                 << desiredPlayers << " player(s) configured." << std::endl;
     }
   } else {
-    nofCars = desiredPlayers;
-    std::cout << "⚠ Warning: No vehicle spawn points found in TMX map. Falling "
+    nofCars_ = desiredPlayers;
+    std::cout << "Warning: No vehicle spawn points found in TMX map. Falling "
                  "back to default positions."
               << std::endl;
     if (!useTmxMap_) {
-      std::cerr << "  ERROR: TMX map not loaded AND no spawn points = cars may "
+      std::cerr << "ERROR: TMX map not loaded AND no spawn points = cars may "
                    "not be visible!"
                 << std::endl;
     }
   }
 
-  if (nofCars <= 0) {
-    nofCars = 1;
+  if (nofCars_ <= 0) {
+    nofCars_ = 1;
     std::cout << "⚠ Warning: nofCars was 0, setting to 1" << std::endl;
   }
 
-  std::cout << "Final car count: " << nofCars << std::endl;
+  std::cout << "Final car count: " << nofCars_ << std::endl;
 
   // obstacle
-  nofObstacles = obstacleSpawns.size();
+  nofObstacles_ = obstacleSpawns.size();
 
   // box2D
   b2WorldDef worldDef = b2DefaultWorldDef();
   worldDef.gravity = {0.0f, 0.0f};
   world_ = b2CreateWorld(&worldDef);
 
-  checkpointManager = std::make_unique<CheckpointManager>(
-      world_, context.config->numOfLaps, context.config->numOfPlayers);
+  checkpointManager_ = std::make_unique<CheckpointManager>(
+      world_, context.config->numOfLaps, nofCars_);
 
-  // float startX = (window.getSize().x / 2.0f) / PIXELS_PER_METER;
-  // float startY = (window.getSize().y / 2.0f) / PIXELS_PER_METER;
-  // float spacing = 3.0f;
-  //
-  // float worldWidth = window.getSize().x / scale;
-  // float worldHeight = window.getSize().y / scale;
-  //
-  // // left wall
-  // b2BodyDef leftDef = b2DefaultBodyDef();
-  // leftDef.position = {0.0f, worldHeight / 2.0f};
-  // b2BodyId leftWall = b2CreateBody(world_, &leftDef);
-  // b2Polygon leftBox = b2MakeBox(0.5f, worldHeight / 2.0f);
-  // b2ShapeDef leftShapeDef = b2DefaultShapeDef();
-  // b2CreatePolygonShape(leftWall, &leftShapeDef, &leftBox);
-  //
-  // // right wall
-  // b2BodyDef rightDef = b2DefaultBodyDef();
-  // rightDef.position = {worldWidth, worldHeight / 2.0f};
-  // b2BodyId rightWall = b2CreateBody(world_, &rightDef);
-  // b2Polygon rightBox = b2MakeBox(0.5f, worldHeight / 2.0f);
-  // b2ShapeDef rightShapeDef = b2DefaultShapeDef();
-  // b2CreatePolygonShape(rightWall, &rightShapeDef, &rightBox);
-  //
-  // // top wall
-  // b2BodyDef topDef = b2DefaultBodyDef();
-  // topDef.position = {worldWidth / 2.0f, 0.0f};
-  // b2BodyId topWall = b2CreateBody(world_, &topDef);
-  // b2Polygon topBox = b2MakeBox(worldWidth / 2.0f, 0.5f);
-  // b2ShapeDef topShapeDef = b2DefaultShapeDef();
-  // b2CreatePolygonShape(topWall, &topShapeDef, &topBox);
-  //
-  // // bottom wall
-  // b2BodyDef botDef = b2DefaultBodyDef();
-  // botDef.position = {worldWidth / 2.0f, worldHeight};
-  // b2BodyId bottomWall = b2CreateBody(world_, &botDef);
-  // b2Polygon bottomBox = b2MakeBox(worldWidth / 2.0f, 0.5f);
-  // b2ShapeDef botShapeDef = b2DefaultShapeDef();
-  // b2CreatePolygonShape(bottomWall, &botShapeDef, &bottomBox);
-  //
-  // std::cout << "test created" << std::endl;
-  // if (!car_) {
-  //   std::cerr << "error with test creation" << std::endl;
-  //   return;
-  // }
-  // std::cout << "nofCars:" << nofCars << "nofObstacles:" << nofObstacles_
-  //           << "nofSoft:" << nofSoft_ << "nofBoosters:" << nofBoosters_
-  //           << std::endl;
-  //
-  // carSprites.resize(nofCars);
-  // CarStatus_.resize(nofCars);
-  // for (int i = 0; i < nofCars; i++) {
-  //   carSprites[i].setTexture(carTexture_);
+  if (useTmxMap_) {
+    checkpointManager_->LoadFromMap(track_.getTmxMap(), PIXELS_PER_METER);
+    track_.setCheckpointManager(checkpointManager_.get());
+  }
+
+  if (HUD_display_) {
+    HUD_display_->setCheckpointManager(checkpointManager_.get());
+  }
 
   std::vector<b2Vec2> spawnPointsVec;
   std::vector<std::pair<float, float>> sizes;
 
   // Vehicles
   if (!spawnPoints.empty()) {
-    CarStatus_.resize(nofCars);
-    for (int i = 0; i < nofCars; i++) {
+    CarStatus_.resize(nofCars_);
+    for (int i = 0; i < nofCars_; i++) {
       sf::Vector2f size = spawnPoints[i].size;
       if (size.x <= 0.f || size.y <= 0.f) {
         size = {static_cast<float>(tileSize.x), static_cast<float>(tileSize.y)};
@@ -181,28 +136,28 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       spawnPointsVec.push_back(b2Vec2{startX, startY});
     }
   }
-  //Testing car specs
+  // Testing car specs
   std::vector<VehicleSpec> specs;
   specs.push_back(VehicleSpec());
-  VehicleSpec second {
-    .angularDamping = 0.6f,
-    .linearDamping = 3.0f,
-    .friction = 0.5f,
-    .restitution = 0.0f,
-    .rollingResistance = 0.0f,
-    .brakeRate = 5.0f,
-    .baseTargetForceStrength = 10.0f,
-    .baseAccelerationRate = 1.0f,
+  VehicleSpec second{
+      .angularDamping = 0.6f,
+      .linearDamping = 3.0f,
+      .friction = 0.5f,
+      .restitution = 0.0f,
+      .rollingResistance = 0.0f,
+      .brakeRate = 5.0f,
+      .baseTargetForceStrength = 10.0f,
+      .baseAccelerationRate = 1.0f,
   };
   specs.push_back(second);
 
   car_ = iforce2d_TopdownCar::Create(world_);
-  car_->VehicleFactory(nofCars, spawnPointsVec, sizes, specs);
+  car_->VehicleFactory(nofCars_, spawnPointsVec, sizes, specs);
 
   carSprites.clear();
-  carSprites.resize(nofCars);
+  carSprites.resize(nofCars_);
 
-  for (int i = 0; i < nofCars; i++) {
+  for (int i = 0; i < nofCars_; i++) {
     const Track::SpawnPoint *spawn =
         (!spawnPoints.empty() && i < static_cast<int>(spawnPoints.size()))
             ? &spawnPoints[i]
@@ -236,87 +191,6 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
 
     sf::FloatRect bounds = carSprites[i].getLocalBounds();
     carSprites[i].setOrigin(bounds.width / 2.f, bounds.height / 2.f);
-
-    //   auto pos = b2Body_GetPosition(car_->GetVehicle(i)->GetBody());
-    //   // std::cout << "box2d Car " << i << " position: " << pos.x << ", " <<
-    //   pos.y
-    //   //         << "\n";
-    //   sf::Vector2f sfPos(pos.x * scale, pos.y * scale);
-    //   carSprites[i].setPosition(sfPos);
-    // }
-    // carSprites[1].setColor(sf::Color(255, 0, 0));
-    // carProgress_.resize(nofCars); // one entry per car
-    //
-    // // obstacles
-    // obsSprites.resize(nofObstacles_);
-    // for (int i = 0; i < nofObstacles_; i++) {
-    //   obsSprites[i].setTexture(obsTexture_);
-    //   obsSprites[i].setScale(0.06f, 0.06f);
-    //   sf::FloatRect bounds = obsSprites[i].getLocalBounds();
-    //   obsSprites[i].setOrigin(bounds.width / 2.f, bounds.height / 2.f);
-    //   auto Obpos = b2Body_GetPosition(car_->GetObstacle(i)->GetBody());
-    //   // std::cout << "box2d Obstacle " << " position: " << Obpos.x << ", "
-    //   <<
-    //   // Obpos.y
-    //   //          << "\n";
-    //   sf::Vector2f sfPos(Obpos.x * scale, Obpos.y * scale);
-    //   obsSprites[i].setPosition(sfPos);
-    // }
-    //
-    // // soft obstacle
-    // sofSprites.resize(nofSoft_);
-    // for (int i = 0; i < nofSoft_; i++) {
-    //   sofSprites[i].setTexture(sofTexture_);
-    //   sofSprites[i].setScale(0.15f, 0.15f);
-    //   sf::FloatRect sofbounds = sofSprites[i].getLocalBounds();
-    //   sofSprites[i].setOrigin(sofbounds.width / 2.f, sofbounds.height / 2.f);
-    //   auto sofpos = b2Body_GetPosition(car_->GetSoftObstacle(i)->GetBody());
-    //   // std::cout << "box2d soft obstacle " << " position: " << sofpos.x <<
-    //   ", "
-    //   //           << sofpos.y << "\n";
-    //   sf::Vector2f sofsfPos(sofpos.x * scale, sofpos.y * scale);
-    //   sofSprites[i].setPosition(sofsfPos);
-    // }
-    //
-    // // booster
-    // bosSprites.resize(nofBoosters_);
-    // for (int i = 0; i < nofBoosters_; i++) {
-    //   bosSprites[i].setTexture(bosTexture_);
-    //   bosSprites[i].setScale(0.15f, 0.15f);
-    //   sf::FloatRect bosbounds = bosSprites[i].getLocalBounds();
-    //   bosSprites[i].setOrigin(bosbounds.width / 2.f, bosbounds.height / 2.f);
-    //   auto bospos = b2Body_GetPosition(car_->GetBooster(i)->GetBody());
-    //   // std::cout << "box2d booster " << " position: " << bospos.x << ", "
-    //   //           << bospos.y << "\n";
-    //   sf::Vector2f bossfPos(bospos.x * scale, bospos.y * scale);
-    //   bosSprites[i].setPosition(bossfPos);
-    // }
-    //
-    // // add 4 checkpoints
-    // checkpointManager->AddCheckpoint(b2Vec2{10.0f, 2.0f});
-    // checkpointManager->AddCheckpoint(b2Vec2{2.5f, 2.0f});
-    // checkpointManager->AddCheckpoint(b2Vec2{2.5f, 18.0f});
-    // checkpointManager->AddCheckpoint(b2Vec2{17.0f, 18.0f});
-    // checkpointManager->AddCheckpoint(b2Vec2{26.0f, 18.0f});
-    // checkpointManager->AddCheckpoint(b2Vec2{26.0f, 7.0f});
-    //
-    // // create SFML sprites for each checkpoint
-    // checkpointSprites_.resize(checkpointManager->GetCheckpoints().size());
-    // for (size_t i = 0; i < checkpointSprites_.size(); i++) {
-    //   checkpointSprites_[i].setTexture(chpTexture_);
-    //   checkpointSprites_[i].setScale(0.5f, 0.5f);
-    //   sf::FloatRect chpbounds = checkpointSprites_[i].getLocalBounds();
-    //   checkpointSprites_[i].setOrigin(chpbounds.width / 2.f,
-    //                                   chpbounds.height / 2.f);
-    //
-    //   auto pos = checkpointManager->GetCheckpoints()[i]->GetPosition(); //
-    //   b2Vec2 std::cout << "Checkpoint " << i << " position: " << pos.x << ",
-    //   " << pos.y
-    //             << "\n";
-    //
-    //   checkpointSprites_[i].setPosition(
-    //       sf::Vector2f(pos.x * scale, pos.y * scale));
-    // }
 
     sf::Vector2f targetSize = {static_cast<float>(tileSize.x),
                                static_cast<float>(tileSize.y)};
@@ -369,11 +243,11 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   }
 
   // obstacles
-  if (nofObstacles > 0) {
+  if (nofObstacles_ > 0) {
     std::vector<b2Vec2> ObstacleSpawnVec;
     std::vector<std::pair<float, float>> Obstaclesizes;
 
-    for (int i = 0; i < nofObstacles; i++) {
+    for (int i = 0; i < nofObstacles_; i++) {
       sf::Vector2f size = obstacleSpawns[i].size;
       if (size.x <= 0.f || size.y <= 0.f) {
         size = {static_cast<float>(tileSize.x), static_cast<float>(tileSize.y)};
@@ -386,11 +260,12 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       float startY = center.y / PIXELS_PER_METER;
       ObstacleSpawnVec.push_back(b2Vec2{startX, startY});
     }
-    car_->ObstacleFactory(nofObstacles, ObstacleSpawnVec, Obstaclesizes);
-    obstacleSprites.clear();
-    obstacleSprites.resize(nofObstacles);
 
-    for (int i = 0; i < nofObstacles; i++) {
+    car_->ObstacleFactory(nofObstacles_, ObstacleSpawnVec, Obstaclesizes);
+    obstacleSprites.clear();
+    obstacleSprites.resize(nofObstacles_);
+
+    for (int i = 0; i < nofObstacles_; i++) {
       const Track::SpawnPoint *obstacleSpawn = &spawnPoints[i];
 
       sf::Texture *texture = &defaultObstacleTexture_;
@@ -485,13 +360,13 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   rightView_.setSize(viewWidth * zoomFactor, viewHeight * zoomFactor);
 
   // Set initial centers (will be updated in update() to follow cars)
-  if (nofCars > 1) {
+  if (nofCars_ > 1) {
     sf::Vector2f car1Pos = carSprites[1].getPosition();
     leftView_.setCenter(car1Pos);
     std::cout << "✓ Left view initialized at car 1 position (WASD): ("
               << car1Pos.x << ", " << car1Pos.y << ")" << std::endl;
   }
-  if (nofCars > 0) {
+  if (nofCars_ > 0) {
     sf::Vector2f car0Pos = carSprites[0].getPosition();
     rightView_.setCenter(car0Pos);
     std::cout << "✓ Right view initialized at car 0 position (Arrow keys): ("
@@ -551,8 +426,10 @@ void RaceScene::update(float dt) {
 
   float scale = 30.0f;
 
+  checkpointManager_->update(dt);
+
   // Process sensor events
-  //
+
   // Checkpoint, soft obstacle check
   b2SensorEvents sensorEvents = b2World_GetSensorEvents(world_);
   for (int i = 0; i < sensorEvents.beginCount; i++) {
@@ -562,7 +439,7 @@ void RaceScene::update(float dt) {
     const char *label = static_cast<const char *>(sensorData);
     // Find which car triggered it
     int triggeredCar = -1;
-    for (int i = 0; i < nofCars; i++) {
+    for (int i = 0; i < nofCars_; i++) {
       if (b2Shape_GetUserData(car_->GetVehicle(i)->GetShape()) == visitorData) {
         triggeredCar = i;
         break;
@@ -573,58 +450,39 @@ void RaceScene::update(float dt) {
     }
     if (label && strcmp(label, "checkpoint") == 0) {
       // Find which checkpoint was triggered
-      int triggeredCheckpoint = -1;
-      for (size_t idx = 0; idx < checkpointManager->GetCheckpoints().size();
-           idx++) {
-        if (B2_ID_EQUALS(checkpointManager->GetCheckpoints()[idx]->GetShapeId(),
-                         e->sensorShapeId)) {
-          triggeredCheckpoint = static_cast<int>(idx);
-          break;
-        }
+      Checkpoint *cp =
+          checkpointManager_->FindCheckpointByShapeId(e->sensorShapeId);
+
+      if (cp) {
+        checkpointManager_->onCarHitCheckpoint(triggeredCar, cp);
       }
-
-      if (triggeredCar != -1 && triggeredCheckpoint != -1) {
-        std::cout << "Car " << triggeredCar << " triggered checkpoint "
-                  << triggeredCheckpoint << "\n";
-
-        // Update car's checkpoint progress
-        CarProgress &progress = carProgress_[triggeredCar];
-        if (progress.nextCheckpointIndex == triggeredCheckpoint) {
-          progress.nextCheckpointIndex++;
-          if (progress.nextCheckpointIndex >=
-              checkpointManager->GetCheckpoints().size()) {
-            progress.currentLap++;
-            progress.nextCheckpointIndex = 0;
-            std::cout << "Car " << triggeredCar << " completed lap "
-                      << progress.currentLap << "\n";
-
-            if (progress.currentLap >= context_.config->numOfLaps) {
-              raceFinished_ = true;
-              winnerCarID_ = triggeredCar;
-              std::cout << "Car " << winnerCarID_ << " wins the race!\n";
-            }
-          }
-        }
+      // race finish
+      if (checkpointManager_->isRaceFinished()) {
+        raceFinished_ = true;
+        winnerCarID_ = checkpointManager_->getWinnerCarID();
       }
     }
+    // }
+
+    // }
     // soft obstacle
-    else if (label && strcmp(label, "softObstacle") == 0) {
-      CarStatus_[triggeredCar].inSoftObstacle = true;
-      CarStatus_[triggeredCar].timer = 1.0f;
-      car_->GetVehicle(triggeredCar)->SetTargetForceStrength(5.0f);
-      std::cout << "Car " << triggeredCar << " hit oil!\n";
-    }
-
-    else if (label && strcmp(label, "booster") == 0) {
-      CarStatus_[triggeredCar].inSoftObstacle = true;
-      CarStatus_[triggeredCar].timer = 2.0f;
-      car_->GetVehicle(triggeredCar)->SetTargetForceStrength(60.0f);
-      car_->GetVehicle(triggeredCar)->SetAccelerationRate(20.0f);
-      std::cout << "Car " << triggeredCar << " hit booster!\n";
-    }
+    // else if (label && strcmp(label, "softObstacle") == 0) {
+    //   CarStatus_[triggeredCar].inSoftObstacle = true;
+    //   CarStatus_[triggeredCar].timer = 1.0f;
+    //   car_->GetVehicle(triggeredCar)->SetTargetForceStrength(5.0f);
+    //   std::cout << "Car " << triggeredCar << " hit oil!\n";
+    // }
+    //
+    // else if (label && strcmp(label, "booster") == 0) {
+    //   CarStatus_[triggeredCar].inSoftObstacle = true;
+    //   CarStatus_[triggeredCar].timer = 2.0f;
+    //   car_->GetVehicle(triggeredCar)->SetTargetForceStrength(60.0f);
+    //   car_->GetVehicle(triggeredCar)->SetAccelerationRate(20.0f);
+    //   std::cout << "Car " << triggeredCar << " hit booster!\n";
+    // }
   }
 
-  for (int i = 0; i < nofCars; i++) {
+  for (int i = 0; i < nofCars_; i++) {
     // TODO: Reset car to normal, possibly can be moved to Track?
     if (CarStatus_[i].inSoftObstacle) {
       CarStatus_[i].timer -= dt;
@@ -643,15 +501,6 @@ void RaceScene::update(float dt) {
     sf::Vector2f sfPos(pos.x * PIXELS_PER_METER, pos.y * PIXELS_PER_METER);
     carSprites[i].setPosition(sfPos);
     carSprites[i].setRotation(angleDeg);
-
-    // Check checkpoint zones for this car
-    if (useTmxMap_) {
-      int activatedId = track_.checkAndActivateCheckpoint(sfPos);
-      if (activatedId >= 0) {
-        // Checkpoint activated - the Track class will handle showing the
-        // activated layer
-      }
-    }
 
     // Check Soft Obstacle zones for this car
     if (useTmxMap_) {
@@ -745,7 +594,7 @@ void RaceScene::render() {
   }
 
   // Render left view (car 1 - WASD)
-  if (nofCars > 1) {
+  if (nofCars_ > 1) {
     window.setView(leftView_);
 
     // render TMX map
@@ -754,13 +603,13 @@ void RaceScene::render() {
     }
 
     // render all vehicles
-    for (int i = 0; i < nofCars; i++) {
+    for (int i = 0; i < nofCars_; i++) {
       window.draw(carSprites[i]);
     }
   }
 
   // Render right view (car 0 - Arrow keys)
-  if (nofCars > 0) {
+  if (nofCars_ > 0) {
     window.setView(rightView_);
 
     // render TMX map
@@ -769,7 +618,7 @@ void RaceScene::render() {
     }
 
     // render all vehicles
-    for (int i = 0; i < nofCars; i++) {
+    for (int i = 0; i < nofCars_; i++) {
       window.draw(carSprites[i]);
     }
   }
