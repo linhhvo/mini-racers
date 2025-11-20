@@ -31,11 +31,12 @@ public:
   }
 
   void VehicleFactory(int nofCars, std::vector<b2Vec2> startPos,
-                      std::vector<std::pair<float, float>> sizes, std::vector<VehicleSpec> specs) {
+                      std::vector<std::pair<float, float>> sizes,
+                      std::vector<VehicleSpec> specs) {
     nofCars_ = nofCars;
     for (int i = 0; i < nofCars; i++) {
-      auto car =
-          new Vehicle(world_, startPos[i], sizes[i].first, sizes[i].second, specs[i]);
+      auto car = new Vehicle(world_, startPos[i], sizes[i].first,
+                             sizes[i].second, specs[i]);
       cars.push_back(car);
     }
   }
@@ -53,8 +54,6 @@ public:
   Vehicle *GetVehicle(int idx) { return cars[idx]; }
 
   Obstacle *GetObstacle(int idx) { return obstacles[idx]; }
-
-  // Checkpoint *GetCheckPoint() { return checkpoint; }
 
   // SoftObstacle *GetSoftObstacle(int idx) { return softObstacles[idx]; }
 
@@ -78,7 +77,6 @@ private:
   int nofCars_;
   // int nofSoft_;
   // int nofBoosters_;
-  // Checkpoint *checkpoint;
   int nofObstacles_;
   std::vector<Vehicle *> cars;
   std::vector<Obstacle *> obstacles;

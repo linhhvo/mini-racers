@@ -17,7 +17,6 @@ public:
   ~Vehicle() = default;
 
   // movement functions
-  //  void updateKey(char key, bool pressed);
   void updateKey(InputManager::InputAction action, bool pressed);
   void update(float dt);
 
@@ -74,8 +73,8 @@ private:
   bool right = false;
   float forceStrength = 0.0f;
   float brakeRate = 5.0f;
-  float baseTargetForceStrength = 3.0f;
-  float baseAccelerationRate = 1.0f;
+  float baseTargetForceStrength;
+  float baseAccelerationRate;
   float targetForceStrength = baseTargetForceStrength;
   float accelerationRate = baseAccelerationRate;
 };

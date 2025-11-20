@@ -146,7 +146,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       .restitution = 0.0f,
       .rollingResistance = 0.0f,
       .brakeRate = 5.0f,
-      .baseTargetForceStrength = 10.0f,
+      .baseTargetForceStrength = 3.0f,
       .baseAccelerationRate = 1.0f,
   };
   specs.push_back(second);
@@ -363,17 +363,11 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   if (nofCars_ > 1) {
     sf::Vector2f car1Pos = carSprites[1].getPosition();
     leftView_.setCenter(car1Pos);
-    std::cout << "✓ Left view initialized at car 1 position (WASD): ("
-              << car1Pos.x << ", " << car1Pos.y << ")" << std::endl;
   }
   if (nofCars_ > 0) {
     sf::Vector2f car0Pos = carSprites[0].getPosition();
     rightView_.setCenter(car0Pos);
-    std::cout << "✓ Right view initialized at car 0 position (Arrow keys): ("
-              << car0Pos.x << ", " << car0Pos.y << ")" << std::endl;
   }
-
-  std::cout << "RaceScene initialization complete." << std::endl;
 }
 
 void RaceScene::handleEvent(const sf::Event &event) {

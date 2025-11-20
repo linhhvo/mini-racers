@@ -32,7 +32,6 @@ private:
   // counters
   int nofSoft_ = 2;
   int nofBoosters_ = 3;
-  int spacing_ = 10;
   int nofCars_ = 0;
   int nofObstacles_ = 0;
 

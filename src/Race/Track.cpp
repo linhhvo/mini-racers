@@ -42,9 +42,6 @@ bool Track::loadFromFile(const std::string &filepath) {
 
   if (!hasValidTileset) {
     std::cout << "Error: No valid tilesets with images found." << std::endl;
-    std::cout << "Hint: In Tiled, right-click your tileset -> 'Embed Tileset' "
-                 "to embed it in the TMX file."
-              << std::endl;
     return false;
   }
 
@@ -84,8 +81,9 @@ bool Track::loadFromFile(const std::string &filepath) {
   }
 
   std::cout << "Successfully loaded TMX map: " << filepath << std::endl;
-  std::cout << "Map size: " << mapSize_.x << "x" << mapSize_.y << std::endl;
-  std::cout << "Tile size: " << tileSize_.x << "x" << tileSize_.y << std::endl;
+  // std::cout << "Map size: " << mapSize_.x << "x" << mapSize_.y << std::endl;
+  // std::cout << "Tile size: " << tileSize_.x << "x" << tileSize_.y <<
+  // std::endl;
 
   return true;
 }
