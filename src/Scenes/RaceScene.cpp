@@ -1,5 +1,6 @@
 #include "RaceScene.hpp"
 #include "../System/SceneManager.hpp"
+#include "Race/Track.hpp"
 #include "Scenes/PauseScene.hpp"
 #include "Scenes/VictoryScene.hpp"
 #include "System/Config.hpp"
@@ -27,7 +28,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     : context_(context), manager_(manager),
       raceTimer_(context.config->raceDuration),
       HUD_display_(std::make_unique<HUD>(raceTimer_, context_)),
-      useTmxMap_(false) {
+      useTmxMap_(false), track_() {
   sf::RenderWindow &window = manager_.getWindow();
 
   // Load TMX map
@@ -103,15 +104,16 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   worldDef.gravity = {0.0f, 0.0f};
   world_ = b2CreateWorld(&worldDef);
 
-  checkpointManager = std::make_unique<CheckpointManager>(
+  checkpointManager_ = std::make_unique<CheckpointManager>(
       world_, context.config->numOfLaps, nofCars_);
 
   if (useTmxMap_) {
-    checkpointManager->LoadFromMap(track_.getTmxMap(), PIXELS_PER_METER);
+    checkpointManager_->LoadFromMap(track_.getTmxMap(), PIXELS_PER_METER);
+    track_.setCheckpointManager(checkpointManager_.get());
   }
 
   if (HUD_display_) {
-    HUD_display_->setCheckpointManager(checkpointManager.get());
+    HUD_display_->setCheckpointManager(checkpointManager_.get());
   }
 
   std::vector<b2Vec2> spawnPointsVec;
@@ -424,7 +426,7 @@ void RaceScene::update(float dt) {
 
   float scale = 30.0f;
 
-  checkpointManager->update(dt);
+  checkpointManager_->update(dt);
 
   // Process sensor events
 
@@ -449,15 +451,15 @@ void RaceScene::update(float dt) {
     if (label && strcmp(label, "checkpoint") == 0) {
       // Find which checkpoint was triggered
       Checkpoint *cp =
-          checkpointManager->FindCheckpointByShapeId(e->sensorShapeId);
+          checkpointManager_->FindCheckpointByShapeId(e->sensorShapeId);
 
       if (cp) {
-        checkpointManager->onCarHitCheckpoint(triggeredCar, cp);
+        checkpointManager_->onCarHitCheckpoint(triggeredCar, cp);
       }
       // race finish
-      if (checkpointManager->isRaceFinished()) {
+      if (checkpointManager_->isRaceFinished()) {
         raceFinished_ = true;
-        winnerCarID_ = checkpointManager->getWinnerCarID();
+        winnerCarID_ = checkpointManager_->getWinnerCarID();
       }
     }
     // }
@@ -499,15 +501,6 @@ void RaceScene::update(float dt) {
     sf::Vector2f sfPos(pos.x * PIXELS_PER_METER, pos.y * PIXELS_PER_METER);
     carSprites[i].setPosition(sfPos);
     carSprites[i].setRotation(angleDeg);
-
-    // Check checkpoint zones for this car
-    // if (useTmxMap_) {
-    // int activatedId = track_.checkAndActivateCheckpoint(sfPos);
-    // if (activatedId >= 0) {
-    // Checkpoint activated - the Track class will handle showing the
-    // activated layer
-    // }
-    // }
 
     // Check Soft Obstacle zones for this car
     if (useTmxMap_) {

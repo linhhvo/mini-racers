@@ -1,4 +1,6 @@
 #include "Checkpoint.hpp"
+#include <iostream>
+#include <string>
 
 Checkpoint::Checkpoint(b2WorldId world, b2Vec2 position, float width,
                        float height)
@@ -28,39 +30,25 @@ b2ShapeId Checkpoint::GetShapeId() const { return checkpoint_; }
 
 const b2Vec2 &Checkpoint::GetPosition() const { return position_; }
 
-uint32_t Checkpoint::getCurrentTileID() const { return currentTileID_; }
-
 bool Checkpoint::isActivated() const { return activated_; }
 
 // activate tmx animation
 void Checkpoint::activate() {
   activated_ = true;
-  currentFrame_ = 0;
-  timer_ = 0;
-
-  if (!frames_.empty()) {
-    currentTileID_ = frames_[0];
-  }
+  timer_ = 0.5f;
 };
+
+void Checkpoint::reset() {
+  activated_ = false;
+  timer_ = 0.f;
+}
 
 // update tmx animation
 void Checkpoint::update(float dt) {
-  if (!activated_ || frames_.empty())
-    return;
-
-  timer_ += dt;
-
-  if (timer_ >= frameDurations_[currentFrame_]) {
-    timer_ -= frameDurations_[currentFrame_];
-    currentFrame_++;
-
-    // Animation finished → deactivate
-    if (currentFrame_ >= (int)frames_.size()) {
-      activated_ = false;
-      currentFrame_ = 0;
-      return;
+  if (activated_) {
+    timer_ -= dt;
+    if (timer_ <= 0.0f) {
+      reset();
     }
-
-    currentTileID_ = frames_[currentFrame_];
   }
 };

@@ -14,6 +14,8 @@
 #include <tmxlite/TileLayer.hpp>
 #include <vector>
 
+class CheckpointManager;
+
 class Track : public sf::Drawable {
 public:
   Track();
@@ -48,34 +50,6 @@ public:
 
   // Extract a tile texture from the tileset by GID
   std::unique_ptr<sf::Texture> extractTileTexture(std::uint32_t tileGID) const;
-
-  // Checkpoint zone structure
-  // struct CheckpointZone {
-  //   int id;                 // Unique checkpoint ID
-  //   sf::Vector2f position;  // Top-left position in pixels
-  //   sf::Vector2f size;      // Width/height in pixels
-  //   bool activated = false; // Whether this checkpoint has been passed
-  //   float activationTimer =
-  //       0.0f; // Timer for how long checkpoint has been activated (in
-  //       seconds)
-  //   static constexpr float ACTIVATION_DURATION =
-  //       0.5f; // Stay active for 0.5 seconds after leaving
-  // };
-  //
-  // const std::vector<CheckpointZone> &getCheckpointZones() const {
-  //   return checkpointZones_;
-  // }
-
-  // Check if a point (in pixels) is inside a checkpoint zone and activate it
-  // Also updates activation timers and deactivates checkpoints when car leaves
-  // Returns the checkpoint ID if newly activated, or -1 if none
-  // int checkAndActivateCheckpoint(const sf::Vector2f &position);
-
-  // Update checkpoint timers (call this in update())
-  // void updateCheckpoints(float dt);
-
-  // Get activated checkpoint IDs
-  // std::vector<int> getActivatedCheckpoints() const;
 
   // Soft obstacle zone structure
   struct SoftObstacleZone {
@@ -114,6 +88,10 @@ public:
   // Get activated soft obstacle IDs
   std::vector<int> getActivatedSofts() const;
 
+  void setCheckpointManager(CheckpointManager *checkpointManager) {
+    checkpointManager_ = checkpointManager;
+  }
+
 private:
   void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
   void createLayer(const tmx::Map &map, const tmx::TileLayer &layer,
@@ -142,6 +120,6 @@ private:
   std::map<std::string, std::unique_ptr<sf::Texture>> textures_;
   std::vector<SpawnPoint> vehicleSpawns_;
   std::vector<SpawnPoint> obstacleSpawns_;
-  // std::vector<CheckpointZone> checkpointZones_;
   std::vector<SoftObstacleZone> softObstacleZones_;
+  CheckpointManager *checkpointManager_ = nullptr;
 };

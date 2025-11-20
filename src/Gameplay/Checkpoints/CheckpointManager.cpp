@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iostream>
 #include <ostream>
+#include <sstream>
 
 CheckpointManager::CheckpointManager(b2WorldId world, int totalLaps,
                                      int numCars)
@@ -19,7 +20,6 @@ CheckpointManager::~CheckpointManager() {
 // load checkpoints from tmx map
 void CheckpointManager::LoadFromMap(const tmx::Map &map, float pixelsPerMeter) {
   const auto &layers = map.getLayers();
-  const auto &tilesets = map.getTilesets();
 
   std::cout << "CheckpointManager: scanning TMX for checkpoints...\n";
 
@@ -83,10 +83,6 @@ int CheckpointManager::GetCheckpointIndex(const Checkpoint *cp) const {
   return -1;
 }
 
-const std::vector<Checkpoint *> &CheckpointManager::GetCheckpoints() const {
-  return checkpoints_;
-};
-
 // Car hit checkpoint (called by RaceScene sensor code)
 void CheckpointManager::onCarHitCheckpoint(int carID, Checkpoint *cp) {
   if (carID < 0 || carID >= static_cast<int>(carProgress_.size()))
@@ -104,7 +100,7 @@ void CheckpointManager::onCarHitCheckpoint(int carID, Checkpoint *cp) {
   std::cout << "passed checkpoint " << triggeredCheckpoint << std::endl;
 
   if (triggeredCheckpoint == 0 &&
-      progress.passedCheckpoints.size() == GetCheckpoints().size()) {
+      progress.passedCheckpoints.size() == checkpoints_.size()) {
     progress.currentLap++;
     progress.passedCheckpoints.clear();
     std::cout << "Car " << carID << " completed lap " << progress.currentLap
@@ -130,8 +126,7 @@ void CheckpointManager::update(float dt) {
 // Reset checkpoints for a new lap
 void CheckpointManager::ResetCheckpoints() {
   for (auto *cp : checkpoints_) {
-    // reset tile to first
-    cp->activate();
+    cp->reset();
   }
 }
 
@@ -139,4 +134,21 @@ int CheckpointManager::getLapCount(int carID) const {
   if (carID < 0 || carID >= static_cast<int>(carProgress_.size()))
     return 0;
   return carProgress_[carID].currentLap;
+}
+
+std::set<std::string> CheckpointManager::getActivatedCheckpointID() const {
+  std::set<std::string> layers{};
+  for (auto *cp : checkpoints_) {
+    if (cp->isActivated()) {
+      int i = GetCheckpointIndex(cp);
+      std::stringstream layerName;
+      if (i > 0) {
+        layerName << "checkpoint_" << i;
+      } else if (i == 0) {
+        layerName << "checkpoint_" << 9;
+      }
+      layers.insert(layerName.str());
+    }
+  }
+  return layers;
 }

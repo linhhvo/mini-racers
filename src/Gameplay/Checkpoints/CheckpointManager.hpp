@@ -17,8 +17,6 @@ public:
   CheckpointManager(b2WorldId world, int totalLaps, int numCars);
   ~CheckpointManager();
 
-  void AddCheckpoint(const b2Vec2 &position);
-
   // Load all checkpoints from TMX object layers whose name contains
   // "checkpoint"
   void LoadFromMap(const tmx::Map &map, float pixelsPerMeter);
@@ -28,11 +26,7 @@ public:
 
   Checkpoint *FindCheckpointByShapeId(b2ShapeId shape) const;
 
-  int checkAndActivateCheckpoint(int carID, const b2Vec2 &carPos);
-
   int GetCheckpointIndex(const Checkpoint *cp) const;
-
-  const std::vector<Checkpoint *> &GetCheckpoints() const;
 
   // Reset check activation (e.g., every lap)
   void ResetCheckpoints();
@@ -45,6 +39,8 @@ public:
 
   std::vector<CarProgress> &getProgresses() { return carProgress_; }
   int getLapCount(int carID) const;
+
+  std::set<std::string> getActivatedCheckpointID() const;
 
 private:
   b2WorldId world_;

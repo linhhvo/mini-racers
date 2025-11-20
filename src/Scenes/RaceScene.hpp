@@ -41,7 +41,7 @@ private:
   GameContext &context_;
 
   // checkpoints
-  std::unique_ptr<CheckpointManager> checkpointManager;
+  std::unique_ptr<CheckpointManager> checkpointManager_;
   std::vector<CarProgress> carProgress_;
   bool raceFinished_ = false; // has any car finished the race?
   int winnerCarID_ = -1;
