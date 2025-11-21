@@ -563,9 +563,17 @@ void RaceScene::update(float dt) {
   HUD_display_->update();
 
   // Race finished when either timer runs out or a player finishes all laps
-  if (raceTimer_.isFinished() || raceFinished_) {
-    std::cout << "Race over!\n";
-    manager_.pushScene<VictoryScene>(context_, winnerCarID_);
+  bool endTriggered = raceTimer_.isFinished() || raceFinished_;
+  if (endTriggered) {
+    if (victoryDelayTimer_ < 0.f) {
+      victoryDelayTimer_ = 1.5f; // delay before showing victory scene
+    } else {
+      victoryDelayTimer_ -= dt;
+      if (victoryDelayTimer_ <= 0.f) {
+        std::cout << "Race over!\n";
+        manager_.pushScene<VictoryScene>(context_, winnerCarID_);
+      }
+    }
   }
 }
 

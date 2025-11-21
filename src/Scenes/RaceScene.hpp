@@ -39,11 +39,12 @@ private:
   InputManager input_;
   GameContext &context_;
 
-  // checkpoints
+  // checkpoints and win condition
   std::unique_ptr<CheckpointManager> checkpointManager_;
   std::vector<CarProgress> carProgress_;
   bool raceFinished_ = false; // has any car finished the race?
   int winnerCarID_ = -1;
+  float victoryDelayTimer_ = -1.f;
 
   // map
   Track track_;
