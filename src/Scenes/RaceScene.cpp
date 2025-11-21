@@ -1,5 +1,6 @@
 #include "RaceScene.hpp"
 #include "../System/SceneManager.hpp"
+#include "Gameplay/GameWorld.hpp"
 #include "Race/Track.hpp"
 #include "Scenes/PauseScene.hpp"
 #include "Scenes/VictoryScene.hpp"
@@ -149,7 +150,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   };
   specs.push_back(second);
 
-  car_ = iforce2d_TopdownCar::Create(world_);
+  car_ = GameWorld::Create(world_);
   car_->VehicleFactory(nofCars_, spawnPointsVec, sizes, specs);
 
   carSprites.clear();
@@ -558,7 +559,7 @@ void RaceScene::update(float dt) {
   // Race finished when either timer runs out or a player finishes all laps
   if (raceTimer_.isFinished() || raceFinished_) {
     if (victoryDelayTimer_ < 0.f) {
-      victoryDelayTimer_ = 0.5f; // delay before showing victory scene
+      victoryDelayTimer_ = 0.8f; // delay before showing victory scene
     } else {
       victoryDelayTimer_ -= dt;
       if (victoryDelayTimer_ <= 0.f) {

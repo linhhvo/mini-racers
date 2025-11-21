@@ -1,9 +1,9 @@
 #pragma once
 #include "../System/SceneManager.hpp"
 #include "Gameplay/Checkpoints/CheckpointManager.hpp"
-#include "Gameplay/iforce2d_car.hpp"
-#include "Race/HUD.hpp"
+#include "Gameplay/GameWorld.hpp"
 #include "Race/Countdown.hpp"
+#include "Race/HUD.hpp"
 #include "Race/Timer.hpp"
 #include "Race/Track.hpp"
 #include "Scene.hpp"
@@ -71,7 +71,7 @@ private:
 
   // box2d
   b2WorldId world_;
-  iforce2d_TopdownCar *car_;
+  GameWorld *car_;
 
   // HUD
   Timer raceTimer_;
