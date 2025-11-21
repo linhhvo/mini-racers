@@ -12,10 +12,17 @@ void BtnContainer::addBtn(std::unique_ptr<Button> btn) {
 }
 
 void BtnContainer::setPosition(const sf::Vector2f &pos) {
-  float yPadding = 0.f;
+  position_ = pos;
+  // arrange buttons vertically or horizontally
+  sf::Vector2f startPos = pos;
+
   for (auto &btn : buttons_) {
-    btn->setPosition(sf::Vector2f(pos.x, pos.y + yPadding));
-    yPadding += btn->getSize().y + spacing_;
+    btn->setPosition(startPos);
+    if (orientation_ == Orientation::VERTICAL) {
+      startPos.y += btn->getSize().y + spacing_;
+    } else {
+      startPos.x += btn->getSize().x + spacing_;
+    }
   }
 }
 
@@ -41,12 +48,21 @@ sf::Vector2f BtnContainer::getSize() const {
   float height = 0.f;
 
   for (const auto &btn : buttons_) {
-    width = std::max(width, btn->getSize().x);
-    height += btn->getSize().y + spacing_;
+    if (orientation_ == Orientation::VERTICAL) {
+      width = std::max(width, btn->getSize().x);
+      height += btn->getSize().y + spacing_;
+    } else {
+      width += btn->getSize().x + spacing_;
+      height = std::max(height, btn->getSize().y);
+    }
   }
 
   if (!buttons_.empty()) {
-    height -= spacing_;
+    if (orientation_ == Orientation::VERTICAL) {
+      height -= spacing_;
+    } else {
+      width -= spacing_;
+    }
   }
 
   return sf::Vector2f(width, height);

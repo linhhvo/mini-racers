@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Window/VideoMode.hpp>
+#include <string>
 class Config {
 public:
   Config() {};
@@ -11,4 +12,6 @@ public:
   int numOfLaps = 1;
   float raceDuration = 300;
   int numOfPlayers = 2;
+
+  std::string TMX_MAP{"../assets/maps/stas_map.tmx"};
 };

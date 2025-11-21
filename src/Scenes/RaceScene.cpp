@@ -20,7 +20,6 @@
 namespace {
 constexpr float PIXELS_PER_METER = 30.0f;
 constexpr float DEG2RAD = 0.0174532925199432957f;
-const std::string TMX_MAP{"../assets/maps/stas_map.tmx"};
 const std::string DEFAULT_CAR_TEXTURE{"../assets/vehicles/car.png"};
 } // namespace
 
@@ -32,16 +31,18 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   sf::RenderWindow &window = manager_.getWindow();
 
   // Load TMX map
-  if (track_.loadFromFile(TMX_MAP)) {
+  if (track_.loadFromFile(context_.config->TMX_MAP)) {
     useTmxMap_ = true;
-    std::cout << "  Successfully loaded TMX map: " << TMX_MAP << std::endl;
+    std::cout << "  Successfully loaded TMX map: " << context_.config->TMX_MAP
+              << std::endl;
     std::cout << "  Map size: " << track_.getMapSize().x << "x"
               << track_.getMapSize().y << std::endl;
     std::cout << "  Tile size: " << track_.getTileSize().x << "x"
               << track_.getTileSize().y << std::endl;
   } else {
     useTmxMap_ = false;
-    std::cerr << "  ERROR: Failed to load TMX map: " << TMX_MAP << std::endl;
+    std::cerr << "  ERROR: Failed to load TMX map: " << context_.config->TMX_MAP
+              << std::endl;
     std::cerr << "  Make sure you're running from the project root directory "
                  "(where CMakeLists.txt is)"
               << std::endl;
