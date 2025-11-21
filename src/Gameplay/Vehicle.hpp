@@ -5,11 +5,6 @@
 #include "box2d/math_functions.h"
 #include <box2d/box2d.h>
 
-#ifndef DEGTORAD
-#define DEGTORAD 0.0174532925199432957f
-#define RADTODEG 57.295779513082320876f
-#endif
-
 class Vehicle {
 public:
   Vehicle(b2WorldId world, b2Vec2 pos, float width, float height,

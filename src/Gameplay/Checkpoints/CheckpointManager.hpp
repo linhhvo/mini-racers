@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Gameplay/Checkpoints/Checkpoint.hpp"
+#include "System/GameContext.hpp"
 #include "tmxlite/Map.hpp"
 #include <box2d/box2d.h>
 #include <set>
@@ -14,12 +15,12 @@ struct CarProgress {
 
 class CheckpointManager {
 public:
-  CheckpointManager(b2WorldId world, int totalLaps, int numCars);
+  CheckpointManager(b2WorldId world, GameContext &context);
   ~CheckpointManager();
 
   // Load all checkpoints from TMX object layers whose name contains
   // "checkpoint"
-  void LoadFromMap(const tmx::Map &map, float pixelsPerMeter);
+  void LoadFromMap(const tmx::Map &map);
 
   // Called by RaceScene when a sensor triggers
   void onCarHitCheckpoint(int carID, Checkpoint *checkpoint);
@@ -43,6 +44,7 @@ public:
   std::set<std::string> getActivatedCheckpointID() const;
 
 private:
+  GameContext &context_;
   b2WorldId world_;
   std::vector<Checkpoint *> checkpoints_;
   std::vector<CarProgress> carProgress_;

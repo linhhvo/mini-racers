@@ -1,6 +1,4 @@
 #include "Checkpoint.hpp"
-#include <iostream>
-#include <string>
 
 Checkpoint::Checkpoint(b2WorldId world, b2Vec2 position, float width,
                        float height)

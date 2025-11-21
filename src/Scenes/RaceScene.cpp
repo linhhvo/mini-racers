@@ -18,8 +18,6 @@
 #include <optional>
 
 namespace {
-constexpr float PIXELS_PER_METER = 30.0f;
-constexpr float DEG2RAD = 0.0174532925199432957f;
 const std::string DEFAULT_CAR_TEXTURE{"../assets/vehicles/car.png"};
 } // namespace
 
@@ -105,11 +103,10 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   worldDef.gravity = {0.0f, 0.0f};
   world_ = b2CreateWorld(&worldDef);
 
-  checkpointManager_ = std::make_unique<CheckpointManager>(
-      world_, context.config->numOfLaps, nofCars_);
+  checkpointManager_ = std::make_unique<CheckpointManager>(world_, context_);
 
   if (useTmxMap_) {
-    checkpointManager_->LoadFromMap(track_.getTmxMap(), PIXELS_PER_METER);
+    checkpointManager_->LoadFromMap(track_.getTmxMap());
     track_.setCheckpointManager(checkpointManager_.get());
   }
 
@@ -128,12 +125,12 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       if (size.x <= 0.f || size.y <= 0.f) {
         size = {static_cast<float>(tileSize.x), static_cast<float>(tileSize.y)};
       }
-      float halfWidth = (size.x / 2.0f) / PIXELS_PER_METER;
-      float halfHeight = (size.y / 2.0f) / PIXELS_PER_METER;
+      float halfWidth = (size.x / 2.0f) / context_.config->PIXELS_PER_METER;
+      float halfHeight = (size.y / 2.0f) / context_.config->PIXELS_PER_METER;
       sizes.push_back(std::pair<float, float>(halfWidth, halfHeight));
       sf::Vector2f center = spawnPoints[0].position + size * 0.5f;
-      float startX = center.x / PIXELS_PER_METER;
-      float startY = center.y / PIXELS_PER_METER;
+      float startX = center.x / context_.config->PIXELS_PER_METER;
+      float startY = center.y / context_.config->PIXELS_PER_METER;
       spawnPointsVec.push_back(b2Vec2{startX, startY});
     }
   }
@@ -205,7 +202,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     }
 
     float rotationDeg = spawn ? spawn->rotation : 0.f;
-    float rotationRad = rotationDeg * DEG2RAD;
+    float rotationRad = rotationDeg * context_.config->DEGTORAD;
 
     b2BodyId body = car_->GetVehicle(i)->GetBody();
 
@@ -217,15 +214,16 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
         center += targetSize * 0.5f;
       }
 
-      b2Vec2 position{center.x / PIXELS_PER_METER, center.y / PIXELS_PER_METER};
+      b2Vec2 position{center.x / context_.config->PIXELS_PER_METER,
+                      center.y / context_.config->PIXELS_PER_METER};
       b2Rot rotation = b2MakeRot(rotationRad);
       b2Body_SetTransform(body, position, rotation);
       carSprites[i].setPosition(center);
       carSprites[i].setRotation(rotationDeg);
     } else {
       auto pos = b2Body_GetPosition(body);
-      carSprites[i].setPosition(
-          {pos.x * PIXELS_PER_METER, pos.y * PIXELS_PER_METER});
+      carSprites[i].setPosition({pos.x * context_.config->PIXELS_PER_METER,
+                                 pos.y * context_.config->PIXELS_PER_METER});
       carSprites[i].setRotation(rotationDeg);
     }
 
@@ -253,12 +251,12 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       if (size.x <= 0.f || size.y <= 0.f) {
         size = {static_cast<float>(tileSize.x), static_cast<float>(tileSize.y)};
       }
-      float halfWidth = (size.x / 2.0f) / PIXELS_PER_METER;
-      float halfHeight = (size.y / 2.0f) / PIXELS_PER_METER;
+      float halfWidth = (size.x / 2.0f) / context_.config->PIXELS_PER_METER;
+      float halfHeight = (size.y / 2.0f) / context_.config->PIXELS_PER_METER;
       sizes.push_back(std::pair<float, float>(halfWidth, halfHeight));
       sf::Vector2f center = spawnPoints[0].position + size * 0.5f;
-      float startX = center.x / PIXELS_PER_METER;
-      float startY = center.y / PIXELS_PER_METER;
+      float startX = center.x / context_.config->PIXELS_PER_METER;
+      float startY = center.y / context_.config->PIXELS_PER_METER;
       ObstacleSpawnVec.push_back(b2Vec2{startX, startY});
     }
 
@@ -312,7 +310,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       }
 
       float rotationDeg = obstacleSpawn ? obstacleSpawn->rotation : 0.f;
-      float rotationRad = rotationDeg * DEG2RAD;
+      float rotationRad = rotationDeg * context_.config->DEGTORAD;
 
       b2BodyId body = car_->GetObstacle(i)->GetBody();
 
@@ -324,8 +322,8 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
           center += targetSize * 0.5f;
         }
 
-        b2Vec2 position{center.x / PIXELS_PER_METER,
-                        center.y / PIXELS_PER_METER};
+        b2Vec2 position{center.x / context_.config->PIXELS_PER_METER,
+                        center.y / context_.config->PIXELS_PER_METER};
         b2Rot rotation = b2MakeRot(rotationRad);
         b2Body_SetTransform(body, position, rotation);
         obstacleSprites[i].setPosition(center);
@@ -333,7 +331,8 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       } else {
         auto pos = b2Body_GetPosition(body);
         obstacleSprites[i].setPosition(
-            {pos.x * PIXELS_PER_METER, pos.y * PIXELS_PER_METER});
+            {pos.x * context_.config->PIXELS_PER_METER,
+             pos.y * context_.config->PIXELS_PER_METER});
         obstacleSprites[i].setRotation(rotationDeg);
       }
     }
@@ -478,9 +477,10 @@ void RaceScene::update(float dt) {
 
     auto carBody = car_->GetVehicle(i)->GetBody();
     auto transform = b2Body_GetTransform(carBody);
-    float angleDeg = b2Rot_GetAngle(transform.q) * RADTODEG;
+    float angleDeg = b2Rot_GetAngle(transform.q) * context_.config->RADTODEG;
     auto pos = car_->GetVehicle(i)->GetPosition();
-    sf::Vector2f sfPos(pos.x * PIXELS_PER_METER, pos.y * PIXELS_PER_METER);
+    sf::Vector2f sfPos(pos.x * context_.config->PIXELS_PER_METER,
+                       pos.y * context_.config->PIXELS_PER_METER);
     carSprites[i].setPosition(sfPos);
     carSprites[i].setRotation(angleDeg);
 
