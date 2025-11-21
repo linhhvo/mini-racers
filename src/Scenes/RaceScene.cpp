@@ -557,7 +557,7 @@ void RaceScene::update(float dt) {
   // Race finished when either timer runs out or a player finishes all laps
   if (raceTimer_.isFinished() || raceFinished_) {
     if (victoryDelayTimer_ < 0.f) {
-      victoryDelayTimer_ = 1.5f; // delay before showing victory scene
+      victoryDelayTimer_ = 0.5f; // delay before showing victory scene
     } else {
       victoryDelayTimer_ -= dt;
       if (victoryDelayTimer_ <= 0.f) {

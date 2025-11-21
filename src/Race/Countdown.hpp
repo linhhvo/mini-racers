@@ -6,10 +6,10 @@
 
 class CountdownOverlay {
 public:
-  explicit CountdownOverlay(float seconds = 3.0f);
+  explicit CountdownOverlay(float seconds);
 
   // Restart countdown with specified seconds.
-  void start(float seconds = 3.0f);
+  void start(float seconds);
 
   // Advance timers; returns true exactly on the frame the countdown ends.
   bool update(float dt);
