@@ -16,7 +16,7 @@ struct CarProgress {
 class CheckpointManager {
 public:
   CheckpointManager(b2WorldId world, GameContext &context);
-  ~CheckpointManager();
+  ~CheckpointManager() = default;
 
   // Load all checkpoints from TMX object layers whose name contains
   // "checkpoint"
@@ -46,9 +46,8 @@ public:
 private:
   GameContext &context_;
   b2WorldId world_;
-  std::vector<Checkpoint *> checkpoints_;
+  std::vector<std::unique_ptr<Checkpoint>> checkpoints_;
   std::vector<CarProgress> carProgress_;
-  int totalLaps_;
   bool raceFinished_ = false;
   int winnerCarID_ = -1;
 };

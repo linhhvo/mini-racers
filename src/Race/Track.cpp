@@ -13,22 +13,22 @@ Track::Track() : mapLoaded_(false), mapSize_(0, 0), tileSize_(0, 0) {}
 
 bool Track::loadFromFile(const std::string &filepath) {
   if (!map_.load(filepath)) {
-    std::cout << "Failed to load TMX map: " << filepath << std::endl;
+    // std::cout << "Failed to load TMX map: " << filepath << std::endl;
     return false;
   }
 
   if (map_.getOrientation() != tmx::Orientation::Orthogonal) {
-    std::cout << "Map is not orthogonal - only orthogonal maps are supported"
-              << std::endl;
+    // std::cout << "Map is not orthogonal - only orthogonal maps are supported"
+    //           << std::endl;
     return false;
   }
 
   // Check if tilesets loaded properly
   const auto &tilesets = map_.getTilesets();
   if (tilesets.empty()) {
-    std::cout << "Error: No tilesets found in map. Make sure tilesets are "
-                 "embedded in the TMX file."
-              << std::endl;
+    // std::cout << "Error: No tilesets found in map. Make sure tilesets are "
+    //              "embedded in the TMX file."
+    //           << std::endl;
     return false;
   }
 
@@ -41,7 +41,7 @@ bool Track::loadFromFile(const std::string &filepath) {
   }
 
   if (!hasValidTileset) {
-    std::cout << "Error: No valid tilesets with images found." << std::endl;
+    // std::cout << "Error: No valid tilesets with images found." << std::endl;
     return false;
   }
 
@@ -76,11 +76,11 @@ bool Track::loadFromFile(const std::string &filepath) {
 
   parseObjectLayers(map_);
   if (!vehicleSpawns_.empty()) {
-    std::cout << "Loaded " << vehicleSpawns_.size()
-              << " vehicle spawn point(s) from TMX." << std::endl;
+    // std::cout << "Loaded " << vehicleSpawns_.size()
+    //           << " vehicle spawn point(s) from TMX." << std::endl;
   }
 
-  std::cout << "Successfully loaded TMX map: " << filepath << std::endl;
+  // std::cout << "Successfully loaded TMX map: " << filepath << std::endl;
   // std::cout << "Map size: " << mapSize_.x << "x" << mapSize_.y << std::endl;
   // std::cout << "Tile size: " << tileSize_.x << "x" << tileSize_.y <<
   // std::endl;
@@ -96,14 +96,15 @@ void Track::loadTextures(const tmx::Map &map) {
     const std::string &imagePath = tileset.getImagePath();
 
     if (imagePath.empty()) {
-      std::cout << "Warning: Tileset '" << tileset.getName()
-                << "' has no image path" << std::endl;
-      std::cout << "  This usually means the tileset is external (.tsx file) "
-                   "and wasn't found."
-                << std::endl;
-      std::cout << "  Solution: In Tiled, right-click the tileset -> 'Embed "
-                   "Tileset' to embed it in the TMX file."
-                << std::endl;
+      // std::cout << "Warning: Tileset '" << tileset.getName()
+      //           << "' has no image path" << std::endl;
+      // std::cout << "  This usually means the tileset is external (.tsx file)
+      // "
+      //              "and wasn't found."
+      //           << std::endl;
+      // std::cout << "  Solution: In Tiled, right-click the tileset -> 'Embed "
+      //              "Tileset' to embed it in the TMX file."
+      //           << std::endl;
       continue;
     }
 
@@ -116,10 +117,10 @@ void Track::loadTextures(const tmx::Map &map) {
       // Try relative to assets/maps directory
       fullPath = "../assets/maps/" + imagePath;
       if (!img.loadFromFile(fullPath)) {
-        std::cout << "Warning: Failed to load tileset image: " << imagePath
-                  << std::endl;
-        std::cout << "  Tried: " << imagePath << " and " << fullPath
-                  << std::endl;
+        // std::cout << "Warning: Failed to load tileset image: " << imagePath
+        //           << std::endl;
+        // std::cout << "  Tried: " << imagePath << " and " << fullPath
+        //           << std::endl;
         // Create a fallback magenta texture
         img.create(32, 32, sf::Color::Magenta);
       }
@@ -134,7 +135,7 @@ void Track::loadTextures(const tmx::Map &map) {
       }
       texture->loadFromImage(img);
       textures_[imagePath] = std::move(texture);
-      std::cout << "Loaded tileset image: " << imagePath << std::endl;
+      // std::cout << "Loaded tileset image: " << imagePath << std::endl;
     }
   }
 }
@@ -374,8 +375,8 @@ void Track::parseObjectLayers(const tmx::Map &map) {
   // checkpointZones_.clear();
 
   const auto &layers = map.getLayers();
-  std::cout << "Parsing object layers... Found " << layers.size()
-            << " total layers." << std::endl;
+  // std::cout << "Parsing object layers... Found " << layers.size()
+  // << " total layers." << std::endl;
 
   for (const auto &layer : layers) {
     if (layer->getType() != tmx::Layer::Type::Object) {
@@ -384,8 +385,8 @@ void Track::parseObjectLayers(const tmx::Map &map) {
 
     const auto &objectGroup = layer->getLayerAs<tmx::ObjectGroup>();
     std::string layerName = objectGroup.getName();
-    std::cout << "Found object layer: '" << layerName << "' with "
-              << objectGroup.getObjects().size() << " objects" << std::endl;
+    // std::cout << "Found object layer: '" << layerName << "' with "
+    //           << objectGroup.getObjects().size() << " objects" << std::endl;
 
     std::string layerNameLower = layerName;
     std::transform(
@@ -416,15 +417,15 @@ void Track::parseObjectLayers(const tmx::Map &map) {
 
         // Parse properties
         for (const auto &prop : object.getProperties()) {
-          std::cout << "    Soft Obstacle Property: " << prop.getName()
-                    << " = ";
+          // std::cout << "    Soft Obstacle Property: " << prop.getName()
+          //           << " = ";
           if (prop.getType() == tmx::Property::Type::Int) {
-            std::cout << prop.getIntValue() << std::endl;
+            // std::cout << prop.getIntValue() << std::endl;
             if (prop.getName() == "id") {
               obstacle.id = prop.getIntValue();
             }
           } else if (prop.getType() == tmx::Property::Type::Float) {
-            std::cout << prop.getFloatValue() << std::endl;
+            // std::cout << prop.getFloatValue() << std::endl;
             if (prop.getName() == "desiredStrength") {
               obstacle.desiredStrength = prop.getFloatValue();
             } else if (prop.getName() == "accelerationStrength") {
@@ -468,12 +469,13 @@ void Track::parseObjectLayers(const tmx::Map &map) {
           obstacle.activationDuration = 2.0f; // Longer effect - 2 seconds
         }
 
-        std::cout << "    -> INCLUDED as soft obstacle zone (ID: "
-                  << obstacle.id << ", type: " << obstacleType
-                  << ", desiredStrength: " << obstacle.desiredStrength
-                  << ", accelerationStrength: " << obstacle.accelerationStrength
-                  << ", duration: " << obstacle.activationDuration << "s)"
-                  << std::endl;
+        // std::cout << "    -> INCLUDED as soft obstacle zone (ID: "
+        //           << obstacle.id << ", type: " << obstacleType
+        //           << ", desiredStrength: " << obstacle.desiredStrength
+        //           << ", accelerationStrength: " <<
+        //           obstacle.accelerationStrength
+        //           << ", duration: " << obstacle.activationDuration << "s)"
+        //           << std::endl;
         softObstacleZones_.push_back(std::move(obstacle));
         continue; // Skip vehicle parsing for soft obstacle objects
       }
@@ -489,11 +491,11 @@ void Track::parseObjectLayers(const tmx::Map &map) {
       spawn.layerName = layerName;
       spawn.tileID = object.getTileID(); // Get tile ID if object uses a tile
 
-      std::cout << "  Object: name='" << spawn.name
-                << "', tileID=" << spawn.tileID << ", position=("
-                << spawn.position.x << "," << spawn.position.y << ")"
-                << ", size=(" << spawn.size.x << "," << spawn.size.y << ")"
-                << std::endl;
+      // std::cout << "  Object: name='" << spawn.name
+      //           << "', tileID=" << spawn.tileID << ", position=("
+      //           << spawn.position.x << "," << spawn.position.y << ")"
+      //           << ", size=(" << spawn.size.x << "," << spawn.size.y << ")"
+      //           << std::endl;
 
       for (const auto &prop : object.getProperties()) {
         if (prop.getName() == "texture" &&
@@ -506,8 +508,8 @@ void Track::parseObjectLayers(const tmx::Map &map) {
       // identifier
       if (spawn.tileID > 0 && spawn.textureId.empty()) {
         spawn.textureId = "tile_" + std::to_string(spawn.tileID);
-        std::cout << "    Auto-assigned textureId: " << spawn.textureId
-                  << std::endl;
+        // std::cout << "    Auto-assigned textureId: " << spawn.textureId
+        //           << std::endl;
       }
 
       // Include all objects from vehicle-like layers, or objects with texture
@@ -516,16 +518,16 @@ void Track::parseObjectLayers(const tmx::Map &map) {
                            spawn.tileID > 0;
 
       if (includeObject) {
-        std::cout << "    -> INCLUDED as vehicle spawn" << std::endl;
+        // std::cout << "    -> INCLUDED as vehicle spawn" << std::endl;
         vehicleSpawns_.push_back(std::move(spawn));
       } else {
-        std::cout << "    -> SKIPPED (not a vehicle)" << std::endl;
+        // std::cout << "    -> SKIPPED (not a vehicle)" << std::endl;
       }
     }
   }
 
-  std::cout << "Total vehicle spawns found: " << vehicleSpawns_.size()
-            << std::endl;
+  // std::cout << "Total vehicle spawns found: " << vehicleSpawns_.size()
+  //           << std::endl;
 }
 
 int Track::checkAndActivateSoft(const sf::Vector2f &position) {
@@ -545,8 +547,8 @@ int Track::checkAndActivateSoft(const sf::Vector2f &position) {
         obstacle.activated = true;
         obstacle.activationTimer = obstacle.activationDuration;
         newlyActivated = obstacle.id;
-        std::cout << "Soft obstacle " << obstacle.id << " activated!"
-                  << std::endl;
+        // std::cout << "Soft obstacle " << obstacle.id << " activated!"
+        //           << std::endl;
       } else {
         // Already activated, reset timer to full duration
         obstacle.activationTimer = obstacle.activationDuration;
@@ -568,8 +570,8 @@ void Track::updateSoftObstacle(float dt) {
       if (obstacle.activationTimer <= 0.0f) {
         obstacle.activated = false;
         obstacle.activationTimer = 0.0f;
-        std::cout << "Soft obstacle " << obstacle.id
-                  << " deactivated (timer expired)" << std::endl;
+        // std::cout << "Soft obstacle " << obstacle.id
+        //           << " deactivated (timer expired)" << std::endl;
       }
     }
   }

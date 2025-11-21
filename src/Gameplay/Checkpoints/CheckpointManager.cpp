@@ -2,6 +2,7 @@
 #include "System/GameContext.hpp"
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <ostream>
 #include <sstream>
 
@@ -11,18 +12,9 @@ CheckpointManager::CheckpointManager(b2WorldId world, GameContext &context)
       context_.config->numOfPlayers); // initialize progress for all cars
 }
 
-CheckpointManager::~CheckpointManager() {
-  for (auto c : checkpoints_) {
-    delete c;
-  }
-  checkpoints_.clear();
-}
-
 // load checkpoints from tmx map
 void CheckpointManager::LoadFromMap(const tmx::Map &map) {
   const auto &layers = map.getLayers();
-
-  std::cout << "CheckpointManager: scanning TMX for checkpoints...\n";
 
   for (const auto &layer : layers) {
     if (layer->getType() != tmx::Layer::Type::Object)
@@ -38,9 +30,6 @@ void CheckpointManager::LoadFromMap(const tmx::Map &map) {
     if (lower.find("checkpoint") == std::string::npos)
       continue;
 
-    std::cout << "  Found checkpoint layer: '" << name << "' with "
-              << objectGroup.getObjects().size() << " objects\n";
-
     for (const auto &obj : objectGroup.getObjects()) {
       auto pos = obj.getPosition();
       auto aabb = obj.getAABB();
@@ -55,22 +44,18 @@ void CheckpointManager::LoadFromMap(const tmx::Map &map) {
                       centerY / context_.config->PIXELS_PER_METER);
 
       // Create checkpoint
-      Checkpoint *cp = new Checkpoint(
+      checkpoints_.push_back(std::make_unique<Checkpoint>(
           world_, worldPos, cpWidth / context_.config->PIXELS_PER_METER,
-          cpHeight / context_.config->PIXELS_PER_METER);
-      checkpoints_.push_back(cp);
+          cpHeight / context_.config->PIXELS_PER_METER));
     }
   }
-
-  std::cout << "CheckpointManager: total checkpoints = " << checkpoints_.size()
-            << "\n";
 }
 
 // Find checkpoint by Box2D shape
 Checkpoint *CheckpointManager::FindCheckpointByShapeId(b2ShapeId shape) const {
-  for (auto *cp : checkpoints_) {
+  for (auto &cp : checkpoints_) {
     if (B2_ID_EQUALS(cp->GetShapeId(), shape)) {
-      return cp;
+      return cp.get();
     }
   }
   return nullptr;
@@ -78,7 +63,7 @@ Checkpoint *CheckpointManager::FindCheckpointByShapeId(b2ShapeId shape) const {
 
 int CheckpointManager::GetCheckpointIndex(const Checkpoint *cp) const {
   for (std::size_t i = 0; i < checkpoints_.size(); ++i) {
-    if (checkpoints_[i] == cp) {
+    if (checkpoints_[i].get() == cp) {
       return static_cast<int>(i);
     }
   }
@@ -108,7 +93,7 @@ void CheckpointManager::onCarHitCheckpoint(int carID, Checkpoint *cp) {
     std::cout << "Car " << carID << " completed lap " << progress.currentLap
               << "\n";
 
-    if (progress.currentLap >= totalLaps_) {
+    if (progress.currentLap >= context_.config->numOfLaps) {
       raceFinished_ = true;
       winnerCarID_ = carID;
       std::cout << "Car " << winnerCarID_ << " wins the race!\n";
@@ -120,14 +105,14 @@ void CheckpointManager::onCarHitCheckpoint(int carID, Checkpoint *cp) {
 
 // Update all checkpoint animations
 void CheckpointManager::update(float dt) {
-  for (auto *cp : checkpoints_) {
+  for (auto &cp : checkpoints_) {
     cp->update(dt);
   }
 }
 
 // Reset checkpoints for a new lap
 void CheckpointManager::ResetCheckpoints() {
-  for (auto *cp : checkpoints_) {
+  for (auto &cp : checkpoints_) {
     cp->reset();
   }
 }
@@ -140,9 +125,9 @@ int CheckpointManager::getLapCount(int carID) const {
 
 std::set<std::string> CheckpointManager::getActivatedCheckpointID() const {
   std::set<std::string> layers{};
-  for (auto *cp : checkpoints_) {
+  for (auto &cp : checkpoints_) {
     if (cp->isActivated()) {
-      int i = GetCheckpointIndex(cp);
+      int i = GetCheckpointIndex(cp.get());
       std::stringstream layerName;
       if (i > 0) {
         layerName << "checkpoint_" << i;

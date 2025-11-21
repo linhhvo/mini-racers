@@ -1,8 +1,6 @@
-
 #include "SceneManager.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <memory>
-#include <utility>
 
 SceneManager::SceneManager(sf ::RenderWindow &window) : window_(window) {};
 

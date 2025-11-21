@@ -8,6 +8,7 @@
 #include "Race/Track.hpp"
 #include "Scene.hpp"
 #include "System/GameContext.hpp"
+#include "box2d/id.h"
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Sprite.hpp>
@@ -24,7 +25,10 @@ public:
     bool inSoftObstacle = false;
     float timer = 0.0f;
   };
+
   RaceScene(SceneManager &manager, GameContext &context);
+  ~RaceScene();
+
   void handleEvent(const sf::Event &event);
   void update(float dt);
   void render();
@@ -43,7 +47,7 @@ private:
   // checkpoints and win condition
   std::unique_ptr<CheckpointManager> checkpointManager_;
   std::vector<CarProgress> carProgress_;
-  bool raceFinished_ = false; // has any car finished the race?
+  bool raceFinished_ = false;
   int winnerCarID_ = -1;
   float victoryDelayTimer_ = -1.f;
   CountdownOverlay countdown_;
@@ -71,8 +75,8 @@ private:
   sf::Texture defaultObstacleTexture_;
 
   // box2d
-  b2WorldId world_;
-  GameWorld *car_;
+  b2WorldId world_{b2_nullWorldId};
+  std::unique_ptr<GameWorld> car_;
 
   // HUD
   Timer raceTimer_;

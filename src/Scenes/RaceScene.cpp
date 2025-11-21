@@ -28,6 +28,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       raceTimer_(context.config->raceDuration),
       HUD_display_(std::make_unique<HUD>(raceTimer_, context_)),
       useTmxMap_(false), track_(), countdown_(3.0f) {
+
   sf::RenderWindow &window = manager_.getWindow();
 
   // Load TMX map
@@ -372,6 +373,12 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   }
 
   std::cout << "RaceScene initialization complete." << std::endl;
+}
+
+RaceScene::~RaceScene() {
+  if (b2World_IsValid(world_)) {
+    b2DestroyWorld(world_);
+  }
 }
 
 void RaceScene::handleEvent(const sf::Event &event) {
