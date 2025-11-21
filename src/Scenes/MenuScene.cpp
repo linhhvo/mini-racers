@@ -4,7 +4,7 @@
 #include "RaceScene.hpp"
 #include "System/GameContext.hpp"
 #include "System/SceneManager.hpp"
-
+#include "System/AudioManager.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -41,8 +41,18 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
   auto startGameBtn = std::make_unique<Button>("Start");
   auto exitGameBtn = std::make_unique<Button>("Exit");
 
-  startGameBtn->onPress = [&]() { manager_.switchScene<RaceScene>(context); };
-  exitGameBtn->onPress = [&]() { window.close(); };
+  startGameBtn->onPress = [&]() { 
+    AudioManager::Instance().PlaySound("../assets/sounds/sound/click_sound.wav");
+    std::cout << "[Audio] Click sound played" << std::endl;
+    AudioManager::Instance().StopMusic();
+    std::cout << "[Audio] Menu music stopped" << std::endl;
+    manager_.switchScene<RaceScene>(context); 
+  };
+  exitGameBtn->onPress = [&]() { 
+    AudioManager::Instance().PlaySound("../assets/sounds/sound/click_sound.wav");
+    std::cout << "[Audio] Click sound played" << std::endl;
+    window.close(); 
+  };
 
   buttonsContainer_.addBtn(std::move(startGameBtn));
   buttonsContainer_.addBtn(std::move(exitGameBtn));
@@ -54,6 +64,10 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
       window.getSize().y / 2.f - buttonsContainer_.getSize().y / 2.f));
 
   buttonsContainer_.highlightBtn(0);
+  
+  // Load and play menu music
+  AudioManager::Instance().PlayMusic("../assets/sounds/music/menu_music.wav");
+  std::cout << "[Audio] Menu music started" << std::endl;
 }
 
 void MenuScene::handleEvent(const sf::Event &event) {

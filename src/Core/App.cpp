@@ -3,6 +3,7 @@
 #include "System/Config.hpp"
 #include "System/GameContext.hpp"
 #include "System/SceneManager.hpp"
+#include "System/AudioManager.hpp"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -14,6 +15,9 @@ App::App(GameContext &context)
              "MicroMachines Skeleton"),
       context_(context) {
   window.setFramerateLimit(context.config->framerate);
+  // Preload all music and sound files
+  AudioManager::Instance().LoadMusic("/assets/sounds/music/menu_music.wav");
+  AudioManager::Instance().LoadSound("checkpoint_sound", "/assets/sounds/sounds/checkpoint.wav");
 }
 
 void App::run() {

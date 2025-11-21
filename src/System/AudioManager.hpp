@@ -2,16 +2,29 @@
 #include <SFML/Audio.hpp>
 #include <string>
 #include <map>
+#include <vector>
 
 class AudioManager {
 public:
     static AudioManager& Instance();
 
-    // Play short sound effect
+    // Load sound into buffer (for reuse)
+    bool LoadSound(const std::string& name, const std::string& filename);
+
+    // Play sound by name (must be pre-loaded)
+    void play(const std::string& name);
+
+    // Play sound directly from file
     void PlaySound(const std::string& filename);
 
-    // Play looping music
+    // Load music from file
+    void LoadMusic(const std::string& filePath);
+
+    // Play the loaded music
     void PlayMusic(const std::string& filename);
+
+    // Stop a named sound
+    void stop(const std::string& name);
 
     // Stop current music
     void StopMusic();
@@ -19,20 +32,16 @@ public:
     // Stop all sounds and music
     void StopAll();
 
-    // Optional: load music once if you want
-    void loadMusic(const std::string& name, const std::string& filepath);
-    void play(const std::string& name);
-    void stop(const std::string& name);
+    // Update (clean up stopped sounds)
+    void Update();
 
 private:
     AudioManager();
     AudioManager(const AudioManager&) = delete;
     AudioManager& operator=(const AudioManager&) = delete;
 
-    static void suppressAudioErrors();
-
-    sf::Music music_;             // current looping music
-    static sf::Music soundEffect; // sound effect, kept alive
-    std::map<std::string, sf::Music*> musics_; // optional multiple music
-    sf::Music* currentMusic_ = nullptr;
+    sf::Music music_;                                    // Current looping music
+    static sf::Music soundEffect_;                       // Sound effect (kept alive)
+    std::map<std::string, sf::SoundBuffer> soundBuffers_; // Pre-loaded buffers
+    std::vector<std::pair<std::string, sf::Sound>> activeSounds_; // Active sounds
 };

@@ -1,6 +1,7 @@
 #include "Checkpoint.hpp"
 #include <iostream>
 #include <string>
+#include "../../System/AudioManager.hpp"
 
 Checkpoint::Checkpoint(b2WorldId world, b2Vec2 position, float width,
                        float height)
@@ -36,6 +37,8 @@ bool Checkpoint::isActivated() const { return activated_; }
 void Checkpoint::activate() {
   activated_ = true;
   timer_ = 0.5f;
+  
+  AudioManager::Instance().PlaySound("checkpoint_sound");
 };
 
 void Checkpoint::reset() {

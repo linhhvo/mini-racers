@@ -6,6 +6,7 @@
 #include "System/Config.hpp"
 #include "System/GameContext.hpp"
 #include "System/InputManager.hpp"
+#include "System/AudioManager.hpp"
 #include "box2d/math_functions.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -374,6 +375,10 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   }
 
   std::cout << "RaceScene initialization complete." << std::endl;
+  
+  // Start race music
+  AudioManager::Instance().PlayMusic("../assets/sounds/music/race_music.wav");
+  std::cout << "[Audio] Race music started" << std::endl;
 }
 
 void RaceScene::handleEvent(const sf::Event &event) {
@@ -455,6 +460,8 @@ void RaceScene::update(float dt) {
 
       if (cp) {
         checkpointManager_->onCarHitCheckpoint(triggeredCar, cp);
+        AudioManager::Instance().PlaySound("../assets/sounds/sound/checkpoint.wav");
+        std::cout << "[Audio] Checkpoint sound played" << std::endl;
       }
       // race finish
       if (checkpointManager_->isRaceFinished()) {
