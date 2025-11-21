@@ -8,6 +8,7 @@
 
 class BtnContainer {
 public:
+  enum class Orientation { VERTICAL, HORIZONTAL };
   std::vector<std::unique_ptr<Button>> buttons_;
 
   BtnContainer() {};
@@ -16,6 +17,9 @@ public:
 
   void setPosition(const sf::Vector2f &pos);
   void setScale();
+  void setSpacing(float spacing) { spacing_ = spacing; }
+  void setOrientation(Orientation orientation) { orientation_ = orientation; }
+  sf::Vector2f getPosition() const { return position_; }
 
   sf::Vector2f getSize() const;
 
@@ -24,4 +28,6 @@ public:
 
 private:
   float spacing_ = 20.f;
+  Orientation orientation_ = Orientation::VERTICAL;
+  sf::Vector2f position_{0.f, 0.f};
 };

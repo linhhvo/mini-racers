@@ -69,8 +69,8 @@ void HUD::setPosition(const sf::Vector2f &pos) { timerText_.setPosition(pos); }
 void HUD::render(sf::RenderTarget &target) {
   // set text positions
   timerText_.setPosition(
-      target.getSize().x - timerText_.getGlobalBounds().width - 50, 10);
-  lapText_.setPosition(50, 10);
+      target.getSize().x - timerText_.getGlobalBounds().width - 30, 10);
+  lapText_.setPosition(30, 10);
 
   target.draw(timerText_);
   target.draw(lapText_);

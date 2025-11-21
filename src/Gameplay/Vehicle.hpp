@@ -5,11 +5,6 @@
 #include "box2d/math_functions.h"
 #include <box2d/box2d.h>
 
-#ifndef DEGTORAD
-#define DEGTORAD 0.0174532925199432957f
-#define RADTODEG 57.295779513082320876f
-#endif
-
 class Vehicle {
 public:
   Vehicle(b2WorldId world, b2Vec2 pos, float width, float height,
@@ -17,7 +12,6 @@ public:
   ~Vehicle() = default;
 
   // movement functions
-  //  void updateKey(char key, bool pressed);
   void updateKey(InputManager::InputAction action, bool pressed);
   void update(float dt);
 
@@ -74,8 +68,8 @@ private:
   bool right = false;
   float forceStrength = 0.0f;
   float brakeRate = 5.0f;
-  float baseTargetForceStrength = 3.0f;
-  float baseAccelerationRate = 1.0f;
+  float baseTargetForceStrength;
+  float baseAccelerationRate;
   float targetForceStrength = baseTargetForceStrength;
   float accelerationRate = baseAccelerationRate;
 };

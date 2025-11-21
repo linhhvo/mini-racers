@@ -1,7 +1,8 @@
 #pragma once
 #include "../System/SceneManager.hpp"
 #include "Gameplay/Checkpoints/CheckpointManager.hpp"
-#include "Gameplay/iforce2d_car.hpp"
+#include "Gameplay/GameWorld.hpp"
+#include "Race/Countdown.hpp"
 #include "Race/HUD.hpp"
 #include "Race/Timer.hpp"
 #include "Race/Track.hpp"
@@ -32,7 +33,6 @@ private:
   // counters
   int nofSoft_ = 2;
   int nofBoosters_ = 3;
-  int spacing_ = 10;
   int nofCars_ = 0;
   int nofObstacles_ = 0;
 
@@ -40,11 +40,13 @@ private:
   InputManager input_;
   GameContext &context_;
 
-  // checkpoints
+  // checkpoints and win condition
   std::unique_ptr<CheckpointManager> checkpointManager_;
   std::vector<CarProgress> carProgress_;
   bool raceFinished_ = false; // has any car finished the race?
   int winnerCarID_ = -1;
+  float victoryDelayTimer_ = -1.f;
+  CountdownOverlay countdown_;
 
   // map
   Track track_;
@@ -69,7 +71,7 @@ private:
 
   // box2d
   b2WorldId world_;
-  iforce2d_TopdownCar *car_;
+  GameWorld *car_;
 
   // HUD
   Timer raceTimer_;

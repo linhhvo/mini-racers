@@ -1,13 +1,14 @@
 #include "CheckpointManager.hpp"
+#include "System/GameContext.hpp"
 #include <algorithm>
 #include <iostream>
 #include <ostream>
 #include <sstream>
 
-CheckpointManager::CheckpointManager(b2WorldId world, int totalLaps,
-                                     int numCars)
-    : world_(world), totalLaps_(totalLaps) {
-  carProgress_.resize(numCars); // initialize progress for all cars
+CheckpointManager::CheckpointManager(b2WorldId world, GameContext &context)
+    : world_(world), context_(context) {
+  carProgress_.resize(
+      context_.config->numOfPlayers); // initialize progress for all cars
 }
 
 CheckpointManager::~CheckpointManager() {
@@ -18,7 +19,7 @@ CheckpointManager::~CheckpointManager() {
 }
 
 // load checkpoints from tmx map
-void CheckpointManager::LoadFromMap(const tmx::Map &map, float pixelsPerMeter) {
+void CheckpointManager::LoadFromMap(const tmx::Map &map) {
   const auto &layers = map.getLayers();
 
   std::cout << "CheckpointManager: scanning TMX for checkpoints...\n";
@@ -50,12 +51,13 @@ void CheckpointManager::LoadFromMap(const tmx::Map &map, float pixelsPerMeter) {
       float centerX = pos.x + cpWidth;
       float centerY = pos.y + cpHeight;
 
-      b2Vec2 worldPos(centerX / pixelsPerMeter, centerY / pixelsPerMeter);
+      b2Vec2 worldPos(centerX / context_.config->PIXELS_PER_METER,
+                      centerY / context_.config->PIXELS_PER_METER);
 
       // Create checkpoint
-      Checkpoint *cp =
-          new Checkpoint(world_, worldPos, cpWidth / pixelsPerMeter,
-                         cpHeight / pixelsPerMeter);
+      Checkpoint *cp = new Checkpoint(
+          world_, worldPos, cpWidth / context_.config->PIXELS_PER_METER,
+          cpHeight / context_.config->PIXELS_PER_METER);
       checkpoints_.push_back(cp);
     }
   }

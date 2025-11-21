@@ -1,5 +1,6 @@
 #include "RaceScene.hpp"
 #include "../System/SceneManager.hpp"
+#include "Gameplay/GameWorld.hpp"
 #include "Race/Track.hpp"
 #include "Scenes/PauseScene.hpp"
 #include "Scenes/VictoryScene.hpp"
@@ -18,9 +19,6 @@
 #include <optional>
 
 namespace {
-constexpr float PIXELS_PER_METER = 30.0f;
-constexpr float DEG2RAD = 0.0174532925199432957f;
-const std::string TMX_MAP{"../assets/maps/stas_map.tmx"};
 const std::string DEFAULT_CAR_TEXTURE{"../assets/vehicles/car.png"};
 } // namespace
 
@@ -28,20 +26,22 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     : context_(context), manager_(manager),
       raceTimer_(context.config->raceDuration),
       HUD_display_(std::make_unique<HUD>(raceTimer_, context_)),
-      useTmxMap_(false), track_() {
+      useTmxMap_(false), track_(), countdown_(3.0f) {
   sf::RenderWindow &window = manager_.getWindow();
 
   // Load TMX map
-  if (track_.loadFromFile(TMX_MAP)) {
+  if (track_.loadFromFile(context_.config->TMX_MAP)) {
     useTmxMap_ = true;
-    std::cout << "  Successfully loaded TMX map: " << TMX_MAP << std::endl;
+    std::cout << "  Successfully loaded TMX map: " << context_.config->TMX_MAP
+              << std::endl;
     std::cout << "  Map size: " << track_.getMapSize().x << "x"
               << track_.getMapSize().y << std::endl;
     std::cout << "  Tile size: " << track_.getTileSize().x << "x"
               << track_.getTileSize().y << std::endl;
   } else {
     useTmxMap_ = false;
-    std::cerr << "  ERROR: Failed to load TMX map: " << TMX_MAP << std::endl;
+    std::cerr << "  ERROR: Failed to load TMX map: " << context_.config->TMX_MAP
+              << std::endl;
     std::cerr << "  Make sure you're running from the project root directory "
                  "(where CMakeLists.txt is)"
               << std::endl;
@@ -104,11 +104,10 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   worldDef.gravity = {0.0f, 0.0f};
   world_ = b2CreateWorld(&worldDef);
 
-  checkpointManager_ = std::make_unique<CheckpointManager>(
-      world_, context.config->numOfLaps, nofCars_);
+  checkpointManager_ = std::make_unique<CheckpointManager>(world_, context_);
 
   if (useTmxMap_) {
-    checkpointManager_->LoadFromMap(track_.getTmxMap(), PIXELS_PER_METER);
+    checkpointManager_->LoadFromMap(track_.getTmxMap());
     track_.setCheckpointManager(checkpointManager_.get());
   }
 
@@ -127,12 +126,12 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       if (size.x <= 0.f || size.y <= 0.f) {
         size = {static_cast<float>(tileSize.x), static_cast<float>(tileSize.y)};
       }
-      float halfWidth = (size.x / 2.0f) / PIXELS_PER_METER;
-      float halfHeight = (size.y / 2.0f) / PIXELS_PER_METER;
+      float halfWidth = (size.x / 2.0f) / context_.config->PIXELS_PER_METER;
+      float halfHeight = (size.y / 2.0f) / context_.config->PIXELS_PER_METER;
       sizes.push_back(std::pair<float, float>(halfWidth, halfHeight));
       sf::Vector2f center = spawnPoints[0].position + size * 0.5f;
-      float startX = center.x / PIXELS_PER_METER;
-      float startY = center.y / PIXELS_PER_METER;
+      float startX = center.x / context_.config->PIXELS_PER_METER;
+      float startY = center.y / context_.config->PIXELS_PER_METER;
       spawnPointsVec.push_back(b2Vec2{startX, startY});
     }
   }
@@ -146,12 +145,12 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       .restitution = 0.0f,
       .rollingResistance = 0.0f,
       .brakeRate = 5.0f,
-      .baseTargetForceStrength = 10.0f,
+      .baseTargetForceStrength = 3.0f,
       .baseAccelerationRate = 1.0f,
   };
   specs.push_back(second);
 
-  car_ = iforce2d_TopdownCar::Create(world_);
+  car_ = GameWorld::Create(world_);
   car_->VehicleFactory(nofCars_, spawnPointsVec, sizes, specs);
 
   carSprites.clear();
@@ -204,7 +203,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     }
 
     float rotationDeg = spawn ? spawn->rotation : 0.f;
-    float rotationRad = rotationDeg * DEG2RAD;
+    float rotationRad = rotationDeg * context_.config->DEGTORAD;
 
     b2BodyId body = car_->GetVehicle(i)->GetBody();
 
@@ -216,15 +215,16 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
         center += targetSize * 0.5f;
       }
 
-      b2Vec2 position{center.x / PIXELS_PER_METER, center.y / PIXELS_PER_METER};
+      b2Vec2 position{center.x / context_.config->PIXELS_PER_METER,
+                      center.y / context_.config->PIXELS_PER_METER};
       b2Rot rotation = b2MakeRot(rotationRad);
       b2Body_SetTransform(body, position, rotation);
       carSprites[i].setPosition(center);
       carSprites[i].setRotation(rotationDeg);
     } else {
       auto pos = b2Body_GetPosition(body);
-      carSprites[i].setPosition(
-          {pos.x * PIXELS_PER_METER, pos.y * PIXELS_PER_METER});
+      carSprites[i].setPosition({pos.x * context_.config->PIXELS_PER_METER,
+                                 pos.y * context_.config->PIXELS_PER_METER});
       carSprites[i].setRotation(rotationDeg);
     }
 
@@ -252,12 +252,12 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       if (size.x <= 0.f || size.y <= 0.f) {
         size = {static_cast<float>(tileSize.x), static_cast<float>(tileSize.y)};
       }
-      float halfWidth = (size.x / 2.0f) / PIXELS_PER_METER;
-      float halfHeight = (size.y / 2.0f) / PIXELS_PER_METER;
+      float halfWidth = (size.x / 2.0f) / context_.config->PIXELS_PER_METER;
+      float halfHeight = (size.y / 2.0f) / context_.config->PIXELS_PER_METER;
       sizes.push_back(std::pair<float, float>(halfWidth, halfHeight));
       sf::Vector2f center = spawnPoints[0].position + size * 0.5f;
-      float startX = center.x / PIXELS_PER_METER;
-      float startY = center.y / PIXELS_PER_METER;
+      float startX = center.x / context_.config->PIXELS_PER_METER;
+      float startY = center.y / context_.config->PIXELS_PER_METER;
       ObstacleSpawnVec.push_back(b2Vec2{startX, startY});
     }
 
@@ -311,7 +311,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       }
 
       float rotationDeg = obstacleSpawn ? obstacleSpawn->rotation : 0.f;
-      float rotationRad = rotationDeg * DEG2RAD;
+      float rotationRad = rotationDeg * context_.config->DEGTORAD;
 
       b2BodyId body = car_->GetObstacle(i)->GetBody();
 
@@ -323,8 +323,8 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
           center += targetSize * 0.5f;
         }
 
-        b2Vec2 position{center.x / PIXELS_PER_METER,
-                        center.y / PIXELS_PER_METER};
+        b2Vec2 position{center.x / context_.config->PIXELS_PER_METER,
+                        center.y / context_.config->PIXELS_PER_METER};
         b2Rot rotation = b2MakeRot(rotationRad);
         b2Body_SetTransform(body, position, rotation);
         obstacleSprites[i].setPosition(center);
@@ -332,14 +332,12 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       } else {
         auto pos = b2Body_GetPosition(body);
         obstacleSprites[i].setPosition(
-            {pos.x * PIXELS_PER_METER, pos.y * PIXELS_PER_METER});
+            {pos.x * context_.config->PIXELS_PER_METER,
+             pos.y * context_.config->PIXELS_PER_METER});
         obstacleSprites[i].setRotation(rotationDeg);
       }
     }
   }
-
-  // start timer
-  raceTimer_.start();
 
   // Initialize split screen views with zoom
   sf::Vector2u windowSize = window.getSize();
@@ -363,24 +361,22 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   if (nofCars_ > 1) {
     sf::Vector2f car1Pos = carSprites[1].getPosition();
     leftView_.setCenter(car1Pos);
-    std::cout << "✓ Left view initialized at car 1 position (WASD): ("
-              << car1Pos.x << ", " << car1Pos.y << ")" << std::endl;
   }
   if (nofCars_ > 0) {
     sf::Vector2f car0Pos = carSprites[0].getPosition();
     rightView_.setCenter(car0Pos);
-    std::cout << "✓ Right view initialized at car 0 position (Arrow keys): ("
-              << car0Pos.x << ", " << car0Pos.y << ")" << std::endl;
   }
-
-  std::cout << "RaceScene initialization complete." << std::endl;
 }
 
 void RaceScene::handleEvent(const sf::Event &event) {
   if (event.type == sf::Event::KeyPressed) {
     if (event.key.code == sf::Keyboard::Escape) {
       manager_.pushScene<PauseScene>(context_);
+      return;
     }
+
+    if (countdown_.isBlockingInput())
+      return;
 
     std::optional<int> playerIdx =
         context_.input->getPlayerFromKey(event.key.code);
@@ -398,6 +394,8 @@ void RaceScene::handleEvent(const sf::Event &event) {
     }
 
   } else if (event.type == sf::Event::KeyReleased) {
+    if (countdown_.isBlockingInput())
+      return;
     std::optional<int> playerIdx =
         context_.input->getPlayerFromKey(event.key.code);
 
@@ -417,7 +415,9 @@ void RaceScene::handleEvent(const sf::Event &event) {
 
 void RaceScene::update(float dt) {
   // Step Box2D world
-  b2World_Step(world_, dt, 4);
+  if (!countdown_.isBlockingInput()) {
+    b2World_Step(world_, dt, 4);
+  }
 
   // Update track (for animated tiles if any)
   if (useTmxMap_) {
@@ -462,24 +462,6 @@ void RaceScene::update(float dt) {
         winnerCarID_ = checkpointManager_->getWinnerCarID();
       }
     }
-    // }
-
-    // }
-    // soft obstacle
-    // else if (label && strcmp(label, "softObstacle") == 0) {
-    //   CarStatus_[triggeredCar].inSoftObstacle = true;
-    //   CarStatus_[triggeredCar].timer = 1.0f;
-    //   car_->GetVehicle(triggeredCar)->SetTargetForceStrength(5.0f);
-    //   std::cout << "Car " << triggeredCar << " hit oil!\n";
-    // }
-    //
-    // else if (label && strcmp(label, "booster") == 0) {
-    //   CarStatus_[triggeredCar].inSoftObstacle = true;
-    //   CarStatus_[triggeredCar].timer = 2.0f;
-    //   car_->GetVehicle(triggeredCar)->SetTargetForceStrength(60.0f);
-    //   car_->GetVehicle(triggeredCar)->SetAccelerationRate(20.0f);
-    //   std::cout << "Car " << triggeredCar << " hit booster!\n";
-    // }
   }
 
   for (int i = 0; i < nofCars_; i++) {
@@ -496,9 +478,10 @@ void RaceScene::update(float dt) {
 
     auto carBody = car_->GetVehicle(i)->GetBody();
     auto transform = b2Body_GetTransform(carBody);
-    float angleDeg = b2Rot_GetAngle(transform.q) * RADTODEG;
+    float angleDeg = b2Rot_GetAngle(transform.q) * context_.config->RADTODEG;
     auto pos = car_->GetVehicle(i)->GetPosition();
-    sf::Vector2f sfPos(pos.x * PIXELS_PER_METER, pos.y * PIXELS_PER_METER);
+    sf::Vector2f sfPos(pos.x * context_.config->PIXELS_PER_METER,
+                       pos.y * context_.config->PIXELS_PER_METER);
     carSprites[i].setPosition(sfPos);
     carSprites[i].setRotation(angleDeg);
 
@@ -568,10 +551,23 @@ void RaceScene::update(float dt) {
   raceTimer_.update(dt);
   HUD_display_->update();
 
+  // Race start countdown
+  if (countdown_.update(dt)) {
+    raceTimer_.start();
+  }
+
   // Race finished when either timer runs out or a player finishes all laps
   if (raceTimer_.isFinished() || raceFinished_) {
-    std::cout << "Race over!\n";
-    manager_.pushScene<VictoryScene>(context_, winnerCarID_);
+    if (victoryDelayTimer_ < 0.f) {
+      victoryDelayTimer_ = 0.8f; // delay before showing victory scene
+    } else {
+      victoryDelayTimer_ -= dt;
+      if (victoryDelayTimer_ <= 0.f) {
+        std::cout << "Race over!\n";
+        manager_.pushScene<VictoryScene>(context_, winnerCarID_);
+        return;
+      }
+    }
   }
 }
 
@@ -627,12 +623,15 @@ void RaceScene::render() {
   window.setView(window.getDefaultView());
 
   // Draw separator line between split screens
-  sf::Vector2u windowSize = window.getSize();
   sf::RectangleShape separator(
-      sf::Vector2f(2.0f, static_cast<float>(windowSize.y)));
-  separator.setPosition(static_cast<float>(windowSize.x) / 2.0f - 1.0f, 0.0f);
+      sf::Vector2f(2.0f, static_cast<float>(window.getSize().y)));
+  separator.setPosition(static_cast<float>(window.getSize().x) / 2.0f - 1.0f,
+                        0.0f);
   separator.setFillColor(sf::Color::Black);
   window.draw(separator);
+
+  // Countdown overlay
+  countdown_.render(window);
 
   // render HUD on top
   HUD_display_->render(window);
