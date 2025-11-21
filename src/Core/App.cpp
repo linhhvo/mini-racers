@@ -7,11 +7,12 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <SFML/Window/WindowStyle.hpp>
 
 App::App(GameContext &context)
     : window(sf::VideoMode(context.config->windowWidth,
                            context.config->windowHeight),
-             "MicroMachines"),
+             "MicroMachines", sf::Style::Titlebar | sf::Style::Close),
       context_(context) {
   window.setFramerateLimit(context.config->framerate);
 }

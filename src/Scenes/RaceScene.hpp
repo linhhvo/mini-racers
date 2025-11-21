@@ -3,6 +3,7 @@
 #include "Gameplay/Checkpoints/CheckpointManager.hpp"
 #include "Gameplay/iforce2d_car.hpp"
 #include "Race/HUD.hpp"
+#include "Race/Countdown.hpp"
 #include "Race/Timer.hpp"
 #include "Race/Track.hpp"
 #include "Scene.hpp"
@@ -45,6 +46,7 @@ private:
   bool raceFinished_ = false; // has any car finished the race?
   int winnerCarID_ = -1;
   float victoryDelayTimer_ = -1.f;
+  CountdownOverlay countdown_;
 
   // map
   Track track_;

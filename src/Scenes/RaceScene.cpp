@@ -28,7 +28,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     : context_(context), manager_(manager),
       raceTimer_(context.config->raceDuration),
       HUD_display_(std::make_unique<HUD>(raceTimer_, context_)),
-      useTmxMap_(false), track_() {
+      useTmxMap_(false), track_(), countdown_(3.0f) {
   sf::RenderWindow &window = manager_.getWindow();
 
   // Load TMX map
@@ -338,9 +338,6 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     }
   }
 
-  // start timer
-  raceTimer_.start();
-
   // Initialize split screen views with zoom
   sf::Vector2u windowSize = window.getSize();
   float viewWidth = windowSize.x / 2.0f;
@@ -374,7 +371,11 @@ void RaceScene::handleEvent(const sf::Event &event) {
   if (event.type == sf::Event::KeyPressed) {
     if (event.key.code == sf::Keyboard::Escape) {
       manager_.pushScene<PauseScene>(context_);
+      return;
     }
+
+    if (countdown_.isBlockingInput())
+      return;
 
     std::optional<int> playerIdx =
         context_.input->getPlayerFromKey(event.key.code);
@@ -392,6 +393,8 @@ void RaceScene::handleEvent(const sf::Event &event) {
     }
 
   } else if (event.type == sf::Event::KeyReleased) {
+    if (countdown_.isBlockingInput())
+      return;
     std::optional<int> playerIdx =
         context_.input->getPlayerFromKey(event.key.code);
 
@@ -411,7 +414,9 @@ void RaceScene::handleEvent(const sf::Event &event) {
 
 void RaceScene::update(float dt) {
   // Step Box2D world
-  b2World_Step(world_, dt, 4);
+  if (!countdown_.isBlockingInput()) {
+    b2World_Step(world_, dt, 4);
+  }
 
   // Update track (for animated tiles if any)
   if (useTmxMap_) {
@@ -456,24 +461,6 @@ void RaceScene::update(float dt) {
         winnerCarID_ = checkpointManager_->getWinnerCarID();
       }
     }
-    // }
-
-    // }
-    // soft obstacle
-    // else if (label && strcmp(label, "softObstacle") == 0) {
-    //   CarStatus_[triggeredCar].inSoftObstacle = true;
-    //   CarStatus_[triggeredCar].timer = 1.0f;
-    //   car_->GetVehicle(triggeredCar)->SetTargetForceStrength(5.0f);
-    //   std::cout << "Car " << triggeredCar << " hit oil!\n";
-    // }
-    //
-    // else if (label && strcmp(label, "booster") == 0) {
-    //   CarStatus_[triggeredCar].inSoftObstacle = true;
-    //   CarStatus_[triggeredCar].timer = 2.0f;
-    //   car_->GetVehicle(triggeredCar)->SetTargetForceStrength(60.0f);
-    //   car_->GetVehicle(triggeredCar)->SetAccelerationRate(20.0f);
-    //   std::cout << "Car " << triggeredCar << " hit booster!\n";
-    // }
   }
 
   for (int i = 0; i < nofCars_; i++) {
@@ -562,9 +549,13 @@ void RaceScene::update(float dt) {
   raceTimer_.update(dt);
   HUD_display_->update();
 
+  // Race start countdown
+  if (countdown_.update(dt)) {
+    raceTimer_.start();
+  }
+
   // Race finished when either timer runs out or a player finishes all laps
-  bool endTriggered = raceTimer_.isFinished() || raceFinished_;
-  if (endTriggered) {
+  if (raceTimer_.isFinished() || raceFinished_) {
     if (victoryDelayTimer_ < 0.f) {
       victoryDelayTimer_ = 1.5f; // delay before showing victory scene
     } else {
@@ -572,6 +563,7 @@ void RaceScene::update(float dt) {
       if (victoryDelayTimer_ <= 0.f) {
         std::cout << "Race over!\n";
         manager_.pushScene<VictoryScene>(context_, winnerCarID_);
+        return;
       }
     }
   }
@@ -629,12 +621,15 @@ void RaceScene::render() {
   window.setView(window.getDefaultView());
 
   // Draw separator line between split screens
-  sf::Vector2u windowSize = window.getSize();
   sf::RectangleShape separator(
-      sf::Vector2f(2.0f, static_cast<float>(windowSize.y)));
-  separator.setPosition(static_cast<float>(windowSize.x) / 2.0f - 1.0f, 0.0f);
+      sf::Vector2f(2.0f, static_cast<float>(window.getSize().y)));
+  separator.setPosition(static_cast<float>(window.getSize().x) / 2.0f - 1.0f,
+                        0.0f);
   separator.setFillColor(sf::Color::Black);
   window.draw(separator);
+
+  // Countdown overlay
+  countdown_.render(window);
 
   // render HUD on top
   HUD_display_->render(window);
