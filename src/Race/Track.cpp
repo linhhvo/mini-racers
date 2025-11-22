@@ -240,11 +240,6 @@ void Track::createLayer(const tmx::Map &map, const tmx::TileLayer &layer,
   }
 }
 
-void Track::update(float dt) {
-  // Update soft obstacle activation timers
-  updateSoftObstacle(dt);
-}
-
 sf::Color Track::getBackgroundColor() const {
   if (!mapLoaded_) {
     return sf::Color::Black; // Default to black if map not loaded
@@ -398,88 +393,7 @@ void Track::parseObjectLayers(const tmx::Map &map) {
         layerNameLower.find("car") != std::string::npos ||
         layerNameLower.find("spawn") != std::string::npos;
 
-    bool layerIsSoftObstacle =
-        layerNameLower.find("softobstacle") != std::string::npos;
-
     for (const auto &object : objectGroup.getObjects()) {
-      // Parse soft obstacle zones (oil, boosters, etc.)
-      if (layerIsSoftObstacle) {
-        SoftObstacleZone obstacle;
-        auto position = object.getPosition();
-        auto aabb = object.getAABB();
-        obstacle.position = {position.x, position.y};
-        obstacle.size = {aabb.width, aabb.height};
-        obstacle.activated = false;
-        obstacle.id = static_cast<int>(
-            softObstacleZones_.size()); // Auto-assign ID based on order
-
-        std::string obstacleType = "oil"; // Default to oil
-
-        // Parse properties
-        for (const auto &prop : object.getProperties()) {
-          // std::cout << "    Soft Obstacle Property: " << prop.getName()
-          //           << " = ";
-          if (prop.getType() == tmx::Property::Type::Int) {
-            // std::cout << prop.getIntValue() << std::endl;
-            if (prop.getName() == "id") {
-              obstacle.id = prop.getIntValue();
-            }
-          } else if (prop.getType() == tmx::Property::Type::Float) {
-            // std::cout << prop.getFloatValue() << std::endl;
-            if (prop.getName() == "desiredStrength") {
-              obstacle.desiredStrength = prop.getFloatValue();
-            } else if (prop.getName() == "accelerationStrength") {
-              obstacle.accelerationStrength = prop.getFloatValue();
-            }
-          } else if (prop.getType() == tmx::Property::Type::String) {
-            // std::cout << prop.getStringValue() << std::endl;
-            if (prop.getName() == "type") {
-              obstacleType = prop.getStringValue();
-              std::transform(obstacleType.begin(), obstacleType.end(),
-                             obstacleType.begin(), [](unsigned char c) {
-                               return static_cast<char>(std::tolower(c));
-                             });
-            }
-          }
-        }
-
-        // Set default values based on type if not overridden by custom
-        // properties
-        if (obstacleType == "booster") {
-          // Booster: speed up with quick dash effect
-          if (obstacle.desiredStrength == 0.5f) { // Only set if not custom
-            obstacle.desiredStrength = 20.0f;     // 6x speed for strong dash
-          }
-          if (obstacle.accelerationStrength == 0.5f) { // Only set if not
-                                                       // custom
-            obstacle.accelerationStrength =
-                10.0f; // 6x acceleration for strong dash
-          }
-          obstacle.activationDuration =
-              0.3f; // Very quick dash, not sure about this need to change I
-                    // think, as it doesn't look like a proper dash
-        } else {
-          // Oil: slow down (default)
-          if (obstacle.desiredStrength == 0.5f) { // Only set if not custom
-            obstacle.desiredStrength = 0.5f;      // Half speed
-          }
-          if (obstacle.accelerationStrength == 0.5f) { // Only set if not custom
-            obstacle.accelerationStrength = 0.5f;      // Half acceleration
-          }
-          obstacle.activationDuration = 2.0f; // Longer effect - 2 seconds
-        }
-
-        // std::cout << "    -> INCLUDED as soft obstacle zone (ID: "
-        //           << obstacle.id << ", type: " << obstacleType
-        //           << ", desiredStrength: " << obstacle.desiredStrength
-        //           << ", accelerationStrength: " <<
-        //           obstacle.accelerationStrength
-        //           << ", duration: " << obstacle.activationDuration << "s)"
-        //           << std::endl;
-        softObstacleZones_.push_back(std::move(obstacle));
-        continue; // Skip vehicle parsing for soft obstacle objects
-      }
-
       // Parse vehicle spawns (existing logic)
       SpawnPoint spawn;
       auto position = object.getPosition();
@@ -490,12 +404,6 @@ void Track::parseObjectLayers(const tmx::Map &map) {
       spawn.name = object.getName();
       spawn.layerName = layerName;
       spawn.tileID = object.getTileID(); // Get tile ID if object uses a tile
-
-      // std::cout << "  Object: name='" << spawn.name
-      //           << "', tileID=" << spawn.tileID << ", position=("
-      //           << spawn.position.x << "," << spawn.position.y << ")"
-      //           << ", size=(" << spawn.size.x << "," << spawn.size.y << ")"
-      //           << std::endl;
 
       for (const auto &prop : object.getProperties()) {
         if (prop.getName() == "texture" &&
@@ -528,61 +436,4 @@ void Track::parseObjectLayers(const tmx::Map &map) {
 
   // std::cout << "Total vehicle spawns found: " << vehicleSpawns_.size()
   //           << std::endl;
-}
-
-int Track::checkAndActivateSoft(const sf::Vector2f &position) {
-  int newlyActivated = -1;
-
-  for (auto &obstacle : softObstacleZones_) {
-    // Check if position is inside the soft obstacle zone
-    bool isInside = (position.x >= obstacle.position.x &&
-                     position.x <= obstacle.position.x + obstacle.size.x &&
-                     position.y >= obstacle.position.y &&
-                     position.y <= obstacle.position.y + obstacle.size.y);
-
-    if (isInside) {
-      // Car is in the zone - activate or keep activated, reset timer
-      if (!obstacle.activated) {
-        // Newly activated
-        obstacle.activated = true;
-        obstacle.activationTimer = obstacle.activationDuration;
-        newlyActivated = obstacle.id;
-        // std::cout << "Soft obstacle " << obstacle.id << " activated!"
-        //           << std::endl;
-      } else {
-        // Already activated, reset timer to full duration
-        obstacle.activationTimer = obstacle.activationDuration;
-      }
-    }
-    // If car is not in zone, timer will count down in updateSoftObstacle()
-  }
-
-  return newlyActivated; // Return -1 if no new obstacle activated
-}
-
-void Track::updateSoftObstacle(float dt) {
-  for (auto &obstacle : softObstacleZones_) {
-    if (obstacle.activated) {
-      // Count down the timer
-      obstacle.activationTimer -= dt;
-
-      // If timer expires, deactivate the obstacle
-      if (obstacle.activationTimer <= 0.0f) {
-        obstacle.activated = false;
-        obstacle.activationTimer = 0.0f;
-        // std::cout << "Soft obstacle " << obstacle.id
-        //           << " deactivated (timer expired)" << std::endl;
-      }
-    }
-  }
-}
-
-std::vector<int> Track::getActivatedSofts() const {
-  std::vector<int> activated;
-  for (const auto &obstacle : softObstacleZones_) {
-    if (obstacle.activated) {
-      activated.push_back(obstacle.id);
-    }
-  }
-  return activated;
 }

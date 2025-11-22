@@ -2,6 +2,8 @@
 #include "../System/SceneManager.hpp"
 #include "Gameplay/Checkpoints/CheckpointManager.hpp"
 #include "Gameplay/GameWorld.hpp"
+#include "Gameplay/Obstacles/SoftObstacleInteraction.hpp"
+#include "Gameplay/Obstacles/SoftObstacleManager.hpp"
 #include "Race/Countdown.hpp"
 #include "Race/HUD.hpp"
 #include "Race/Timer.hpp"
@@ -68,6 +70,9 @@ private:
   std::vector<bool> carCollidedThisFrame_; ///< Track collisions this frame
 
   // obstacles
+  std::unique_ptr<SoftObstacleManager> softObstacleManager_;
+  std::unique_ptr<SoftObstacleInteraction> softObstacleInteraction_;
+
   std::vector<sf::Sprite> obstacleSprites;
   std::unordered_map<std::string, std::unique_ptr<sf::Texture>>
       obstacleTextureCache_;

@@ -19,7 +19,7 @@ public:
                       std::vector<VehicleSpec> specs) {
     nofCars_ = nofCars;
     for (int i = 0; i < nofCars; i++) {
-      cars.push_back(std::make_unique<Vehicle>(
+      cars_.push_back(std::make_unique<Vehicle>(
           world_, startPos[i], sizes[i].first, sizes[i].second, specs[i]));
     }
   }
@@ -28,17 +28,26 @@ public:
                        std::vector<std::pair<float, float>> sizes) {
     nofObstacles_ = nofObstacles;
     for (int i = 0; i < nofObstacles; i++) {
-      obstacles.push_back(std::make_unique<Obstacle>(
+      obstacles_.push_back(std::make_unique<Obstacle>(
           world_, startPos[i], sizes[i].first, sizes[i].second));
     }
   }
 
-  Vehicle *GetVehicle(int idx) { return cars[idx].get(); }
+  Vehicle *GetVehicle(int idx) { return cars_[idx].get(); }
 
-  Obstacle *GetObstacle(int idx) { return obstacles[idx].get(); }
+  std::vector<Vehicle *> GetAllVehicles() const {
+    std::vector<Vehicle *> out;
+    out.reserve(cars_.size());
+    for (auto &c : cars_) {
+      out.push_back(c.get());
+    }
+    return out;
+  }
+
+  Obstacle *GetObstacle(int idx) { return obstacles_[idx].get(); }
 
   void Keyboard(InputManager::InputAction action, int idx, bool pressed) {
-    cars[idx]->updateKey(action, pressed);
+    cars_[idx]->updateKey(action, pressed);
   }
 
   static std::unique_ptr<GameWorld> Create(b2WorldId world) {
@@ -48,8 +57,8 @@ public:
 private:
   int nofCars_ = 0;
   int nofObstacles_ = 0;
-  std::vector<std::unique_ptr<Vehicle>> cars;
-  std::vector<std::unique_ptr<Obstacle>> obstacles;
-  int m_controlState;
+  std::vector<std::unique_ptr<Vehicle>> cars_;
+  std::vector<std::unique_ptr<Obstacle>> obstacles_;
+  int m_controlState_;
   b2WorldId world_;
 };
