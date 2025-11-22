@@ -2,8 +2,8 @@
 
 #include "Gameplay/Checkpoints/Checkpoint.hpp"
 #include "System/GameContext.hpp"
-#include "tmxlite/Map.hpp"
 #include <box2d/box2d.h>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -18,9 +18,9 @@ public:
   CheckpointManager(b2WorldId world, GameContext &context);
   ~CheckpointManager() = default;
 
-  // Load all checkpoints from TMX object layers whose name contains
-  // "checkpoint"
-  void LoadFromMap(const tmx::Map &map);
+  // create checkpoint from tmx map objects
+  void createCheckpoint(float width, float height, float centerX,
+                        float centerY);
 
   // Called by RaceScene when a sensor triggers
   void onCarHitCheckpoint(int carID, Checkpoint *checkpoint);

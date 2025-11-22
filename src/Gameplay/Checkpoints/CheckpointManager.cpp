@@ -1,6 +1,5 @@
 #include "CheckpointManager.hpp"
 #include "System/GameContext.hpp"
-#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <ostream>
@@ -12,43 +11,14 @@ CheckpointManager::CheckpointManager(b2WorldId world, GameContext &context)
       context_.config->numOfPlayers); // initialize progress for all cars
 }
 
-// load checkpoints from tmx map
-void CheckpointManager::LoadFromMap(const tmx::Map &map) {
-  const auto &layers = map.getLayers();
+void CheckpointManager::createCheckpoint(float width, float height,
+                                         float centerX, float centerY) {
+  b2Vec2 worldPos(centerX / context_.config->PIXELS_PER_METER,
+                  centerY / context_.config->PIXELS_PER_METER);
 
-  for (const auto &layer : layers) {
-    if (layer->getType() != tmx::Layer::Type::Object)
-      continue;
-
-    const auto &objectGroup = layer->getLayerAs<tmx::ObjectGroup>();
-    std::string name = objectGroup.getName();
-    std::string lower = name;
-    std::transform(
-        lower.begin(), lower.end(), lower.begin(),
-        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-    if (lower.find("checkpoint") == std::string::npos)
-      continue;
-
-    for (const auto &obj : objectGroup.getObjects()) {
-      auto pos = obj.getPosition();
-      auto aabb = obj.getAABB();
-
-      float cpWidth = aabb.width * 0.5f;
-      float cpHeight = aabb.height * 0.5f;
-
-      float centerX = pos.x + cpWidth;
-      float centerY = pos.y + cpHeight;
-
-      b2Vec2 worldPos(centerX / context_.config->PIXELS_PER_METER,
-                      centerY / context_.config->PIXELS_PER_METER);
-
-      // Create checkpoint
-      checkpoints_.push_back(std::make_unique<Checkpoint>(
-          world_, worldPos, cpWidth / context_.config->PIXELS_PER_METER,
-          cpHeight / context_.config->PIXELS_PER_METER));
-    }
-  }
+  checkpoints_.push_back(std::make_unique<Checkpoint>(
+      world_, worldPos, width / context_.config->PIXELS_PER_METER,
+      height / context_.config->PIXELS_PER_METER));
 }
 
 // Find checkpoint by Box2D shape

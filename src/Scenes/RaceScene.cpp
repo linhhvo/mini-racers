@@ -1,5 +1,6 @@
 #include "RaceScene.hpp"
 #include "../System/SceneManager.hpp"
+#include "Gameplay/Checkpoints/CheckpointTMXLoader.hpp"
 #include "Gameplay/GameWorld.hpp"
 #include "Race/Track.hpp"
 #include "Scenes/PauseScene.hpp"
@@ -109,7 +110,8 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   checkpointManager_ = std::make_unique<CheckpointManager>(world_, context_);
 
   if (useTmxMap_) {
-    checkpointManager_->LoadFromMap(track_.getTmxMap());
+    CheckpointTMXLoader::loadCheckpoints(*checkpointManager_,
+                                         track_.getTmxMap());
     track_.setCheckpointManager(checkpointManager_.get());
   }
 
