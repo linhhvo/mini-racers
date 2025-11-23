@@ -1,5 +1,5 @@
 #pragma once
-#include "Obstacles/Obstacle.hpp"
+#include "Obstacles/HardObstacle.hpp"
 #include "System/InputManager.hpp"
 #include "Vehicle.hpp"
 #include <box2d/box2d.h>

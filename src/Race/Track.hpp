@@ -9,6 +9,7 @@
 #include <array>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <tmxlite/Map.hpp>
 #include <tmxlite/TileLayer.hpp>
@@ -28,33 +29,17 @@ public:
   sf::Color getBackgroundColor() const;
   const tmx::Map &getTmxMap() const { return map_; }
 
-  struct SpawnPoint {
-    sf::Vector2f position;    // top-left position in pixels
-    sf::Vector2f size;        // width/height in pixels
-    float rotation = 0.f;     // rotation in degrees
-    std::string textureId;    // identifier or filename for texture
-    std::uint32_t tileID = 0; // GID if object uses a tile from tileset
-    std::string name;
-    std::string layerName;
-  };
-
-  const std::vector<SpawnPoint> &getVehicleSpawnPoints() const {
-    return vehicleSpawns_;
+  void setActiveCheckpointLayers(const std::set<std::string> &layers) {
+    activeCheckpointLayers_ = layers;
   }
-
   // Extract a tile texture from the tileset by GID
   std::unique_ptr<sf::Texture> extractTileTexture(std::uint32_t tileGID) const;
-
-  void setCheckpointManager(CheckpointManager *checkpointManager) {
-    checkpointManager_ = checkpointManager;
-  }
 
 private:
   void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
   void createLayer(const tmx::Map &map, const tmx::TileLayer &layer,
                    const std::string &layerName);
   void loadTextures(const tmx::Map &map);
-  void parseObjectLayers(const tmx::Map &map);
 
   tmx::Map map_;
   bool mapLoaded_;
@@ -78,7 +63,6 @@ private:
   std::vector<TileQuad> tiles_;
 
   std::map<std::string, std::unique_ptr<sf::Texture>> textures_;
-  std::vector<SpawnPoint> vehicleSpawns_;
 
-  CheckpointManager *checkpointManager_ = nullptr;
+  std::set<std::string> activeCheckpointLayers_;
 };

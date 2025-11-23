@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Gameplay/Checkpoints/Checkpoint.hpp"
+#include "Race/MapObjectParser.hpp"
 #include "System/GameContext.hpp"
 #include <box2d/box2d.h>
 #include <memory>
@@ -18,18 +19,16 @@ public:
   CheckpointManager(b2WorldId world, GameContext &context);
   ~CheckpointManager() = default;
 
-  // create checkpoint from tmx map objects
-  void createCheckpoint(float width, float height, float centerX,
-                        float centerY);
+  // load checkpoint objects from parsed map data
+  void loadFromData(const std::vector<CheckpointData> &cps);
 
-  // Called by RaceScene when a sensor triggers
   void onCarHitCheckpoint(int carID, Checkpoint *checkpoint);
 
   Checkpoint *FindCheckpointByShapeId(b2ShapeId shape) const;
 
   int GetCheckpointIndex(const Checkpoint *cp) const;
 
-  // Reset check activation (e.g., every lap)
+  // Reset check activation
   void ResetCheckpoints();
 
   void update(float dt);

@@ -1,5 +1,4 @@
 #include "Track.hpp"
-#include "Gameplay/Checkpoints/CheckpointManager.hpp"
 #include <algorithm>
 #include <cctype>
 #include <iostream>
@@ -63,7 +62,9 @@ bool Track::loadFromFile(const std::string &filepath) {
   tiles_.clear();
   layerTiles_.clear();
   layerOrder_.clear();
+
   const auto &layers = map_.getLayers();
+
   for (const auto &layer : layers) {
     if (layer->getType() == tmx::Layer::Type::Tile) {
       std::string layerName = layer->getName();
@@ -73,17 +74,6 @@ bool Track::loadFromFile(const std::string &filepath) {
       std::cout << layerName << std::endl;
     }
   }
-
-  parseObjectLayers(map_);
-  if (!vehicleSpawns_.empty()) {
-    // std::cout << "Loaded " << vehicleSpawns_.size()
-    //           << " vehicle spawn point(s) from TMX." << std::endl;
-  }
-
-  // std::cout << "Successfully loaded TMX map: " << filepath << std::endl;
-  // std::cout << "Map size: " << mapSize_.x << "x" << mapSize_.y << std::endl;
-  // std::cout << "Tile size: " << tileSize_.x << "x" << tileSize_.y <<
-  // std::endl;
 
   return true;
 }
@@ -278,11 +268,9 @@ void Track::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     // Skip checkpoint activation layers (checkpoint_1, checkpoint_2, etc.)
     // unless activated
     bool isCheckpointLayer = layerNameLower.find("checkpoint_") == 0;
-
-    if (isCheckpointLayer && checkpointManager_ &&
-        !checkpointManager_->getActivatedCheckpointID().contains(
-            layerNameLower)) {
-      continue;
+    if (isCheckpointLayer) {
+      if (!activeCheckpointLayers_.contains(layerNameLower))
+        continue;
     }
 
     // Add tiles from this layer to the render groups
@@ -363,77 +351,4 @@ Track::extractTileTexture(std::uint32_t tileGID) const {
   auto texture = std::make_unique<sf::Texture>();
   texture->loadFromImage(extracted);
   return texture;
-}
-
-void Track::parseObjectLayers(const tmx::Map &map) {
-  vehicleSpawns_.clear();
-  // checkpointZones_.clear();
-
-  const auto &layers = map.getLayers();
-  // std::cout << "Parsing object layers... Found " << layers.size()
-  // << " total layers." << std::endl;
-
-  for (const auto &layer : layers) {
-    if (layer->getType() != tmx::Layer::Type::Object) {
-      continue;
-    }
-
-    const auto &objectGroup = layer->getLayerAs<tmx::ObjectGroup>();
-    std::string layerName = objectGroup.getName();
-    // std::cout << "Found object layer: '" << layerName << "' with "
-    //           << objectGroup.getObjects().size() << " objects" << std::endl;
-
-    std::string layerNameLower = layerName;
-    std::transform(
-        layerNameLower.begin(), layerNameLower.end(), layerNameLower.begin(),
-        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-    bool layerLooksLikeVehicles =
-        layerNameLower.find("vehicle") != std::string::npos ||
-        layerNameLower.find("car") != std::string::npos ||
-        layerNameLower.find("spawn") != std::string::npos;
-
-    for (const auto &object : objectGroup.getObjects()) {
-      // Parse vehicle spawns (existing logic)
-      SpawnPoint spawn;
-      auto position = object.getPosition();
-      auto aabb = object.getAABB();
-      spawn.position = {position.x, position.y};
-      spawn.size = {aabb.width, aabb.height};
-      spawn.rotation = object.getRotation();
-      spawn.name = object.getName();
-      spawn.layerName = layerName;
-      spawn.tileID = object.getTileID(); // Get tile ID if object uses a tile
-
-      for (const auto &prop : object.getProperties()) {
-        if (prop.getName() == "texture" &&
-            prop.getType() == tmx::Property::Type::String) {
-          spawn.textureId = prop.getStringValue();
-        }
-      }
-
-      // If object has a tile ID but no texture property, use tile ID as texture
-      // identifier
-      if (spawn.tileID > 0 && spawn.textureId.empty()) {
-        spawn.textureId = "tile_" + std::to_string(spawn.tileID);
-        // std::cout << "    Auto-assigned textureId: " << spawn.textureId
-        //           << std::endl;
-      }
-
-      // Include all objects from vehicle-like layers, or objects with texture
-      // property or tile ID
-      bool includeObject = layerLooksLikeVehicles || !spawn.textureId.empty() ||
-                           spawn.tileID > 0;
-
-      if (includeObject) {
-        // std::cout << "    -> INCLUDED as vehicle spawn" << std::endl;
-        vehicleSpawns_.push_back(std::move(spawn));
-      } else {
-        // std::cout << "    -> SKIPPED (not a vehicle)" << std::endl;
-      }
-    }
-  }
-
-  // std::cout << "Total vehicle spawns found: " << vehicleSpawns_.size()
-  //           << std::endl;
 }

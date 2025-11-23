@@ -41,7 +41,6 @@ private:
 
   // checkpoints and win condition
   std::unique_ptr<CheckpointManager> checkpointManager_;
-  std::vector<CarProgress> carProgress_;
   bool raceFinished_ = false;
   int winnerCarID_ = -1;
   float victoryDelayTimer_ = -1.f;
@@ -49,7 +48,7 @@ private:
 
   // map
   Track track_;
-  bool useTmxMap_;
+  bool useTmxMap_ = false;
 
   // scene
   SceneManager &manager_;
@@ -67,7 +66,7 @@ private:
 
   // box2d
   b2WorldId world_{b2_nullWorldId};
-  std::unique_ptr<GameWorld> car_;
+  std::unique_ptr<GameWorld> gameWorld_;
 
   // HUD
   Timer raceTimer_;
@@ -77,10 +76,9 @@ private:
   sf::View leftView_;  // For car 1 (WASD)
   sf::View rightView_; // For car 0 (Arrow keys)
 
-  int redCarIndex_ = -1;  // Which car index is red (uses WASD)
-  int blueCarIndex_ = -1; // Which car index is blue (uses Arrow keys)
+  int leftVehicleIndex_ = -1;  // Which car index is red (uses WASD)
+  int rightVehicleIndex_ = -1; // Which car index is blue (uses Arrow keys)
 
   // private methods
   sf::Texture *getCarTexture(const std::string &textureId);
-  sf::Texture *getObstacleTexture(const std::string &textureId);
 };

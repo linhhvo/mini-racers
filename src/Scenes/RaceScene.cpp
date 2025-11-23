@@ -1,8 +1,6 @@
 #include "RaceScene.hpp"
 #include "../System/SceneManager.hpp"
-#include "Gameplay/Checkpoints/CheckpointTMXLoader.hpp"
 #include "Gameplay/GameWorld.hpp"
-#include "Gameplay/Obstacles/ObstacleTMXLoader.hpp"
 #include "Gameplay/Obstacles/SoftObstacleManager.hpp"
 #include "Race/Track.hpp"
 #include "Scenes/PauseScene.hpp"
@@ -29,33 +27,37 @@ const std::string DEFAULT_CAR_TEXTURE{"../assets/vehicles/car.png"};
 RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     : context_(context), manager_(manager),
       raceTimer_(context.config->raceDuration),
-      HUD_display_(std::make_unique<HUD>(raceTimer_, context_)),
-      useTmxMap_(false), track_(), countdown_(3.0f) {
+      HUD_display_(std::make_unique<HUD>(raceTimer_, context_)), track_(),
+      countdown_(3.0f) {
 
   sf::RenderWindow &window = manager_.getWindow();
 
   // Load TMX map
   if (track_.loadFromFile(context_.config->TMX_MAP)) {
     useTmxMap_ = true;
-    std::cout << "  Successfully loaded TMX map: " << context_.config->TMX_MAP
-              << std::endl;
-    std::cout << "  Map size: " << track_.getMapSize().x << "x"
-              << track_.getMapSize().y << std::endl;
-    std::cout << "  Tile size: " << track_.getTileSize().x << "x"
-              << track_.getTileSize().y << std::endl;
+    // std::cout << "  Successfully loaded TMX map: " <<
+    // context_.config->TMX_MAP
+    //           << std::endl;
+    // std::cout << "  Map size: " << track_.getMapSize().x << "x"
+    //           << track_.getMapSize().y << std::endl;
+    // std::cout << "  Tile size: " << track_.getTileSize().x << "x"
+    //           << track_.getTileSize().y << std::endl;
   } else {
     useTmxMap_ = false;
-    std::cerr << "  ERROR: Failed to load TMX map: " << context_.config->TMX_MAP
-              << std::endl;
-    std::cerr << "  Make sure you're running from the project root directory "
-                 "(where CMakeLists.txt is)"
-              << std::endl;
-    std::cerr << "  Or that the path '../assets/maps/stas_map.tmx' is correct "
-                 "relative to your working directory."
-              << std::endl;
-    std::cerr
-        << "  Game will continue but screen will be black without the map!"
-        << std::endl;
+    // std::cerr << "  ERROR: Failed to load TMX map: " <<
+    // context_.config->TMX_MAP
+    //           << std::endl;
+    // std::cerr << "  Make sure you're running from the project root directory
+    // "
+    //              "(where CMakeLists.txt is)"
+    //           << std::endl;
+    // std::cerr << "  Or that the path '../assets/maps/stas_map.tmx' is correct
+    // "
+    //              "relative to your working directory."
+    //           << std::endl;
+    // std::cerr
+    //     << "  Game will continue but screen will be black without the map!"
+    //     << std::endl;
   }
 
   if (!defaultCarTexture_.loadFromFile(DEFAULT_CAR_TEXTURE)) {
@@ -64,53 +66,25 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   }
   defaultCarTexture_.setSmooth(true);
 
-  const auto &spawnPoints = track_.getVehicleSpawnPoints();
-  const auto tileSize = track_.getTileSize();
-  const int desiredPlayers = context_.config->numOfPlayers;
+  MapObjectParser parser;
+  parser.parse(track_.getTmxMap());
 
-  if (!spawnPoints.empty()) {
-    nofCars_ = std::min(static_cast<int>(spawnPoints.size()), desiredPlayers);
-    std::cout << "Using " << nofCars_ << " cars from TMX spawn points"
-              << std::endl;
-    if (desiredPlayers > static_cast<int>(spawnPoints.size())) {
-      std::cout << "Warning: Only " << spawnPoints.size()
-                << " vehicle spawn point(s) defined in TMX, but "
-                << desiredPlayers << " player(s) configured." << std::endl;
-    }
-  } else {
-    nofCars_ = desiredPlayers;
-    std::cout << "Warning: No vehicle spawn points found in TMX map. Falling "
-                 "back to default positions."
-              << std::endl;
-    if (!useTmxMap_) {
-      std::cerr << "ERROR: TMX map not loaded AND no spawn points = cars may "
-                   "not be visible!"
-                << std::endl;
-    }
-  }
+  // parse vehicle, obstacle, checkpoint objects
+  const auto &spawnData = parser.getVehicleSpawns();
+  const auto &checkpointData = parser.getCheckpoints();
+  const auto &softObstacleData = parser.getSoftObstacles();
 
-  if (nofCars_ <= 0) {
-    nofCars_ = 1;
-    std::cout << "⚠ Warning: nofCars was 0, setting to 1" << std::endl;
-  }
-
-  std::cout << "Final car count: " << nofCars_ << std::endl;
-
-  // box2D
+  // set up box2d world
   b2WorldDef worldDef = b2DefaultWorldDef();
   worldDef.gravity = {0.0f, 0.0f};
   world_ = b2CreateWorld(&worldDef);
 
+  // create container manager for obstacles and checkpoints
   checkpointManager_ = std::make_unique<CheckpointManager>(world_, context_);
-  softObstacleManager_ = std::make_unique<SoftObstacleManager>();
+  checkpointManager_->loadFromData(checkpointData);
 
-  if (useTmxMap_) {
-    CheckpointTMXLoader::loadCheckpoints(*checkpointManager_,
-                                         track_.getTmxMap());
-    track_.setCheckpointManager(checkpointManager_.get());
-    ObstacleTMXLoader::loadSoftObstacles(*softObstacleManager_,
-                                         track_.getTmxMap());
-  }
+  softObstacleManager_ = std::make_unique<SoftObstacleManager>();
+  softObstacleManager_->loadFromData(softObstacleData);
 
   if (HUD_display_) {
     HUD_display_->setCheckpointManager(checkpointManager_.get());
@@ -138,6 +112,15 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       spawnPointsVec.push_back(b2Vec2{startX, startY});
     }
   }
+
+  // assign vehicle index to match split screen position
+  if (nofCars_ > 0) {
+    leftVehicleIndex_ = 0;
+  }
+  if (nofCars_ > 1) {
+    rightVehicleIndex_ = 1;
+  }
+
   // Testing car specs
   std::vector<VehicleSpec> specs;
   specs.push_back(VehicleSpec());
@@ -151,102 +134,53 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
       .baseTargetForceStrength = 3.0f,
       .baseAccelerationRate = 1.0f,
   };
+
   specs.push_back(second);
 
-  car_ = GameWorld::Create(world_);
-  car_->VehicleFactory(nofCars_, spawnPointsVec, sizes, specs);
+  // create vehicle initial spawn points and create box2d world
+  std::vector<b2Vec2> spawnPointsVec;
+  std::vector<std::pair<float, float>> sizes;
 
-  softObstacleInteraction_ = std::make_unique<SoftObstacleInteraction>(
-      softObstacleManager_.get(), car_->GetAllVehicles());
+  for (int i = 0; i < nofCars_; i++) {
+    const auto &s = spawnData[i];
 
+    sf::Vector2f center = s.position + s.size * 0.5f;
+
+    // convert to Box2D
+    float halfW = (s.size.x * 0.5f) / context_.config->PIXELS_PER_METER;
+    float halfH = (s.size.y * 0.5f) / context_.config->PIXELS_PER_METER;
+    sizes.push_back({halfW, halfH});
+
+    spawnPointsVec.push_back({center.x / context_.config->PIXELS_PER_METER,
+                              center.y / context_.config->PIXELS_PER_METER});
+  }
+
+  gameWorld_ = GameWorld::Create(world_);
+  gameWorld_->VehicleFactory(nofCars_, spawnPointsVec, sizes, specs);
+
+  // set up SFML sprites for vehicles
   carSprites.clear();
   carSprites.resize(nofCars_);
 
   for (int i = 0; i < nofCars_; i++) {
-    const Track::SpawnPoint *spawn =
-        (!spawnPoints.empty() && i < static_cast<int>(spawnPoints.size()))
-            ? &spawnPoints[i]
-            : nullptr;
+    const auto &s = spawnData[i];
 
-    sf::Texture *texture = &defaultCarTexture_;
-    if (spawn) {
-      std::cout << "Car " << i << ": tileID=" << spawn->tileID
-                << ", textureId='" << spawn->textureId << "'" << std::endl;
+    sf::Vector2f center = s.position + s.size * 0.5f;
+    sf::Texture *vehicleTexture = getCarTexture(s.textureId);
+    carSprites[i].setTexture(*vehicleTexture);
 
-      // If object has a tile ID, use that (it will extract from tileset)
-      if (spawn->tileID > 0) {
-        std::string tileKey = "tile_" + std::to_string(spawn->tileID);
-        std::cout << "  Extracting tile texture for GID: " << spawn->tileID
-                  << std::endl;
-        texture = getCarTexture(tileKey);
-      } else if (!spawn->textureId.empty()) {
-        // Otherwise use the texture property (blue/red or file path)
-        std::cout << "  Using texture property: " << spawn->textureId
-                  << std::endl;
-        texture = getCarTexture(spawn->textureId);
-      } else {
-        std::cout << "  No tileID or texture property, using default texture"
-                  << std::endl;
-      }
-    } else {
-      std::cout << "Car " << i << ": No spawn point, using default texture"
-                << std::endl;
-    }
-    carSprites[i].setTexture(*texture);
+    auto bounds = carSprites[i].getLocalBounds();
+    carSprites[i].setOrigin(bounds.width / 2, bounds.height / 2);
 
-    sf::FloatRect bounds = carSprites[i].getLocalBounds();
-    carSprites[i].setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+    carSprites[i].setScale(s.size.x / bounds.width, s.size.y / bounds.height);
 
-    sf::Vector2f targetSize = {static_cast<float>(tileSize.x),
-                               static_cast<float>(tileSize.y)};
-    if (spawn && (spawn->size.x > 0.f && spawn->size.y > 0.f)) {
-      targetSize = spawn->size;
-    }
-
-    if (bounds.width > 0.f && bounds.height > 0.f) {
-      carSprites[i].setScale(targetSize.x / bounds.width,
-                             targetSize.y / bounds.height);
-    }
-
-    float rotationDeg = spawn ? spawn->rotation : 0.f;
-    float rotationRad = rotationDeg * context_.config->DEGTORAD;
-
-    b2BodyId body = car_->GetVehicle(i)->GetBody();
-
-    if (spawn) {
-      sf::Vector2f center = spawn->position;
-      if (spawn->size.x > 0.f && spawn->size.y > 0.f) {
-        center += spawn->size * 0.5f;
-      } else {
-        center += targetSize * 0.5f;
-      }
-
-      b2Vec2 position{center.x / context_.config->PIXELS_PER_METER,
-                      center.y / context_.config->PIXELS_PER_METER};
-      b2Rot rotation = b2MakeRot(rotationRad);
-      b2Body_SetTransform(body, position, rotation);
-      carSprites[i].setPosition(center);
-      carSprites[i].setRotation(rotationDeg);
-    } else {
-      auto pos = b2Body_GetPosition(body);
-      carSprites[i].setPosition({pos.x * context_.config->PIXELS_PER_METER,
-                                 pos.y * context_.config->PIXELS_PER_METER});
-      carSprites[i].setRotation(rotationDeg);
-    }
-
-    // Find which car is red/blue
-    if (spawn) {
-      std::string textureIdLower = spawn->textureId;
-      std::transform(
-          textureIdLower.begin(), textureIdLower.end(), textureIdLower.begin(),
-          [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-      if (textureIdLower == "red") {
-        redCarIndex_ = i;
-      } else if (textureIdLower == "blue") {
-        blueCarIndex_ = i;
-      }
-    }
+    carSprites[i].setPosition(center);
+    carSprites[i].setRotation(s.rotation);
   }
+
+  // set up obstacle and vehicle interaction
+  softObstacleInteraction_ = std::make_unique<SoftObstacleInteraction>(
+      softObstacleManager_.get(), gameWorld_->GetAllVehicles());
 
   // obstacles
   // if (nofObstacles_ > 0) {
@@ -357,7 +291,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   // Zoom factor - smaller value = more zoomed in (shows less area)
   // Adjust this value to change zoom level (0.5 = 2x zoom, 0.25 = 4x zoom,
   // etc.)
-  float zoomFactor = 0.5f; // Shows a smaller area around each car
+  float zoomFactor = 0.5f;
 
   // Left view (car 1 - WASD) - left half of screen
   leftView_.setViewport(sf::FloatRect(0.0f, 0.0f, 0.5f, 1.0f));
@@ -367,14 +301,11 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   rightView_.setViewport(sf::FloatRect(0.5f, 0.0f, 0.5f, 1.0f));
   rightView_.setSize(viewWidth * zoomFactor, viewHeight * zoomFactor);
 
-  // Set initial centers (will be updated in update() to follow cars)
-  if (nofCars_ > 1) {
-    sf::Vector2f car1Pos = carSprites[1].getPosition();
-    leftView_.setCenter(car1Pos);
+  if (leftVehicleIndex_ >= 0) {
+    leftView_.setCenter(carSprites[leftVehicleIndex_].getPosition());
   }
-  if (nofCars_ > 0) {
-    sf::Vector2f car0Pos = carSprites[0].getPosition();
-    rightView_.setCenter(car0Pos);
+  if (rightVehicleIndex_ >= 0) {
+    rightView_.setCenter(carSprites[rightVehicleIndex_].getPosition());
   }
 
   std::cout << "RaceScene initialization complete." << std::endl;
@@ -402,13 +333,13 @@ void RaceScene::handleEvent(const sf::Event &event) {
     if (playerIdx.has_value()) {
       InputManager::InputAction action =
           context_.input->getPlayerAction(event.key.code, playerIdx.value());
-      // Player 1 (WASD) controls red car, Player 0 (Arrow keys) controls blue
-      // car
-      int carIndex =
-          (playerIdx.value() == 1 && redCarIndex_ >= 0)    ? redCarIndex_
-          : (playerIdx.value() == 0 && blueCarIndex_ >= 0) ? blueCarIndex_
-                                                           : playerIdx.value();
-      car_->Keyboard(action, carIndex, true);
+      // left view player uses WASD for vehicle control
+      int carIndex = (playerIdx.value() == 0 && leftVehicleIndex_ >= 0)
+                         ? leftVehicleIndex_
+                     : (playerIdx.value() == 1 && rightVehicleIndex_ >= 0)
+                         ? rightVehicleIndex_
+                         : playerIdx.value();
+      gameWorld_->Keyboard(action, carIndex, true);
     }
 
   } else if (event.type == sf::Event::KeyReleased) {
@@ -420,13 +351,13 @@ void RaceScene::handleEvent(const sf::Event &event) {
     if (playerIdx.has_value()) {
       InputManager::InputAction action =
           context_.input->getPlayerAction(event.key.code, playerIdx.value());
-      // Player 1 (WASD) controls red car, Player 0 (Arrow keys) controls blue
-      // car
-      int carIndex =
-          (playerIdx.value() == 1 && redCarIndex_ >= 0)    ? redCarIndex_
-          : (playerIdx.value() == 0 && blueCarIndex_ >= 0) ? blueCarIndex_
-                                                           : playerIdx.value();
-      car_->Keyboard(action, carIndex, false);
+      // right view player uses arrow keys for vehicle control
+      int carIndex = (playerIdx.value() == 0 && leftVehicleIndex_ >= 0)
+                         ? leftVehicleIndex_
+                     : (playerIdx.value() == 1 && rightVehicleIndex_ >= 0)
+                         ? rightVehicleIndex_
+                         : playerIdx.value();
+      gameWorld_->Keyboard(action, carIndex, false);
     }
   }
 }
@@ -438,8 +369,8 @@ void RaceScene::update(float dt) {
   }
 
   checkpointManager_->update(dt);
-
-  // Process sensor events
+  softObstacleInteraction_->update(dt);
+  softObstacleManager_->update(dt);
 
   // Reset collision tracking for this frame
   for (int i = 0; i < nofCars_; i++) {
@@ -456,7 +387,8 @@ void RaceScene::update(float dt) {
     // Find which car triggered it
     int triggeredCar = -1;
     for (int i = 0; i < nofCars_; i++) {
-      if (b2Shape_GetUserData(car_->GetVehicle(i)->GetShape()) == visitorData) {
+      if (b2Shape_GetUserData(gameWorld_->GetVehicle(i)->GetShape()) ==
+          visitorData) {
         triggeredCar = i;
         break;
       }
@@ -502,13 +434,13 @@ void RaceScene::update(float dt) {
   }
 
   for (int i = 0; i < nofCars_; i++) {
-    car_->GetVehicle(i)->update(dt);
+    gameWorld_->GetVehicle(i)->update(dt);
 
-    auto pos = car_->GetVehicle(i)->GetPosition();
+    auto pos = gameWorld_->GetVehicle(i)->GetPosition();
     sf::Vector2f sfPos(pos.x * context_.config->PIXELS_PER_METER,
                        pos.y * context_.config->PIXELS_PER_METER);
 
-    auto carBody = car_->GetVehicle(i)->GetBody();
+    auto carBody = gameWorld_->GetVehicle(i)->GetBody();
     float angleDeg = b2Rot_GetAngle(b2Body_GetTransform(carBody).q) *
                      context_.config->RADTODEG;
 
@@ -582,17 +514,14 @@ void RaceScene::update(float dt) {
     }
 
     // Update camera views to follow cars
-    if (i == 0) {
+    if (i == leftVehicleIndex_) {
       // Left view follows car 1 (WASD)
       leftView_.setCenter(sfPos);
-    } else if (i == 1) {
+    } else if (i == rightVehicleIndex_) {
       // Right view follows car 0 (Arrow keys)
       rightView_.setCenter(sfPos);
     }
   }
-
-  softObstacleInteraction_->update(dt);
-  softObstacleManager_->update(dt);
 
   // Update HUD and timer
   raceTimer_.update(dt);
@@ -623,53 +552,37 @@ void RaceScene::update(float dt) {
       }
     }
   }
+
+  // render activated checkpoint in Track class
+  track_.setActiveCheckpointLayers(
+      checkpointManager_->getActivatedCheckpointID());
 }
 
 void RaceScene::render() {
   sf::RenderWindow &window = manager_.getWindow();
 
   // Clear entire window first
-  sf::Color bgColor =
-      useTmxMap_ ? track_.getBackgroundColor() : sf::Color::Black;
-  window.clear(bgColor);
-
-  // Debug: Print warning if map not loaded (only once)
-  static bool warnedAboutBlackScreen = false;
-  if (!useTmxMap_ && !warnedAboutBlackScreen) {
-    std::cerr << "⚠ RENDER WARNING: TMX map not loaded - screen will be black!"
-              << std::endl;
-    std::cerr << "  Check console output above for map loading errors."
-              << std::endl;
-    warnedAboutBlackScreen = true;
-  }
+  window.clear(track_.getBackgroundColor());
 
   // Render left view (car 1 - WASD)
   if (nofCars_ > 1) {
     window.setView(leftView_);
-
-    // render TMX map
     if (useTmxMap_) {
       window.draw(track_);
     }
-
-    // render all vehicles
-    for (int i = 0; i < nofCars_; i++) {
-      window.draw(carSprites[i]);
+    for (auto &vehicle : carSprites) {
+      window.draw(vehicle);
     }
   }
 
   // Render right view (car 0 - Arrow keys)
   if (nofCars_ > 0) {
     window.setView(rightView_);
-
-    // render TMX map
     if (useTmxMap_) {
       window.draw(track_);
     }
-
-    // render all vehicles
-    for (int i = 0; i < nofCars_; i++) {
-      window.draw(carSprites[i]);
+    for (auto &vehicle : carSprites) {
+      window.draw(vehicle);
     }
   }
 
@@ -691,87 +604,49 @@ void RaceScene::render() {
   HUD_display_->render(window);
 }
 
-sf::Texture *RaceScene::getCarTexture(const std::string &textureId) {
-  std::string trimmed = textureId;
-  trimmed.erase(trimmed.begin(), std::find_if(trimmed.begin(), trimmed.end(),
-                                              [](unsigned char ch) {
-                                                return !std::isspace(ch);
-                                              }));
-  trimmed.erase(std::find_if(trimmed.rbegin(), trimmed.rend(),
-                             [](unsigned char ch) { return !std::isspace(ch); })
-                    .base(),
-                trimmed.end());
-
-  if (trimmed.empty()) {
+sf::Texture *RaceScene::getCarTexture(const std::string &id) {
+  if (id.empty()) {
     return &defaultCarTexture_;
   }
 
-  // Check if this is a tile ID reference (starts with "tile_")
-  if (trimmed.substr(0, 5) == "tile_") {
-    std::string tileIDStr = trimmed.substr(5);
-    try {
-      std::uint32_t tileGID = std::stoul(tileIDStr);
-      std::string cacheKey = "tile_" + tileIDStr;
+  std::string key = id;
+  std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 
-      // Check cache first
-      auto cached = carTextureCache_.find(cacheKey);
-      if (cached != carTextureCache_.end()) {
-        return cached->second.get();
-      }
+  // extract tile id from tileset
+  if (key.rfind("tile_", 0) == 0) {
+    std::string gidStr = key.substr(5);
+    uint32_t gid = std::stoul(gidStr);
 
-      // Extract tile from tileset
-      auto extracted = track_.extractTileTexture(tileGID);
-      if (extracted) {
-        extracted->setSmooth(true);
-        sf::Texture *result = extracted.get();
-        carTextureCache_.emplace(cacheKey, std::move(extracted));
-        std::cout << "Extracted tile texture from tileset for GID: " << tileGID
-                  << std::endl;
-        return result;
-      } else {
-        std::cout << "Warning: Could not extract tile " << tileGID
-                  << " from tileset." << std::endl;
-      }
-    } catch (...) {
-      std::cout << "Warning: Invalid tile ID format: " << tileIDStr
-                << std::endl;
+    if (auto it = carTextureCache_.find(key); it != carTextureCache_.end())
+      return it->second.get();
+
+    auto texture = track_.extractTileTexture(gid);
+    if (texture) {
+      texture->setSmooth(true);
+      auto *texturePtr = texture.get();
+      carTextureCache_[key] = std::move(texture);
+      return texturePtr;
     }
+    return &defaultCarTexture_;
   }
 
-  std::string path = trimmed;
-  // Ensure we have a relative path to the vehicles directory if none provided
-  if (path.find('/') == std::string::npos &&
-      path.find('\\') == std::string::npos) {
-    std::string lowered = path;
-    std::transform(
-        lowered.begin(), lowered.end(), lowered.begin(),
-        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-    // Replace spaces with underscores for convenience
-    std::replace(lowered.begin(), lowered.end(), ' ', '_');
-    path = "../assets/vehicles/" + lowered;
-  }
-
-  // Append extension if missing
-  if (path.find('.') == std::string::npos) {
+  // Load texture from file in vehicles folder
+  std::string path = id;
+  if (path.find('.') == std::string::npos)
     path += ".png";
-  }
 
-  auto cached = carTextureCache_.find(path);
-  if (cached != carTextureCache_.end()) {
-    return cached->second.get();
-  }
+  if (path.find('/') == std::string::npos)
+    path = "../assets/vehicles/" + path;
+
+  if (auto it = carTextureCache_.find(path); it != carTextureCache_.end())
+    return it->second.get();
 
   auto texture = std::make_unique<sf::Texture>();
-  if (!texture->loadFromFile(path)) {
-    std::cout << "Warning: unable to load car texture '" << textureId
-              << "' (attempted path: " << path << "). Using fallback texture."
-              << std::endl;
+  if (!texture->loadFromFile(path))
     return &defaultCarTexture_;
-  }
 
   texture->setSmooth(true);
-  sf::Texture *result = texture.get();
-  carTextureCache_.emplace(path, std::move(texture));
-  return result;
+  auto *texturePtr = texture.get();
+  carTextureCache_[path] = std::move(texture);
+  return texturePtr;
 }

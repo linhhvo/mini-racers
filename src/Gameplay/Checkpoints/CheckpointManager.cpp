@@ -11,14 +11,17 @@ CheckpointManager::CheckpointManager(b2WorldId world, GameContext &context)
       context_.config->numOfPlayers); // initialize progress for all cars
 }
 
-void CheckpointManager::createCheckpoint(float width, float height,
-                                         float centerX, float centerY) {
-  b2Vec2 worldPos(centerX / context_.config->PIXELS_PER_METER,
-                  centerY / context_.config->PIXELS_PER_METER);
+void CheckpointManager::loadFromData(
+    const std::vector<CheckpointData> &checkpoints) {
+  checkpoints_.clear();
 
-  checkpoints_.push_back(std::make_unique<Checkpoint>(
-      world_, worldPos, width / context_.config->PIXELS_PER_METER,
-      height / context_.config->PIXELS_PER_METER));
+  for (const auto &data : checkpoints) {
+    b2Vec2 worldPos(data.center.x / context_.config->PIXELS_PER_METER,
+                    data.center.y / context_.config->PIXELS_PER_METER);
+    checkpoints_.push_back(std::make_unique<Checkpoint>(
+        world_, worldPos, data.halfSize.x / context_.config->PIXELS_PER_METER,
+        data.halfSize.y / context_.config->PIXELS_PER_METER));
+  }
 }
 
 // Find checkpoint by Box2D shape
@@ -40,7 +43,7 @@ int CheckpointManager::GetCheckpointIndex(const Checkpoint *cp) const {
   return -1;
 }
 
-// Car hit checkpoint (called by RaceScene sensor code)
+// Car hit checkpoint effect
 void CheckpointManager::onCarHitCheckpoint(int carID, Checkpoint *cp) {
   if (carID < 0 || carID >= static_cast<int>(carProgress_.size()))
     return;
@@ -54,14 +57,11 @@ void CheckpointManager::onCarHitCheckpoint(int carID, Checkpoint *cp) {
   cp->activate();
 
   progress.passedCheckpoints.insert(triggeredCheckpoint);
-  std::cout << "passed checkpoint " << triggeredCheckpoint << std::endl;
 
   if (triggeredCheckpoint == 0 &&
       progress.passedCheckpoints.size() == checkpoints_.size()) {
     progress.currentLap++;
     progress.passedCheckpoints.clear();
-    std::cout << "Car " << carID << " completed lap " << progress.currentLap
-              << "\n";
 
     if (progress.currentLap >= context_.config->numOfLaps) {
       raceFinished_ = true;
@@ -80,7 +80,7 @@ void CheckpointManager::update(float dt) {
   }
 }
 
-// Reset checkpoints for a new lap
+// Reset checkpoints
 void CheckpointManager::ResetCheckpoints() {
   for (auto &cp : checkpoints_) {
     cp->reset();

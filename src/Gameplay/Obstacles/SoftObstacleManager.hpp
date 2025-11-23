@@ -1,10 +1,11 @@
 #pragma once
+#include "Race/MapObjectParser.hpp"
 #include "SoftObstacle.hpp"
 #include <vector>
 
 class SoftObstacleManager {
 public:
-  void addObstacle(const SoftObstacle &obstacle);
+  void loadFromData(const std::vector<SoftObstacleData> &data);
 
   void update(float dt);
 
