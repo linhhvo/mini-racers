@@ -23,11 +23,6 @@
 class RaceScene : public Scene {
 
 public:
-  struct CarStatus {
-    bool inSoftObstacle = false;
-    float timer = 0.0f;
-  };
-
   RaceScene(SceneManager &manager, GameContext &context);
   ~RaceScene();
 
@@ -37,8 +32,6 @@ public:
 
 private:
   // counters
-  int nofSoft_ = 2;
-  int nofBoosters_ = 3;
   int nofCars_ = 0;
   int nofObstacles_ = 0;
 
@@ -65,19 +58,12 @@ private:
   std::vector<sf::Sprite> carSprites;
   std::unordered_map<std::string, std::unique_ptr<sf::Texture>>
       carTextureCache_;
-  std::vector<CarStatus> CarStatus_;
   sf::Texture defaultCarTexture_;
   std::vector<bool> carCollidedThisFrame_; ///< Track collisions this frame
 
   // obstacles
   std::unique_ptr<SoftObstacleManager> softObstacleManager_;
   std::unique_ptr<SoftObstacleInteraction> softObstacleInteraction_;
-
-  std::vector<sf::Sprite> obstacleSprites;
-  std::unordered_map<std::string, std::unique_ptr<sf::Texture>>
-      obstacleTextureCache_;
-  std::vector<CarStatus> obstacleStatus_;
-  sf::Texture defaultObstacleTexture_;
 
   // box2d
   b2WorldId world_{b2_nullWorldId};

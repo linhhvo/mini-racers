@@ -124,7 +124,6 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
 
   // Vehicles
   if (!spawnPoints.empty()) {
-    CarStatus_.resize(nofCars_);
     for (int i = 0; i < nofCars_; i++) {
       sf::Vector2f size = spawnPoints[i].size;
       if (size.x <= 0.f || size.y <= 0.f) {
