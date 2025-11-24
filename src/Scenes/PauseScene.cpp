@@ -4,7 +4,6 @@
 #include "System/SceneManager.hpp"
 #include "System/AudioManager.hpp"
 #include <SFML/System/Vector2.hpp>
-#include <iostream>
 
 PauseScene::PauseScene(SceneManager &manager, GameContext &context)
     : manager_(manager), context_(context) {

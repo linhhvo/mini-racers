@@ -28,7 +28,6 @@ public:
   std::function<void()> onPress;
 
 private:
-  // sf::RectangleShape button_;
   sf::Sprite buttonSprite_;
   sf::Texture normalTexture_;
   sf::Texture highlightTexture_;
