@@ -4,6 +4,7 @@
 #include "Gameplay/GameWorld.hpp"
 #include "Gameplay/Obstacles/SoftObstacleInteraction.hpp"
 #include "Gameplay/Obstacles/SoftObstacleManager.hpp"
+#include "Race/Camera.hpp"
 #include "Race/Countdown.hpp"
 #include "Race/HUD.hpp"
 #include "Race/Timer.hpp"
@@ -73,8 +74,9 @@ private:
   std::unique_ptr<HUD> HUD_display_;
 
   // Split screen views
-  sf::View leftView_;  // For car 1 (WASD)
-  sf::View rightView_; // For car 0 (Arrow keys)
+  Camera camera_;
+  // sf::View leftView_;  // For car 1 (WASD)
+  // sf::View rightView_; // For car 0 (Arrow keys)
 
   int leftVehicleIndex_ = -1;  // Which car index is red (uses WASD)
   int rightVehicleIndex_ = -1; // Which car index is blue (uses Arrow keys)

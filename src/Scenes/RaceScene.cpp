@@ -113,13 +113,9 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     }
   }
 
-  // assign vehicle index to match split screen position
-  if (nofCars_ > 0) {
-    leftVehicleIndex_ = 0;
-  }
-  if (nofCars_ > 1) {
-    rightVehicleIndex_ = 1;
-  }
+  // set up split views
+  camera_.configure(nofCars_, window.getSize());
+  camera_.setZoom(0.5f);
 
   // Testing car specs
   std::vector<VehicleSpec> specs;
@@ -514,14 +510,10 @@ void RaceScene::update(float dt) {
     }
 
     // Update camera views to follow cars
-    if (i == leftVehicleIndex_) {
-      // Left view follows car 1 (WASD)
-      leftView_.setCenter(sfPos);
-    } else if (i == rightVehicleIndex_) {
-      // Right view follows car 0 (Arrow keys)
-      rightView_.setCenter(sfPos);
-    }
+    camera_.setCarTarget(i, sfPos);
   }
+
+  camera_.updateViews();
 
   // Update HUD and timer
   raceTimer_.update(dt);
@@ -564,26 +556,14 @@ void RaceScene::render() {
   // Clear entire window first
   window.clear(track_.getBackgroundColor());
 
-  // Render left view (car 1 - WASD)
-  if (nofCars_ > 1) {
-    window.setView(leftView_);
-    if (useTmxMap_) {
-      window.draw(track_);
-    }
-    for (auto &vehicle : carSprites) {
-      window.draw(vehicle);
-    }
-  }
+  for (int i = 0; i < camera_.getNumViews(); i++) {
+    window.setView(camera_.getView(i));
 
-  // Render right view (car 0 - Arrow keys)
-  if (nofCars_ > 0) {
-    window.setView(rightView_);
-    if (useTmxMap_) {
+    if (useTmxMap_)
       window.draw(track_);
-    }
-    for (auto &vehicle : carSprites) {
-      window.draw(vehicle);
-    }
+
+    for (auto &sprite : carSprites)
+      window.draw(sprite);
   }
 
   // Reset to default view for HUD (full screen overlay)
