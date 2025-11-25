@@ -2,6 +2,7 @@
 #include "Scenes/MenuScene.hpp"
 #include "System/GameContext.hpp"
 #include "System/SceneManager.hpp"
+#include "System/AudioManager.hpp"
 #include <SFML/System/Vector2.hpp>
 #include <iostream>
 #include <sstream>
@@ -56,6 +57,11 @@ VictoryScene::VictoryScene(SceneManager &manager, GameContext &context,
   raceResult_.setFillColor(sf::Color::Black);
   raceResult_.setPosition(bannerSprite_.getPosition().x + 100,
                           bannerSprite_.getPosition().y + 100);
+
+  // Play menu music when returning to victory screen
+  AudioManager::Instance().SetMusicVolume(80.0f);
+  AudioManager::Instance().PlayMusic("../assets/sounds/music/menu_music.wav");
+  std::cout << "[Audio] Menu music started at 80%" << std::endl;
 }
 
 void VictoryScene::handleEvent(const sf::Event &event) {

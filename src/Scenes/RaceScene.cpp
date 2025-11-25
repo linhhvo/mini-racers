@@ -601,9 +601,9 @@ void RaceScene::update(float dt) {
   if (countdown_.update(dt)) {
     raceTimer_.start();
     // Start race music after "GO!" sound finishes playing
-    AudioManager::Instance().SetMusicVolume(50.0f);  // Set race music to 50%
+    AudioManager::Instance().SetMusicVolume(40.0f);  // Set race music to 40%
     AudioManager::Instance().PlayMusic("../assets/sounds/music/race_music.wav");
-    std::cout << "[Audio] Race music started at 50%" << std::endl;
+    std::cout << "[Audio] Race music started at 40%" << std::endl;
   }
 
   // Race finished when either timer runs out or a player finishes all laps
