@@ -75,9 +75,17 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
 
   buttonsContainer_.highlightBtn(0);
   
-  // Load and play menu music
-  AudioManager::Instance().PlayMusic("../assets/sounds/music/menu_music.wav");
-  std::cout << "[Audio] Menu music started" << std::endl;
+  // Load and play menu music (continue if already playing, otherwise start)
+  AudioManager::Instance().SetMusicVolume(80.0f);  // Set menu music to 80%
+  // Only restart music if it's not already played 
+  static bool musicStarted = false;
+  if (!musicStarted) {
+    AudioManager::Instance().PlayMusic("../assets/sounds/music/menu_music.wav");
+    musicStarted = true;
+    std::cout << "[Audio] Menu music started at 80%" << std::endl;
+  } else {
+    std::cout << "[Audio] Menu music continued at 80%" << std::endl;
+  }
 }
 
 void MenuScene::handleEvent(const sf::Event &event) {

@@ -16,9 +16,6 @@ App::App(GameContext &context)
              "MicroMachines", sf::Style::Titlebar | sf::Style::Close),
       context_(context) {
   window.setFramerateLimit(context.config->framerate);
-  // Preload all music and sound files
-  AudioManager::Instance().LoadMusic("/assets/sounds/music/menu_music.wav");
-  AudioManager::Instance().LoadSound("checkpoint_sound", "/assets/sounds/sounds/checkpoint.wav");
 }
 
 void App::run() {

@@ -37,17 +37,23 @@ bool CountdownOverlay::update(float dt) {
       countingDown_ = false;
       goTimer_ = 0.8f;
       text_.setString("GO!");
-      // Play "GO!" sound
+      // Play "GO!" sound at max volume
+      float originalSoundVolume = AudioManager::Instance().GetVolume();
+      AudioManager::Instance().SetSoundVolume(100.0f);  // Max volume for GO
       AudioManager::Instance().PlaySound("../assets/sounds/audio/race_start_sound.wav");
+      AudioManager::Instance().SetSoundVolume(originalSoundVolume);  // Restore
       std::cout << "[Audio] Countdown GO!" << std::endl;
       finishedThisFrame = true;
     } else {
       updateDisplay();
-      // Play beep sound when number changes
+      // Play beep sound when number changes (max volume)
       int currentNumber = static_cast<int>(std::ceil(remaining_));
       if (currentNumber != lastDisplayedNumber_) {
         lastDisplayedNumber_ = currentNumber;
-        AudioManager::Instance().PlaySound("../assets/sounds/audio/click_sound.wav");
+        float originalSoundVolume = AudioManager::Instance().GetVolume();
+        AudioManager::Instance().SetSoundVolume(100.0f);  // Max volume for countdown
+        AudioManager::Instance().PlaySound("../assets/sounds/audio/count_down_sound.wav");
+        AudioManager::Instance().SetSoundVolume(originalSoundVolume);  // Restore
         std::cout << "[Audio] Countdown beep: " << currentNumber << std::endl;
       }
     }

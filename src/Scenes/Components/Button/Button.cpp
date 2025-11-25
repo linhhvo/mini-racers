@@ -1,4 +1,5 @@
 #include "Button.hpp"
+#include "System/AudioManager.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Rect.hpp>
@@ -54,6 +55,7 @@ sf::Vector2f Button::getSize() const {
 sf::Text &Button::getLabel() { return label_; }
 
 void Button::trigger() {
+  AudioManager::Instance().PlaySound("../assets/sounds/audio/click_sound.wav");
   if (onPress)
     onPress();
 }

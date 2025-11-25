@@ -18,38 +18,23 @@ public:
     /// Get singleton instance
     static AudioManager& Instance();
 
-    /// Load sound into buffer for reuse (unused)
-    bool LoadSound(const std::string& name, const std::string& filename);
-
-    /// Play pre-loaded sound by name (unused)
-    void play(const std::string& name);
-
-    /// Play sound directly from file (recommended)
+    /// Play sound directly from file
     void PlaySound(const std::string& filename);
-
-    /// Pre-load music from file (unused)
-    void LoadMusic(const std::string& filePath);
 
     /// Play music with looping enabled
     void PlayMusic(const std::string& filename);
 
-    /// Stop a named sound (unused)
-    void stop(const std::string& name);
-
     /// Stop current background music
     void StopMusic();
 
-    /// Stop all sounds and music
-    void StopAll();
-
-    /// Update - clean up stopped sounds
-    void Update();
-
-    /// Set master volume for all audio (0.0 - 100.0)
-    void SetVolume(float volume);
-
     /// Get current master volume (0.0 - 100.0)
     float GetVolume() const;
+
+    /// Set music volume (0.0 - 100.0)
+    void SetMusicVolume(float volume);
+
+    /// Set sound effect volume (0.0 - 100.0)
+    void SetSoundVolume(float volume);
 
 private:
     AudioManager();
@@ -58,7 +43,6 @@ private:
 
     sf::Music music_;                                     ///< Background music
     static sf::Music soundEffect_;                        ///< Sound effect (kept alive)
-    std::map<std::string, sf::SoundBuffer> soundBuffers_; ///< Pre-loaded buffers (unused)
-    std::vector<std::pair<std::string, sf::Sound>> activeSounds_; ///< Active sounds (unused)
-    float volume_ = 100.0f;                               ///< Master volume (0.0 - 100.0)
+    float musicVolume_ = 70.0f;                           ///< Music volume (0.0 - 100.0)
+    float soundVolume_ = 70.0f;                           ///< Sound effect volume (0.0 - 100.0)
 };
