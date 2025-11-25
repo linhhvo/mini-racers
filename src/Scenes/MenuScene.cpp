@@ -3,9 +3,9 @@
 #include "Components/Button/Button.hpp"
 #include "RaceScene.hpp"
 #include "SelectMapScene.hpp"
+#include "System/AudioManager.hpp"
 #include "System/GameContext.hpp"
 #include "System/SceneManager.hpp"
-#include "System/AudioManager.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -45,22 +45,14 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
 
   // triggered events when a button is selected
   selectOptionsBtn->onPress = [&]() {
-    AudioManager::Instance().PlaySound("../assets/sounds/sound/click_sound.wav");
-    std::cout << "[Audio] Click sound played" << std::endl;
     manager_.switchScene<SelectMapScene>(context_);
   };
-  startGameBtn->onPress = [&]() { 
-    AudioManager::Instance().PlaySound("../assets/sounds/sound/click_sound.wav");
-    std::cout << "[Audio] Click sound played" << std::endl;
+  startGameBtn->onPress = [&]() {
     AudioManager::Instance().StopMusic();
     std::cout << "[Audio] Menu music stopped" << std::endl;
-    manager_.switchScene<RaceScene>(context); 
+    manager_.switchScene<RaceScene>(context);
   };
-  exitGameBtn->onPress = [&]() { 
-    AudioManager::Instance().PlaySound("../assets/sounds/sound/click_sound.wav");
-    std::cout << "[Audio] Click sound played" << std::endl;
-    window.close(); 
-  };
+  exitGameBtn->onPress = [&]() { window.close(); };
 
   // add buttons to container
   buttonsContainer_.addBtn(std::move(selectOptionsBtn));
@@ -74,10 +66,10 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
       window.getSize().y / 2.f - buttonsContainer_.getSize().y / 2.f));
 
   buttonsContainer_.highlightBtn(0);
-  
+
   // Load and play menu music (continue if already playing, otherwise start)
-  AudioManager::Instance().SetMusicVolume(80.0f);  // Set menu music to 80%
-  // Only restart music if it's not already played 
+  AudioManager::Instance().SetMusicVolume(80.0f); // Set menu music to 80%
+  // Only restart music if it's not already played
   static bool musicStarted = false;
   if (!musicStarted) {
     AudioManager::Instance().PlayMusic("../assets/sounds/music/menu_music.wav");
