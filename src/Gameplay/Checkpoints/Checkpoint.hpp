@@ -2,7 +2,6 @@
 
 #include "box2d/math_functions.h"
 #include <box2d/box2d.h>
-#include <string>
 
 class Checkpoint {
 public:

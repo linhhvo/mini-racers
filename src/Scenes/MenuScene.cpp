@@ -2,6 +2,7 @@
 #include "Components/Button/BtnContainer.hpp"
 #include "Components/Button/Button.hpp"
 #include "RaceScene.hpp"
+#include "SelectMapScene.hpp"
 #include "System/GameContext.hpp"
 #include "System/SceneManager.hpp"
 #include "System/AudioManager.hpp"
@@ -38,9 +39,16 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
                                 window.getSize().y / 2.f);
 
   // initialize start game and exit buttons
+  auto selectOptionsBtn = std::make_unique<Button>("Options");
   auto startGameBtn = std::make_unique<Button>("Start");
   auto exitGameBtn = std::make_unique<Button>("Exit");
 
+  // triggered events when a button is selected
+  selectOptionsBtn->onPress = [&]() {
+    AudioManager::Instance().PlaySound("../assets/sounds/sound/click_sound.wav");
+    std::cout << "[Audio] Click sound played" << std::endl;
+    manager_.switchScene<SelectMapScene>(context_);
+  };
   startGameBtn->onPress = [&]() { 
     AudioManager::Instance().PlaySound("../assets/sounds/sound/click_sound.wav");
     std::cout << "[Audio] Click sound played" << std::endl;
@@ -54,6 +62,8 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
     window.close(); 
   };
 
+  // add buttons to container
+  buttonsContainer_.addBtn(std::move(selectOptionsBtn));
   buttonsContainer_.addBtn(std::move(startGameBtn));
   buttonsContainer_.addBtn(std::move(exitGameBtn));
 

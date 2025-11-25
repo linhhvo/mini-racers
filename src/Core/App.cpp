@@ -8,11 +8,12 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <SFML/Window/WindowStyle.hpp>
 
 App::App(GameContext &context)
     : window(sf::VideoMode(context.config->windowWidth,
                            context.config->windowHeight),
-             "MicroMachines Skeleton"),
+             "MicroMachines", sf::Style::Titlebar | sf::Style::Close),
       context_(context) {
   window.setFramerateLimit(context.config->framerate);
   // Preload all music and sound files
@@ -34,13 +35,6 @@ void App::run() {
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed)
         window.close();
-
-      if (event.type == sf::Event::Resized) {
-        // match background image size with window size
-        view.setSize(event.size.width, event.size.height);
-        view.setCenter(event.size.width / 2.f, event.size.height / 2.f);
-        window.setView(view);
-      }
 
       sceneManager.handleEnvent(event);
     }

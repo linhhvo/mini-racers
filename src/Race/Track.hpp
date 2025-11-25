@@ -112,14 +112,18 @@ private:
 
   // Store tiles per layer name for show/hide functionality
   std::map<std::string, std::vector<TileQuad>> layerTiles_;
-  std::vector<std::string>
-      layerOrder_; // Store layer names in the order they appear in TMX (for
-                   // correct rendering order)
-  std::vector<TileQuad>
-      tiles_; // Keep for backward compatibility, contains all tiles
+
+  // Store layer names in the order they appear in TMX (for correct rendering
+  // order)
+  std::vector<std::string> layerOrder_;
+
+  // Keep for backward compatibility, contains all tiles
+  std::vector<TileQuad> tiles_;
+
   std::map<std::string, std::unique_ptr<sf::Texture>> textures_;
   std::vector<SpawnPoint> vehicleSpawns_;
   std::vector<SpawnPoint> obstacleSpawns_;
   std::vector<SoftObstacleZone> softObstacleZones_;
+
   CheckpointManager *checkpointManager_ = nullptr;
 };
