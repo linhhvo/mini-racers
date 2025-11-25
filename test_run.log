@@ -1,0 +1,133 @@
+Setting vertical sync not supported
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5204:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5204:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5204:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5727:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+Failed to open the audio device
+An internal OpenAL call failed in SoundSource.cpp(44).
+Expression:
+   alGenSources(1, &m_source)
+Error description:
+   AL_INVALID_OPERATION
+   The specified operation is not allowed in the current state.
+
+An internal OpenAL call failed in SoundSource.cpp(45).
+Expression:
+   alSourcei(m_source, AL_BUFFER, 0)
+Error description:
+   AL_INVALID_OPERATION
+   The specified operation is not allowed in the current state.
+
+[Audio] Playing sound: ../assets/sounds/sound/click_sound.wav
+INFO: found tile set track (/home/linh/cpp-course/micro-machines-1/libs/tmxlite/tmxlite/src/Tileset.cpp, 120)
+Loaded tileset image: ../assets/maps/Racing_AssetPack - Copy.png
+Track
+Checkpoints
+checkpoint_1
+checkpoint_2
+checkpoint_3
+checkpoint_4
+checkpoint_5
+checkpoint_6
+checkpoint_7
+checkpoint_8
+checkpoint_9
+Oil
+plants
+boosters
+Parsing object layers... Found 18 total layers.
+Found object layer: 'Cars' with 2 objects
+  Object: name='', tileID=2307, position=(134.091,788.455), size=(16,16)
+    -> INCLUDED as vehicle spawn
+  Object: name='', tileID=2308, position=(166.091,762.545), size=(16,16)
+    -> INCLUDED as vehicle spawn
+Found object layer: 'CheckpointsZone' with 9 objects
+  Object: name='', tileID=0, position=(112,864), size=(96,16)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(272,400), size=(16,96)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(432,176), size=(16,96)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(704,528), size=(16,96)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(1088,304), size=(16,96)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(1216,688), size=(96,16)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(1008,1024), size=(96,16)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(832,848), size=(16,96)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(480,1072), size=(16,96)
+    -> SKIPPED (not a vehicle)
+Found object layer: 'softObstacles' with 26 objects
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 0, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 1, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 2, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 3, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 4, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 5, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 6, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 7, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 8, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 9, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 10, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 11, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 12, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 13, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 14, type: oil, desiredStrength: 0.5, accelerationStrength: 0.5, duration: 2s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 15, type: booster, desiredStrength: 20, accelerationStrength: 10, duration: 0.3s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 16, type: booster, desiredStrength: 20, accelerationStrength: 10, duration: 0.3s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 17, type: booster, desiredStrength: 20, accelerationStrength: 10, duration: 0.3s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 18, type: booster, desiredStrength: 20, accelerationStrength: 10, duration: 0.3s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 19, type: booster, desiredStrength: 20, accelerationStrength: 10, duration: 0.3s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 20, type: booster, desiredStrength: 20, accelerationStrength: 10, duration: 0.3s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 21, type: booster, desiredStrength: 20, accelerationStrength: 10, duration: 0.3s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 22, type: booster, desiredStrength: 20, accelerationStrength: 10, duration: 0.3s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 23, type: booster, desiredStrength: 20, accelerationStrength: 10, duration: 0.3s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 24, type: booster, desiredStrength: 20, accelerationStrength: 10, duration: 0.3s)
+    Soft Obstacle Property: type =     -> INCLUDED as soft obstacle zone (ID: 25, type: booster, desiredStrength: 20, accelerationStrength: 10, duration: 0.3s)
+Found object layer: 'MapBorder' with 8 objects
+  Object: name='', tileID=0, position=(64,112), size=(16,688)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(80,112), size=(752,16)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(832,112), size=(560,16)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(1376,128), size=(16,832)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(1376,960), size=(16,352)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(528,1296), size=(848,16)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(64,1296), size=(464,16)
+    -> SKIPPED (not a vehicle)
+  Object: name='', tileID=0, position=(64,800), size=(16,496)
+    -> SKIPPED (not a vehicle)
+Total vehicle spawns found: 2
+Loaded 2 vehicle spawn point(s) from TMX.
+Successfully loaded TMX map: ../assets/maps/stas_map.tmx
+Map size: 1600x1600
+Tile size: 16x16
+  Successfully loaded TMX map: ../assets/maps/stas_map.tmx
+  Map size: 1600x1600
+  Tile size: 16x16
+RaceScene: Found 2 car spawn points, 0obstacle spawn points from TMX map.
+Using 2 cars from TMX spawn points
+Final car count: 2
+CheckpointManager: scanning TMX for checkpoints...
+  Found checkpoint layer: 'CheckpointsZone' with 9 objects
+CheckpointManager: total checkpoints = 9
+Car 0: tileID=2307, textureId='red'
+  Extracting tile texture for GID: 2307
+Extracted tile texture from tileset for GID: 2307
+Car 1: tileID=2308, textureId='blue'
+  Extracting tile texture for GID: 2308
+Extracted tile texture from tileset for GID: 2308
+✓ Left view initialized at car 1 position (WASD): (174.091, 770.545)
+✓ Right view initialized at car 0 position (Arrow keys): (142.091, 796.455)
+RaceScene initialization complete.

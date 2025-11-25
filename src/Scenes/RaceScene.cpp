@@ -7,6 +7,7 @@
 #include "System/Config.hpp"
 #include "System/GameContext.hpp"
 #include "System/InputManager.hpp"
+#include "System/AudioManager.hpp"
 #include "box2d/math_functions.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -117,6 +118,9 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
 
   std::vector<b2Vec2> spawnPointsVec;
   std::vector<std::pair<float, float>> sizes;
+
+  // Initialize collision tracking
+  carCollidedThisFrame_.resize(nofCars_, false);
 
   // Vehicles
   if (!spawnPoints.empty()) {
@@ -366,6 +370,8 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     sf::Vector2f car0Pos = carSprites[0].getPosition();
     rightView_.setCenter(car0Pos);
   }
+
+  std::cout << "RaceScene initialization complete." << std::endl;
 }
 
 void RaceScene::handleEvent(const sf::Event &event) {
@@ -430,6 +436,11 @@ void RaceScene::update(float dt) {
 
   // Process sensor events
 
+  // Reset collision tracking for this frame
+  for (int i = 0; i < nofCars_; i++) {
+    carCollidedThisFrame_[i] = false;
+  }
+
   // Checkpoint, soft obstacle check
   b2SensorEvents sensorEvents = b2World_GetSensorEvents(world_);
   for (int i = 0; i < sensorEvents.beginCount; i++) {
@@ -455,11 +466,32 @@ void RaceScene::update(float dt) {
 
       if (cp) {
         checkpointManager_->onCarHitCheckpoint(triggeredCar, cp);
+        AudioManager::Instance().PlaySound("../assets/sounds/audio/checkpoint_sound.wav");
+        std::cout << "[Audio] Checkpoint sound played" << std::endl;
       }
       // race finish
       if (checkpointManager_->isRaceFinished()) {
         raceFinished_ = true;
         winnerCarID_ = checkpointManager_->getWinnerCarID();
+      }
+    }
+  }
+
+  // Detect vehicle-to-vehicle collisions for sound effects
+  b2ContactEvents contactEvents = b2World_GetContactEvents(world_);
+  for (int i = 0; i < contactEvents.beginCount; i++) {
+    b2ContactBeginTouchEvent *e = contactEvents.beginEvents + i;
+    // Check if a car is involved in the collision
+    for (int j = 0; j < nofCars_; j++) {
+      if (b2Shape_GetUserData(car_->GetVehicle(j)->GetShape()) == 
+          b2Shape_GetUserData(e->shapeIdA) ||
+          b2Shape_GetUserData(car_->GetVehicle(j)->GetShape()) == 
+          b2Shape_GetUserData(e->shapeIdB)) {
+        AudioManager::Instance().SetSoundVolume(100.0f);
+        AudioManager::Instance().PlaySound("../assets/sounds/audio/collision_sound.wav");
+        AudioManager::Instance().SetSoundVolume(70.0f);  // Reset to default
+        std::cout << "[Audio] Vehicle collision detected at 100%" << std::endl;
+        break;
       }
     }
   }
@@ -499,6 +531,20 @@ void RaceScene::update(float dt) {
                   obstacle.desiredStrength, obstacle.accelerationStrength);
               CarStatus_[i].inSoftObstacle = true;
               CarStatus_[i].timer = obstacle.activationDuration;
+              
+              // Play sound based on obstacle type
+              if (obstacle.desiredStrength > 0.5f) {
+                // Booster detected (high desiredStrength)
+                AudioManager::Instance().PlaySound("../assets/sounds/audio/booster_sound.wav");
+                std::cout << "[Audio] Booster sound played" << std::endl;
+              } else {
+                // Oil/soft obstacle detected
+                AudioManager::Instance().SetSoundVolume(100.0f);
+                AudioManager::Instance().PlaySound("../assets/sounds/audio/collision_sound.wav");
+                AudioManager::Instance().SetSoundVolume(70.0f);  // Reset to default
+                std::cout << "[Audio] Soft obstacle sound played at 100%" << std::endl;
+              }
+              
               std::cout << "Car " << i << " hit soft obstacle " << activatedId
                         << " (desiredStrength: " << obstacle.desiredStrength
                         << ", accelerationStrength: "
@@ -554,12 +600,19 @@ void RaceScene::update(float dt) {
   // Race start countdown
   if (countdown_.update(dt)) {
     raceTimer_.start();
+    // Start race music after "GO!" sound finishes playing
+    AudioManager::Instance().SetMusicVolume(40.0f);  // Set race music to 40%
+    AudioManager::Instance().PlayMusic("../assets/sounds/music/race_music.wav");
+    std::cout << "[Audio] Race music started at 40%" << std::endl;
   }
 
   // Race finished when either timer runs out or a player finishes all laps
   if (raceTimer_.isFinished() || raceFinished_) {
     if (victoryDelayTimer_ < 0.f) {
       victoryDelayTimer_ = 0.8f; // delay before showing victory scene
+      AudioManager::Instance().PlaySound("../assets/sounds/audio/end_game_sound.wav");
+      AudioManager::Instance().StopMusic();  // Stop race music when game ends
+      std::cout << "[Audio] Race ended, music stopped" << std::endl;
     } else {
       victoryDelayTimer_ -= dt;
       if (victoryDelayTimer_ <= 0.f) {

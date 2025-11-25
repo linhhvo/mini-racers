@@ -61,6 +61,7 @@ private:
       carTextureCache_;
   std::vector<CarStatus> CarStatus_;
   sf::Texture defaultCarTexture_;
+  std::vector<bool> carCollidedThisFrame_; ///< Track collisions this frame
 
   // obstacles
   std::vector<sf::Sprite> obstacleSprites;

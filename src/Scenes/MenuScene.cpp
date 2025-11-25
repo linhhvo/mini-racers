@@ -3,9 +3,9 @@
 #include "Components/Button/Button.hpp"
 #include "RaceScene.hpp"
 #include "SelectMapScene.hpp"
+#include "System/AudioManager.hpp"
 #include "System/GameContext.hpp"
 #include "System/SceneManager.hpp"
-
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -47,7 +47,11 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
   selectOptionsBtn->onPress = [&]() {
     manager_.switchScene<SelectMapScene>(context_);
   };
-  startGameBtn->onPress = [&]() { manager_.switchScene<RaceScene>(context_); };
+  startGameBtn->onPress = [&]() {
+    AudioManager::Instance().StopMusic();
+    std::cout << "[Audio] Menu music stopped" << std::endl;
+    manager_.switchScene<RaceScene>(context);
+  };
   exitGameBtn->onPress = [&]() { window.close(); };
 
   // add buttons to container
@@ -62,6 +66,18 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
       window.getSize().y / 2.f - buttonsContainer_.getSize().y / 2.f));
 
   buttonsContainer_.highlightBtn(0);
+
+  // Load and play menu music (continue if already playing, otherwise start)
+  AudioManager::Instance().SetMusicVolume(80.0f); // Set menu music to 80%
+  // Only restart music if it's not already played
+  static bool musicStarted = false;
+  if (!musicStarted) {
+    AudioManager::Instance().PlayMusic("../assets/sounds/music/menu_music.wav");
+    musicStarted = true;
+    std::cout << "[Audio] Menu music started at 80%" << std::endl;
+  } else {
+    std::cout << "[Audio] Menu music continued at 80%" << std::endl;
+  }
 }
 
 void MenuScene::handleEvent(const sf::Event &event) {

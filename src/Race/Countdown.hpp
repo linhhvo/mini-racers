@@ -25,6 +25,7 @@ private:
   float remaining_ = 0.0f;
   float goTimer_ = 0.0f;
   bool countingDown_ = true;
+  int lastDisplayedNumber_ = -1; ///< Track last displayed number for sound
   sf::Font font_;
   sf::Text text_;
 };
