@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-// Suppress ALSA/OpenAL errors
+/// Suppress ALSA/OpenAL error messages (redirects stderr to /dev/null)
 static void suppressAudioErrors() {
     int devnull = open("/dev/null", O_WRONLY);
     if (devnull != -1) {
@@ -13,13 +13,17 @@ static void suppressAudioErrors() {
     }
 }
 
-// Static sound effect - keeps sound alive while playing
+/// Static sound effect object - keeps sound alive while playing
 sf::Music AudioManager::soundEffect_;
 
+/// Constructor - suppress audio device errors on initialization
 AudioManager::AudioManager() {
     suppressAudioErrors();
+    // Set initial volumes
+    SetVolume(70.0f);  // Default master volume at 70%
 }
 
+/// Get or create singleton instance
 AudioManager& AudioManager::Instance() {
     static AudioManager instance;
     return instance;
@@ -33,58 +37,61 @@ bool AudioManager::LoadSound(const std::string& name, const std::string& filenam
         return false;
     }
     soundBuffers_[name] = buffer;
-    std::cout << "[Audio] SUCCESS: Loaded sound '" << name << "' (" << buffer.getSampleCount() 
-              << " samples, " << buffer.getChannelCount() << " channels)" << std::endl;
+    std::cout << "[Audio] SUCCESS: Loaded sound '" << name << "'" << std::endl;
     return true;
 }
 
+/// Play sound directly from file (recommended)
 void AudioManager::PlaySound(const std::string& filename) {
-    // Direct file playback - simple approach
     if (soundEffect_.openFromFile(filename)) {
+        soundEffect_.setVolume(volume_);
         soundEffect_.play();
-        std::cout << "[Audio] SUCCESS: Playing sound: " << filename 
-                  << " (Duration: " << soundEffect_.getDuration().asSeconds() << "s)" << std::endl;
+        std::cout << "[Audio] Playing sound: " << filename << std::endl;
     } else {
         std::cerr << "[Audio] ERROR: Failed to play: " << filename << std::endl;
     }
 }
 
+/// Play pre-loaded sound by name (unused)
 void AudioManager::play(const std::string& name) {
     auto it = soundBuffers_.find(name);
     if (it != soundBuffers_.end()) {
         sf::Sound sound;
         sound.setBuffer(it->second);
+        sound.setVolume(volume_);
         sound.play();
         activeSounds_.emplace_back(name, sound);
-        std::cout << "[Audio] SUCCESS: Playing named sound: " << name 
-                  << " (Active sounds: " << activeSounds_.size() << ")" << std::endl;
+        std::cout << "[Audio] Playing named sound: " << name << std::endl;
     } else {
         std::cerr << "[Audio] ERROR: Sound not found: " << name << std::endl;
     }
 }
 
+/// Play background music with looping
 void AudioManager::PlayMusic(const std::string& filename) {
     if (music_.openFromFile(filename)) {
         music_.setLoop(true);
+        music_.setVolume(volume_);
         music_.play();
-        std::cout << "[Audio] SUCCESS: Playing music: " << filename 
-                  << " (Duration: " << music_.getDuration().asSeconds() << "s)" << std::endl;
+        std::cout << "[Audio] Playing music: " << filename << std::endl;
     } else {
         std::cerr << "[Audio] ERROR: Failed to play music: " << filename << std::endl;
     }
 }
 
+/// Pre-load music from file (unused)
 void AudioManager::LoadMusic(const std::string& filePath) {
     std::cout << "[Audio] LoadMusic: Loading from '" << filePath << "'" << std::endl;
     if (!music_.openFromFile(filePath)) {
         std::cerr << "[Audio] ERROR: Failed to load music: " << filePath << std::endl;
     } else {
-        std::cout << "[Audio] SUCCESS: Music loaded (Duration: " << music_.getDuration().asSeconds() << "s)" << std::endl;
+        std::cout << "[Audio] SUCCESS: Music loaded" << std::endl;
     }
 }
 
+/// Stop a named sound (unused)
 void AudioManager::stop(const std::string& name) {
-    std::cout << "[Audio] stop: Stopping sound '" << name << "'" << std::endl;
+    std::cout << "[Audio] Stopping sound '" << name << "'" << std::endl;
     int stopped = 0;
     for (auto& kv : activeSounds_) {
         if (kv.first == name) {
@@ -92,36 +99,52 @@ void AudioManager::stop(const std::string& name) {
             stopped++;
         }
     }
-    std::cout << "[Audio] Stopped " << stopped << " instance(s) of '" << name << "'" << std::endl;
 }
 
+/// Stop background music playback
 void AudioManager::StopMusic() {
-    std::cout << "[Audio] StopMusic: Stopping background music" << std::endl;
+    std::cout << "[Audio] Stopping music" << std::endl;
     music_.stop();
 }
 
+/// Stop all audio (sounds and music)
 void AudioManager::StopAll() {
-    std::cout << "[Audio] StopAll: Stopping all sounds and music" << std::endl;
+    std::cout << "[Audio] Stopping all audio" << std::endl;
     music_.stop();
     soundEffect_.stop();
     for (auto& kv : activeSounds_) {
         kv.second.stop();
     }
-    std::cout << "[Audio] Cleared " << activeSounds_.size() << " active sounds" << std::endl;
     activeSounds_.clear();
 }
 
+/// Update - remove stopped sounds from active list
 void AudioManager::Update() {
-    // Clean up stopped sounds
-    auto oldSize = activeSounds_.size();
     auto newEnd = std::remove_if(activeSounds_.begin(), activeSounds_.end(),
         [](const std::pair<std::string, sf::Sound>& kv) {
             return kv.second.getStatus() == sf::Sound::Stopped;
         });
-    int removed = activeSounds_.end() - newEnd;
     activeSounds_.erase(newEnd, activeSounds_.end());
-    if (removed > 0) {
-        std::cout << "[Audio] Update: Cleaned up " << removed << " stopped sound(s) (" 
-                  << oldSize << " -> " << activeSounds_.size() << ")" << std::endl;
+}
+
+/// Set master volume for all audio (0.0 - 100.0)
+void AudioManager::SetVolume(float volume) {
+    // Clamp volume to 0.0 - 100.0
+    volume_ = (volume < 0.0f) ? 0.0f : (volume > 100.0f) ? 100.0f : volume;
+    
+    // Apply to music and sound effect
+    music_.setVolume(volume_);
+    soundEffect_.setVolume(volume_);
+    
+    // Apply to all active sounds
+    for (auto& kv : activeSounds_) {
+        kv.second.setVolume(volume_);
     }
+    
+    std::cout << "[Audio] Volume set to " << volume_ << "%" << std::endl;
+}
+
+/// Get current master volume
+float AudioManager::GetVolume() const {
+    return volume_;
 }

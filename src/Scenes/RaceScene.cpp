@@ -508,6 +508,18 @@ void RaceScene::update(float dt) {
                   obstacle.desiredStrength, obstacle.accelerationStrength);
               CarStatus_[i].inSoftObstacle = true;
               CarStatus_[i].timer = obstacle.activationDuration;
+              
+              // Play sound based on obstacle type
+              if (obstacle.desiredStrength > 1.0f) {
+                // Booster detected (high desiredStrength)
+                AudioManager::Instance().PlaySound("../assets/sounds/audio/booster_sound.wav");
+                std::cout << "[Audio] Booster sound played" << std::endl;
+              } else {
+                // Oil/collision detected
+                AudioManager::Instance().PlaySound("../assets/sounds/audio/collision_sound.wav");
+                std::cout << "[Audio] Collision sound played" << std::endl;
+              }
+              
               std::cout << "Car " << i << " hit soft obstacle " << activatedId
                         << " (desiredStrength: " << obstacle.desiredStrength
                         << ", accelerationStrength: "
@@ -563,12 +575,16 @@ void RaceScene::update(float dt) {
   // Race start countdown
   if (countdown_.update(dt)) {
     raceTimer_.start();
+    AudioManager::Instance().PlaySound("../assets/sounds/audio/race_start_sound.wav");
+    std::cout << "[Audio] Race started" << std::endl;
   }
 
   // Race finished when either timer runs out or a player finishes all laps
   if (raceTimer_.isFinished() || raceFinished_) {
     if (victoryDelayTimer_ < 0.f) {
       victoryDelayTimer_ = 0.8f; // delay before showing victory scene
+      AudioManager::Instance().PlaySound("../assets/sounds/audio/end_game_sound.wav");
+      std::cout << "[Audio] Race ended" << std::endl;
     } else {
       victoryDelayTimer_ -= dt;
       if (victoryDelayTimer_ <= 0.f) {

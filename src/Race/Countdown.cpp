@@ -1,4 +1,5 @@
 #include "Countdown.hpp"
+#include "System/AudioManager.hpp"
 #include <cmath>
 #include <iostream>
 
@@ -23,6 +24,7 @@ void CountdownOverlay::start(float seconds) {
   remaining_ = seconds;
   goTimer_ = 0.0f;
   countingDown_ = true;
+  lastDisplayedNumber_ = -1;
   updateDisplay();
 }
 
@@ -35,9 +37,19 @@ bool CountdownOverlay::update(float dt) {
       countingDown_ = false;
       goTimer_ = 0.8f;
       text_.setString("GO!");
+      // Play "GO!" sound
+      AudioManager::Instance().PlaySound("../assets/sounds/audio/race_start_sound.wav");
+      std::cout << "[Audio] Countdown GO!" << std::endl;
       finishedThisFrame = true;
     } else {
       updateDisplay();
+      // Play beep sound when number changes
+      int currentNumber = static_cast<int>(std::ceil(remaining_));
+      if (currentNumber != lastDisplayedNumber_) {
+        lastDisplayedNumber_ = currentNumber;
+        AudioManager::Instance().PlaySound("../assets/sounds/audio/click_sound.wav");
+        std::cout << "[Audio] Countdown beep: " << currentNumber << std::endl;
+      }
     }
   } else if (goTimer_ > 0.0f) {
     goTimer_ -= dt;
