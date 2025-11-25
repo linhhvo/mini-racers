@@ -4,25 +4,25 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-// /// Suppress ALSA/OpenAL error messages (redirects stderr to /dev/null)
-// static void suppressAudioErrors() {
-//     int devnull = open("/dev/null", O_WRONLY);
-//     if (devnull != -1) {
-//         dup2(devnull, STDERR_FILENO);
-//         close(devnull);
-//     }
-// }
+// Suppress ALSA/OpenAL error messages (redirects stderr to /dev/null)
+static void suppressAudioErrors() {
+    int devnull = open("/dev/null", O_WRONLY);
+    if (devnull != -1) {
+        dup2(devnull, STDERR_FILENO);
+        close(devnull);
+    }
+}
 
-// /// Constructor - suppress audio device errors on initialization
-// AudioManager::AudioManager() {
-//     suppressAudioErrors();
-//     // Initialize default volumes
-// }
+// Constructor - suppress audio device errors on initialization
+AudioManager::AudioManager() {
+    suppressAudioErrors();
+    // Initialize default volumes
+}
 
-/// Static sound effect object - keeps sound alive while playing
+// Static sound effect object - keeps sound alive while playing
 sf::Music AudioManager::soundEffect_;
 
-/// Get or create singleton instance
+// Get or create singleton instance
 AudioManager& AudioManager::Instance() {
     static AudioManager instance;
     return instance;
