@@ -3,6 +3,7 @@
 #include "System/Config.hpp"
 #include "System/GameContext.hpp"
 #include "System/SceneManager.hpp"
+#include "System/AudioManager.hpp"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/View.hpp>
