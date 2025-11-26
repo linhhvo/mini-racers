@@ -9,7 +9,7 @@ public:
   const unsigned windowHeight = desktop_.height * 0.6f;
   const unsigned windowWidth = desktop_.width * 0.6f;
   const int framerate = 60;
-  const int numOfLaps = 1;
+  const int numOfLaps = 2;
   const float raceDuration = 300;
   const int numOfPlayers = 2;
 

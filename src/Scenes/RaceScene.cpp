@@ -5,10 +5,10 @@
 #include "Race/Track.hpp"
 #include "Scenes/PauseScene.hpp"
 #include "Scenes/VictoryScene.hpp"
+#include "System/AudioManager.hpp"
 #include "System/Config.hpp"
 #include "System/GameContext.hpp"
 #include "System/InputManager.hpp"
-#include "System/AudioManager.hpp"
 #include "box2d/math_functions.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -90,27 +90,11 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
     HUD_display_->setCheckpointManager(checkpointManager_.get());
   }
 
-  std::vector<b2Vec2> spawnPointsVec;
-  std::vector<std::pair<float, float>> sizes;
-
-  // Initialize collision tracking
-  carCollidedThisFrame_.resize(nofCars_, false);
-
-  // Vehicles
-  if (!spawnPoints.empty()) {
-    for (int i = 0; i < nofCars_; i++) {
-      sf::Vector2f size = spawnPoints[i].size;
-      if (size.x <= 0.f || size.y <= 0.f) {
-        size = {static_cast<float>(tileSize.x), static_cast<float>(tileSize.y)};
-      }
-      float halfWidth = (size.x / 2.0f) / context_.config->PIXELS_PER_METER;
-      float halfHeight = (size.y / 2.0f) / context_.config->PIXELS_PER_METER;
-      sizes.push_back(std::pair<float, float>(halfWidth, halfHeight));
-      sf::Vector2f center = spawnPoints[0].position + size * 0.5f;
-      float startX = center.x / context_.config->PIXELS_PER_METER;
-      float startY = center.y / context_.config->PIXELS_PER_METER;
-      spawnPointsVec.push_back(b2Vec2{startX, startY});
-    }
+  // determine vehicle count
+  const int desiredPlayers = context_.config->numOfPlayers;
+  nofCars_ = std::min((int)spawnData.size(), desiredPlayers);
+  if (nofCars_ < 1) {
+    nofCars_ = 1;
   }
 
   // set up split views
@@ -278,33 +262,6 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   //     }
   //   }
   // }
-
-  // Initialize split screen views with zoom
-  sf::Vector2u windowSize = window.getSize();
-  float viewWidth = windowSize.x / 2.0f;
-  float viewHeight = windowSize.y;
-
-  // Zoom factor - smaller value = more zoomed in (shows less area)
-  // Adjust this value to change zoom level (0.5 = 2x zoom, 0.25 = 4x zoom,
-  // etc.)
-  float zoomFactor = 0.5f;
-
-  // Left view (car 1 - WASD) - left half of screen
-  leftView_.setViewport(sf::FloatRect(0.0f, 0.0f, 0.5f, 1.0f));
-  leftView_.setSize(viewWidth * zoomFactor, viewHeight * zoomFactor);
-
-  // Right view (car 0 - Arrow keys) - right half of screen
-  rightView_.setViewport(sf::FloatRect(0.5f, 0.0f, 0.5f, 1.0f));
-  rightView_.setSize(viewWidth * zoomFactor, viewHeight * zoomFactor);
-
-  if (leftVehicleIndex_ >= 0) {
-    leftView_.setCenter(carSprites[leftVehicleIndex_].getPosition());
-  }
-  if (rightVehicleIndex_ >= 0) {
-    rightView_.setCenter(carSprites[rightVehicleIndex_].getPosition());
-  }
-
-  std::cout << "RaceScene initialization complete." << std::endl;
 }
 
 RaceScene::~RaceScene() {
@@ -368,12 +325,7 @@ void RaceScene::update(float dt) {
   softObstacleInteraction_->update(dt);
   softObstacleManager_->update(dt);
 
-  // Reset collision tracking for this frame
-  for (int i = 0; i < nofCars_; i++) {
-    carCollidedThisFrame_[i] = false;
-  }
-
-  // Checkpoint, soft obstacle check
+  // Checkpoint sensor detection
   b2SensorEvents sensorEvents = b2World_GetSensorEvents(world_);
   for (int i = 0; i < sensorEvents.beginCount; i++) {
     b2SensorBeginTouchEvent *e = sensorEvents.beginEvents + i;
@@ -399,8 +351,6 @@ void RaceScene::update(float dt) {
 
       if (cp) {
         checkpointManager_->onCarHitCheckpoint(triggeredCar, cp);
-        AudioManager::Instance().PlaySound("../assets/sounds/audio/checkpoint_sound.wav");
-        std::cout << "[Audio] Checkpoint sound played" << std::endl;
       }
       // race finish
       if (checkpointManager_->isRaceFinished()) {
@@ -416,19 +366,21 @@ void RaceScene::update(float dt) {
     b2ContactBeginTouchEvent *e = contactEvents.beginEvents + i;
     // Check if a car is involved in the collision
     for (int j = 0; j < nofCars_; j++) {
-      if (b2Shape_GetUserData(car_->GetVehicle(j)->GetShape()) == 
-          b2Shape_GetUserData(e->shapeIdA) ||
-          b2Shape_GetUserData(car_->GetVehicle(j)->GetShape()) == 
-          b2Shape_GetUserData(e->shapeIdB)) {
+      if (b2Shape_GetUserData(gameWorld_->GetVehicle(j)->GetShape()) ==
+              b2Shape_GetUserData(e->shapeIdA) ||
+          b2Shape_GetUserData(gameWorld_->GetVehicle(j)->GetShape()) ==
+              b2Shape_GetUserData(e->shapeIdB)) {
         AudioManager::Instance().SetSoundVolume(100.0f);
-        AudioManager::Instance().PlaySound("../assets/sounds/audio/collision_sound.wav");
-        AudioManager::Instance().SetSoundVolume(70.0f);  // Reset to default
+        AudioManager::Instance().PlaySound(
+            "../assets/sounds/audio/collision_sound.wav");
+        AudioManager::Instance().SetSoundVolume(70.0f); // Reset to default
         std::cout << "[Audio] Vehicle collision detected at 100%" << std::endl;
         break;
       }
     }
   }
 
+  // update vehicle movement and sprite transform
   for (int i = 0; i < nofCars_; i++) {
     gameWorld_->GetVehicle(i)->update(dt);
 
@@ -443,71 +395,7 @@ void RaceScene::update(float dt) {
     carSprites[i].setPosition(sfPos);
     carSprites[i].setRotation(angleDeg);
 
-    // Check Soft Obstacle zones for this car
-    if (useTmxMap_) {
-      int activatedId = track_.checkAndActivateSoft(sfPos);
-      if (activatedId >= 0) {
-        // Soft obstacle newly activated - apply effect to car
-        const auto &softObstacles = track_.getSoftObstacleZones();
-        for (const auto &obstacle : softObstacles) {
-          if (obstacle.id == activatedId) {
-            // Car just entered this soft obstacle - apply effect
-            if (!CarStatus_[i].inSoftObstacle) {
-              car_->GetVehicle(i)->HitSoftObstacle(
-                  obstacle.desiredStrength, obstacle.accelerationStrength);
-              CarStatus_[i].inSoftObstacle = true;
-              CarStatus_[i].timer = obstacle.activationDuration;
-              
-              // Play sound based on obstacle type
-              if (obstacle.desiredStrength > 0.5f) {
-                // Booster detected (high desiredStrength)
-                AudioManager::Instance().PlaySound("../assets/sounds/audio/booster_sound.wav");
-                std::cout << "[Audio] Booster sound played" << std::endl;
-              } else {
-                // Oil/soft obstacle detected
-                AudioManager::Instance().SetSoundVolume(100.0f);
-                AudioManager::Instance().PlaySound("../assets/sounds/audio/collision_sound.wav");
-                AudioManager::Instance().SetSoundVolume(70.0f);  // Reset to default
-                std::cout << "[Audio] Soft obstacle sound played at 100%" << std::endl;
-              }
-              
-              std::cout << "Car " << i << " hit soft obstacle " << activatedId
-                        << " (desiredStrength: " << obstacle.desiredStrength
-                        << ", accelerationStrength: "
-                        << obstacle.accelerationStrength << ")" << std::endl;
-            }
-            break;
-          }
-        }
-      }
-
-      // Check if car is still in any soft obstacle (to keep timer reset)
-      // We check by seeing if checkAndActivateSoft returns -1 but car is marked
-      // as in obstacle If car is still in, the Track will keep the obstacle
-      // activated and reset its timer We need to check if car's position is
-      // currently in any activated soft obstacle
-      if (CarStatus_[i].inSoftObstacle) {
-        const auto &softObstacles = track_.getSoftObstacleZones();
-        bool stillInObstacle = false;
-        for (const auto &obstacle : softObstacles) {
-          if (obstacle.activated) {
-            // Check if car position is inside this activated obstacle
-            bool isInside = (sfPos.x >= obstacle.position.x &&
-                             sfPos.x <= obstacle.position.x + obstacle.size.x &&
-                             sfPos.y >= obstacle.position.y &&
-                             sfPos.y <= obstacle.position.y + obstacle.size.y);
-            if (isInside) {
-              stillInObstacle = true;
-              // Reset timer while car is still in obstacle
-              CarStatus_[i].timer = obstacle.activationDuration;
-              break;
-            }
-          }
-        }
-        // If car left all obstacles, timer will count down in the existing
-        // logic below
-      }
-    }
+    softObstacleInteraction_->onCarPositionUpdated(i, sfPos);
 
     // Update camera views to follow cars
     camera_.setCarTarget(i, sfPos);
@@ -523,7 +411,7 @@ void RaceScene::update(float dt) {
   if (countdown_.update(dt)) {
     raceTimer_.start();
     // Start race music after "GO!" sound finishes playing
-    AudioManager::Instance().SetMusicVolume(40.0f);  // Set race music to 40%
+    AudioManager::Instance().SetMusicVolume(40.0f); // Set race music to 40%
     AudioManager::Instance().PlayMusic("../assets/sounds/music/race_music.wav");
     std::cout << "[Audio] Race music started at 40%" << std::endl;
   }
@@ -532,8 +420,9 @@ void RaceScene::update(float dt) {
   if (raceTimer_.isFinished() || raceFinished_) {
     if (victoryDelayTimer_ < 0.f) {
       victoryDelayTimer_ = 0.8f; // delay before showing victory scene
-      AudioManager::Instance().PlaySound("../assets/sounds/audio/end_game_sound.wav");
-      AudioManager::Instance().StopMusic();  // Stop race music when game ends
+      AudioManager::Instance().PlaySound(
+          "../assets/sounds/audio/end_game_sound.wav");
+      AudioManager::Instance().StopMusic(); // Stop race music when game ends
       std::cout << "[Audio] Race ended, music stopped" << std::endl;
     } else {
       victoryDelayTimer_ -= dt;

@@ -51,7 +51,7 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
   startGameBtn->onPress = [&]() {
     AudioManager::Instance().StopMusic();
     std::cout << "[Audio] Menu music stopped" << std::endl;
-    manager_.switchScene<RaceScene>(context);
+    manager_.switchScene<RaceScene>(context_);
   };
   exitGameBtn->onPress = [&]() { window.close(); };
 

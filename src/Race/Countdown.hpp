@@ -28,5 +28,4 @@ private:
   int lastDisplayedNumber_ = -1; ///< Track last displayed number for sound
   sf::Font font_;
   sf::Text text_;
-  int lastDisplayedNumber_ = -1; ///< Track last displayed number for sound
 };

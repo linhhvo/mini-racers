@@ -3,7 +3,6 @@
 #include "System/AudioManager.hpp"
 #include "System/GameContext.hpp"
 #include "System/SceneManager.hpp"
-#include "System/AudioManager.hpp"
 #include <SFML/System/Vector2.hpp>
 #include <iostream>
 #include <sstream>
