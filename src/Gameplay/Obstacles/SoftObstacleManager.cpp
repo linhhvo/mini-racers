@@ -14,6 +14,7 @@ void SoftObstacleManager::loadFromData(
     obstacle.desiredStrength = d.desiredStrength;
     obstacle.accelerationStrength = d.accelerationStrength;
     obstacle.activationDuration = d.activationDuration;
+    obstacle.type = d.type;
     obstacles_.push_back(obstacle);
   }
 }

@@ -17,16 +17,15 @@ void SoftObstacleInteraction::onCarPositionUpdated(
 
   // Newly activated obstacle
   if (activatedId >= 0) {
-    const auto &obstacles = manager_->getAll();
+    auto &obstacles = manager_->getAll();
 
-    for (const auto &obstacle : obstacles) {
+    for (auto &obstacle : obstacles) {
       if (obstacle.id != activatedId)
         continue;
 
       // Apply gameplay effect only if car wasn't already inside
       if (!carStates_[carIndex].inObstacle) {
-        vehicles_[carIndex]->HitSoftObstacle(obstacle.desiredStrength,
-                                             obstacle.accelerationStrength);
+        vehicles_[carIndex]->HitSoftObstacle(obstacle);
 
         std::cout << "Car " << carIndex << " hit obstacle " << activatedId
                   << "\n";

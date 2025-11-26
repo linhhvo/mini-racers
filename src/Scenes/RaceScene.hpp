@@ -75,8 +75,6 @@ private:
 
   // Split screen views
   Camera camera_;
-  // sf::View leftView_;  // For car 1 (WASD)
-  // sf::View rightView_; // For car 0 (Arrow keys)
 
   int leftVehicleIndex_ = -1;  // Which car index is red (uses WASD)
   int rightVehicleIndex_ = -1; // Which car index is blue (uses Arrow keys)
