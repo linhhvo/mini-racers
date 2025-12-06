@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../System/InputManager.hpp"
+#include "Gameplay/Obstacles/SoftObstacle.hpp"
+#include "System/AudioManager.hpp"
 #include "VehicleSpec.hpp"
 #include "box2d/math_functions.h"
 #include <box2d/box2d.h>
@@ -25,9 +27,23 @@ public:
     this->SetAccelerationRate(baseAccelerationRate);
   }
 
-  void HitSoftObstacle(float desiredStrength, float accelerationStrength) {
-    this->SetTargetForceStrength(targetForceStrength * desiredStrength);
-    this->SetAccelerationRate(accelerationRate * accelerationStrength);
+  void HitSoftObstacle(SoftObstacle &obstacle) {
+    this->SetTargetForceStrength(targetForceStrength *
+                                 obstacle.desiredStrength);
+    this->SetAccelerationRate(accelerationRate * obstacle.accelerationStrength);
+
+    // Play sound based on obstacle type
+    if (obstacle.type == "booster") {
+      AudioManager::Instance().PlaySound(
+          "../assets/sounds/audio/booster_sound.wav");
+      // std::cout << "[Audio] Booster sound played" << std::endl;
+    } else { // oil type
+      AudioManager::Instance().SetSoundVolume(100.0f);
+      AudioManager::Instance().PlaySound(
+          "../assets/sounds/audio/collision_sound.wav");
+      AudioManager::Instance().SetSoundVolume(70.0f); // Reset to default
+      // std::cout << "[Audio] Soft obstacle sound played at 100%" << std::endl;
+    }
   }
 
   // getter functions

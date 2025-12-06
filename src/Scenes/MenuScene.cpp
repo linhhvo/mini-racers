@@ -1,7 +1,7 @@
 #include "MenuScene.hpp"
 #include "Components/Button/BtnContainer.hpp"
 #include "Components/Button/Button.hpp"
-#include "RaceScene.hpp"
+#include "Scenes/RaceScene.hpp"
 #include "SelectMapScene.hpp"
 #include "System/AudioManager.hpp"
 #include "System/GameContext.hpp"
@@ -15,6 +15,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
 const std::string IMAGE_FILE{"../assets/backgrounds/MenuScene.jpg"};
 
@@ -50,7 +51,7 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
   startGameBtn->onPress = [&]() {
     AudioManager::Instance().StopMusic();
     std::cout << "[Audio] Menu music stopped" << std::endl;
-    manager_.switchScene<RaceScene>(context);
+    manager_.switchScene<RaceScene>(context_);
   };
   exitGameBtn->onPress = [&]() { window.close(); };
 

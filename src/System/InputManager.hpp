@@ -22,18 +22,18 @@ public:
   }
 
 private:
-  std::map<sf::Keyboard::Key, InputManager::InputAction> player1_input{
-      {sf::Keyboard::Up, InputManager::UP},
-      {sf::Keyboard::Down, InputManager::DOWN},
-      {sf::Keyboard::Left, InputManager::LEFT},
-      {sf::Keyboard::Right, InputManager::RIGHT}};
-
-  std::map<sf::Keyboard::Key, InputManager::InputAction> player2_input{
+  std::map<sf::Keyboard::Key, InputManager::InputAction> leftPlayer_input{
       {sf::Keyboard::W, InputManager::UP},
       {sf::Keyboard::S, InputManager::DOWN},
       {sf::Keyboard::A, InputManager::LEFT},
       {sf::Keyboard::D, InputManager::RIGHT}};
 
+  std::map<sf::Keyboard::Key, InputManager::InputAction> rightPlayer_input{
+      {sf::Keyboard::Up, InputManager::UP},
+      {sf::Keyboard::Down, InputManager::DOWN},
+      {sf::Keyboard::Left, InputManager::LEFT},
+      {sf::Keyboard::Right, InputManager::RIGHT}};
+
   std::vector<std::map<sf::Keyboard::Key, InputManager::InputAction>>
-      PlayerInput{player1_input, player2_input};
+      PlayerInput{leftPlayer_input, rightPlayer_input};
 };

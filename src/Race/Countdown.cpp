@@ -39,10 +39,10 @@ bool CountdownOverlay::update(float dt) {
       text_.setString("GO!");
       // Play "GO!" sound at max volume
       float originalSoundVolume = AudioManager::Instance().GetVolume();
-      AudioManager::Instance().SetSoundVolume(100.0f);  // Max volume for GO
-      AudioManager::Instance().PlaySound("../assets/sounds/audio/race_start_sound.wav");
-      AudioManager::Instance().SetSoundVolume(originalSoundVolume);  // Restore
-      std::cout << "[Audio] Countdown GO!" << std::endl;
+      AudioManager::Instance().SetSoundVolume(100.0f); // Max volume for GO
+      AudioManager::Instance().PlaySound(
+          "../assets/sounds/audio/race_start_sound.wav");
+      AudioManager::Instance().SetSoundVolume(originalSoundVolume); // Restore
       finishedThisFrame = true;
     } else {
       updateDisplay();
@@ -51,10 +51,11 @@ bool CountdownOverlay::update(float dt) {
       if (currentNumber != lastDisplayedNumber_) {
         lastDisplayedNumber_ = currentNumber;
         float originalSoundVolume = AudioManager::Instance().GetVolume();
-        AudioManager::Instance().SetSoundVolume(100.0f);  // Max volume for countdown
-        AudioManager::Instance().PlaySound("../assets/sounds/audio/count_down_sound.wav");
-        AudioManager::Instance().SetSoundVolume(originalSoundVolume);  // Restore
-        std::cout << "[Audio] Countdown beep: " << currentNumber << std::endl;
+        AudioManager::Instance().SetSoundVolume(
+            100.0f); // Max volume for countdown
+        AudioManager::Instance().PlaySound(
+            "../assets/sounds/audio/count_down_sound.wav");
+        AudioManager::Instance().SetSoundVolume(originalSoundVolume); // Restore
       }
     }
   } else if (goTimer_ > 0.0f) {
