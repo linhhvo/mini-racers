@@ -1,44 +1,23 @@
 #pragma once
+#include <SFML/System/Vector2.hpp>
+#include <string>
 
-#include "box2d/math_functions.h"
-#include <box2d/box2d.h>
+struct SoftObstacle {
+  int id = 0;
+  sf::Vector2f position;
+  sf::Vector2f size;
 
-// class SoftObstacle {
-// public:
-//   SoftObstacle(b2WorldId world, b2Vec2 position, float height, float width,
-//                float strength)
-//       : postion_(position), strength_(strength) {
-//     b2BodyDef bodyDef = b2DefaultBodyDef();
-//     bodyDef.type = b2_staticBody;
-//     bodyDef.position = postion_;
-//     body = b2CreateBody(world, &bodyDef);
-//
-//     // Box Polygon shape
-//     b2Polygon box = b2MakeBox(height, width);
-//     // Tire material (can be changed for future vehicle types)
-//     b2SurfaceMaterial material = b2SurfaceMaterial();
-//     material.friction = 0.8f;
-//     material.restitution = 0.0f;
-//     material.rollingResistance = 0.0f;
-//     // Shape def
-//     b2ShapeDef shapeDef = b2DefaultShapeDef();
-//     shapeDef.enableContactEvents = false;
-//     shapeDef.enableHitEvents = false;
-//     shapeDef.enableSensorEvents = true;
-//     shapeDef.isSensor = true;
-//     shapeDef.userData = (void *)"softObstacle";
-//     // car creator
-//     softObstacle = b2CreatePolygonShape(body, &shapeDef, &box);
-//   }
-//   ~SoftObstacle() = default;
-//
-//   b2BodyId GetBody() { return body; }
-//   b2ShapeId GetShapeId() { return softObstacle; }
-//   float GetStrength() { return strength_; }
-//
-// private:
-//   float strength_;
-//   b2BodyId body;
-//   b2ShapeId softObstacle;
-//   b2Vec2 postion_;
-// };
+  float desiredStrength = 0.5f;
+  float accelerationStrength = 0.5f;
+
+  float activationDuration = 2.0f;
+  float activationTimer = 0.0f;
+  bool activated = false;
+
+  std::string type; // "oil", "booster", etc.
+
+  bool contains(const sf::Vector2f &pos) const {
+    return pos.x >= position.x && pos.x <= position.x + size.x &&
+           pos.y >= position.y && pos.y <= position.y + size.y;
+  }
+};
