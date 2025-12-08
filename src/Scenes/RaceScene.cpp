@@ -14,6 +14,7 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <algorithm>
+#include <cmath>
 #include <cctype>
 #include <cstring>
 #include <iostream>
@@ -85,6 +86,28 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
 
   softObstacleManager_ = std::make_unique<SoftObstacleManager>();
   softObstacleManager_->loadFromData(softObstacleData);
+
+  // create map border obstacles from tile layer (static collision bodies)
+  mapBorders_.clear();
+  const auto &borderTiles = track_.getBorderTiles();
+  std::cout << "Creating " << borderTiles.size() << " border collision tiles..." << std::endl;
+  
+  for (const auto &borderTile : borderTiles) {
+    // Convert to Box2D coordinates (pixels to meters)
+    b2Vec2 worldPos(borderTile.position.x / context_.config->PIXELS_PER_METER,
+                    borderTile.position.y / context_.config->PIXELS_PER_METER);
+    
+    // Convert size to Box2D (half-width and half-height for b2MakeBox)
+    // Obstacle constructor takes (height, width) and b2MakeBox expects half-extents
+    float halfWidth = (borderTile.size.x * 0.5f) / context_.config->PIXELS_PER_METER;
+    float halfHeight = (borderTile.size.y * 0.5f) / context_.config->PIXELS_PER_METER;
+    
+    // Create static obstacle body
+    // Obstacle constructor: (world, position, height, width)
+    mapBorders_.push_back(std::make_unique<Obstacle>(
+        world_, worldPos, halfHeight, halfWidth));
+  }
+  std::cout << "Created " << mapBorders_.size() << " border collision bodies" << std::endl;
 
   if (HUD_display_) {
     HUD_display_->setCheckpointManager(checkpointManager_.get());
@@ -267,7 +290,7 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
 RaceScene::~RaceScene() {
   if (b2World_IsValid(world_)) {
     b2DestroyWorld(world_);
-  }
+}
 }
 
 void RaceScene::handleEvent(const sf::Event &event) {
@@ -318,7 +341,7 @@ void RaceScene::handleEvent(const sf::Event &event) {
 void RaceScene::update(float dt) {
   // Step Box2D world
   if (!countdown_.isBlockingInput()) {
-    b2World_Step(world_, dt, 4);
+  b2World_Step(world_, dt, 4);
   }
 
   checkpointManager_->update(dt);
@@ -396,6 +419,36 @@ void RaceScene::update(float dt) {
     carSprites[i].setRotation(angleDeg);
 
     softObstacleInteraction_->onCarPositionUpdated(i, sfPos);
+
+    // Off-track speed reduction
+    Vehicle *vehicle = gameWorld_->GetVehicle(i);
+    float baseSpeed = vehicle->GetBaseTargetForceStrength();
+    float currentSpeed = vehicle->GetTargetForceStrength();
+    bool isOnTrack = track_.isPositionOnTrack(sfPos);
+    
+    // Off-track speed multiplier (60% of base speed)
+    const float offTrackSpeedMultiplier = 0.6f;
+    float offTrackSpeed = baseSpeed * offTrackSpeedMultiplier;
+    
+    // Tolerance for comparing speeds (to account for floating point precision)
+    const float speedTolerance = 0.01f;
+    
+    // Check if car is at base speed (not affected by soft obstacles)
+    bool isAtBaseSpeed = std::abs(currentSpeed - baseSpeed) < speedTolerance;
+    // Check if car is at off-track speed
+    bool isAtOffTrackSpeed = std::abs(currentSpeed - offTrackSpeed) < speedTolerance;
+    
+    if (isOnTrack) {
+      // On track: restore base speed if currently at off-track speed
+      if (isAtOffTrackSpeed) {
+        vehicle->SetTargetForceStrength(baseSpeed);
+      }
+    } else {
+      // Off track: apply speed reduction only if at base speed (not affected by soft obstacles)
+      if (isAtBaseSpeed) {
+        vehicle->SetTargetForceStrength(offTrackSpeed);
+      }
+    }
 
     // Update camera views to follow cars
     camera_.setCarTarget(i, sfPos);

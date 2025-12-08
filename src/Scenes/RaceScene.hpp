@@ -2,6 +2,7 @@
 #include "../System/SceneManager.hpp"
 #include "Gameplay/Checkpoints/CheckpointManager.hpp"
 #include "Gameplay/GameWorld.hpp"
+#include "Gameplay/Obstacles/HardObstacle.hpp"
 #include "Gameplay/Obstacles/SoftObstacleInteraction.hpp"
 #include "Gameplay/Obstacles/SoftObstacleManager.hpp"
 #include "Race/Camera.hpp"
@@ -64,6 +65,7 @@ private:
   // obstacles
   std::unique_ptr<SoftObstacleManager> softObstacleManager_;
   std::unique_ptr<SoftObstacleInteraction> softObstacleInteraction_;
+  std::vector<std::unique_ptr<Obstacle>> mapBorders_; // Map border obstacles
 
   // box2d
   b2WorldId world_{b2_nullWorldId};
