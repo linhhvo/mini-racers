@@ -51,6 +51,8 @@ public:
   b2ShapeId GetShape() { return car; };
   b2Vec2 GetPosition() { return b2Body_GetPosition(body); };
   float GetSpeed() { return forceStrength; }
+  float GetTargetForceStrength() const { return targetForceStrength; }
+  float GetBaseTargetForceStrength() const { return baseTargetForceStrength; }
 
 private:
   b2Vec2 getLateralVelocity() const {
