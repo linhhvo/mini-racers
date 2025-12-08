@@ -12,22 +12,22 @@ Track::Track() : mapLoaded_(false), mapSize_(0, 0), tileSize_(0, 0) {}
 
 bool Track::loadFromFile(const std::string &filepath) {
   if (!map_.load(filepath)) {
-    // std::cout << "Failed to load TMX map: " << filepath << std::endl;
+    std::cout << "Failed to load TMX map: " << filepath << std::endl;
     return false;
   }
 
   if (map_.getOrientation() != tmx::Orientation::Orthogonal) {
-    // std::cout << "Map is not orthogonal - only orthogonal maps are supported"
-    //           << std::endl;
+    std::cout << "Map is not orthogonal - only orthogonal maps are supported"
+              << std::endl;
     return false;
   }
 
   // Check if tilesets loaded properly
   const auto &tilesets = map_.getTilesets();
   if (tilesets.empty()) {
-    // std::cout << "Error: No tilesets found in map. Make sure tilesets are "
-    //              "embedded in the TMX file."
-    //           << std::endl;
+    std::cout << "Error: No tilesets found in map. Make sure tilesets are "
+                 "embedded in the TMX file."
+              << std::endl;
     return false;
   }
 
@@ -40,7 +40,7 @@ bool Track::loadFromFile(const std::string &filepath) {
   }
 
   if (!hasValidTileset) {
-    // std::cout << "Error: No valid tilesets with images found." << std::endl;
+    std::cout << "Error: No valid tilesets with images found." << std::endl;
     return false;
   }
 
@@ -71,7 +71,6 @@ bool Track::loadFromFile(const std::string &filepath) {
       createLayer(map_, layer->getLayerAs<tmx::TileLayer>(), layerName);
       // Store layer order to preserve TMX rendering order (bottom to top)
       layerOrder_.push_back(layerName);
-      std::cout << layerName << std::endl;
     }
   }
 
@@ -86,15 +85,6 @@ void Track::loadTextures(const tmx::Map &map) {
     const std::string &imagePath = tileset.getImagePath();
 
     if (imagePath.empty()) {
-      // std::cout << "Warning: Tileset '" << tileset.getName()
-      //           << "' has no image path" << std::endl;
-      // std::cout << "  This usually means the tileset is external (.tsx file)
-      // "
-      //              "and wasn't found."
-      //           << std::endl;
-      // std::cout << "  Solution: In Tiled, right-click the tileset -> 'Embed "
-      //              "Tileset' to embed it in the TMX file."
-      //           << std::endl;
       continue;
     }
 
@@ -107,11 +97,6 @@ void Track::loadTextures(const tmx::Map &map) {
       // Try relative to assets/maps directory
       fullPath = "../assets/maps/" + imagePath;
       if (!img.loadFromFile(fullPath)) {
-        // std::cout << "Warning: Failed to load tileset image: " << imagePath
-        //           << std::endl;
-        // std::cout << "  Tried: " << imagePath << " and " << fullPath
-        //           << std::endl;
-        // Create a fallback magenta texture
         img.create(32, 32, sf::Color::Magenta);
       }
     }
@@ -125,7 +110,6 @@ void Track::loadTextures(const tmx::Map &map) {
       }
       texture->loadFromImage(img);
       textures_[imagePath] = std::move(texture);
-      // std::cout << "Loaded tileset image: " << imagePath << std::endl;
     }
   }
 }
@@ -208,9 +192,11 @@ void Track::createLayer(const tmx::Map &map, const tmx::TileLayer &layer,
                      sf::Color::White, sf::Vector2f(texX, texY + tileSize.y));
 
       // Handle flip flags (horizontal, vertical, and diagonal)
-      // Tiled encoding: diagonal = transpose texture coords, then apply H/V flips
-      // Diagonal alone = 90° CW, Diagonal+H = 90° CCW, Diagonal+V = 180°, Diagonal+H+V = 270° CW
-      bool hasHorizontal = tile.flipFlags & tmx::TileLayer::FlipFlag::Horizontal;
+      // Tiled encoding: diagonal = transpose texture coords, then apply H/V
+      // flips Diagonal alone = 90° CW, Diagonal+H = 90° CCW, Diagonal+V = 180°,
+      // Diagonal+H+V = 270° CW
+      bool hasHorizontal =
+          tile.flipFlags & tmx::TileLayer::FlipFlag::Horizontal;
       bool hasVertical = tile.flipFlags & tmx::TileLayer::FlipFlag::Vertical;
       bool hasDiagonal = tile.flipFlags & tmx::TileLayer::FlipFlag::Diagonal;
 
@@ -220,7 +206,7 @@ void Track::createLayer(const tmx::Map &map, const tmx::TileLayer &layer,
         for (int i = 0; i < 4; ++i) {
           origTex[i] = quad.vertices[i].texCoords;
         }
-        
+
         // Calculate relative coordinates from tile origin (texX, texY)
         float dx0 = origTex[0].x - texX;
         float dy0 = origTex[0].y - texY;
@@ -230,19 +216,27 @@ void Track::createLayer(const tmx::Map &map, const tmx::TileLayer &layer,
         float dy2 = origTex[2].y - texY;
         float dx3 = origTex[3].x - texX;
         float dy3 = origTex[3].y - texY;
-        
+
         if (hasHorizontal && hasVertical) {
           // 270° CW: transpose (swap x/y), then flip both
-          quad.vertices[0].texCoords = sf::Vector2f(texX + tileSize.y - dy0, texY + tileSize.x - dx0);
-          quad.vertices[1].texCoords = sf::Vector2f(texX + tileSize.y - dy1, texY + tileSize.x - dx1);
-          quad.vertices[2].texCoords = sf::Vector2f(texX + tileSize.y - dy2, texY + tileSize.x - dx2);
-          quad.vertices[3].texCoords = sf::Vector2f(texX + tileSize.y - dy3, texY + tileSize.x - dx3);
+          quad.vertices[0].texCoords =
+              sf::Vector2f(texX + tileSize.y - dy0, texY + tileSize.x - dx0);
+          quad.vertices[1].texCoords =
+              sf::Vector2f(texX + tileSize.y - dy1, texY + tileSize.x - dx1);
+          quad.vertices[2].texCoords =
+              sf::Vector2f(texX + tileSize.y - dy2, texY + tileSize.x - dx2);
+          quad.vertices[3].texCoords =
+              sf::Vector2f(texX + tileSize.y - dy3, texY + tileSize.x - dx3);
         } else if (hasVertical) {
           // 180°: transpose, then flip vertically
-          quad.vertices[0].texCoords = sf::Vector2f(texX + tileSize.y - dy0, texY + dx0);
-          quad.vertices[1].texCoords = sf::Vector2f(texX + tileSize.y - dy1, texY + dx1);
-          quad.vertices[2].texCoords = sf::Vector2f(texX + tileSize.y - dy2, texY + dx2);
-          quad.vertices[3].texCoords = sf::Vector2f(texX + tileSize.y - dy3, texY + dx3);
+          quad.vertices[0].texCoords =
+              sf::Vector2f(texX + tileSize.y - dy0, texY + dx0);
+          quad.vertices[1].texCoords =
+              sf::Vector2f(texX + tileSize.y - dy1, texY + dx1);
+          quad.vertices[2].texCoords =
+              sf::Vector2f(texX + tileSize.y - dy2, texY + dx2);
+          quad.vertices[3].texCoords =
+              sf::Vector2f(texX + tileSize.y - dy3, texY + dx3);
         } else if (hasHorizontal) {
           // 90° CCW: transpose only
           quad.vertices[0].texCoords = sf::Vector2f(texX + dy0, texY + dx0);
@@ -251,10 +245,14 @@ void Track::createLayer(const tmx::Map &map, const tmx::TileLayer &layer,
           quad.vertices[3].texCoords = sf::Vector2f(texX + dy3, texY + dx3);
         } else {
           // 90° CW: transpose, then flip horizontally
-          quad.vertices[0].texCoords = sf::Vector2f(texX + dy0, texY + tileSize.x - dx0);
-          quad.vertices[1].texCoords = sf::Vector2f(texX + dy1, texY + tileSize.x - dx1);
-          quad.vertices[2].texCoords = sf::Vector2f(texX + dy2, texY + tileSize.x - dx2);
-          quad.vertices[3].texCoords = sf::Vector2f(texX + dy3, texY + tileSize.x - dx3);
+          quad.vertices[0].texCoords =
+              sf::Vector2f(texX + dy0, texY + tileSize.x - dx0);
+          quad.vertices[1].texCoords =
+              sf::Vector2f(texX + dy1, texY + tileSize.x - dx1);
+          quad.vertices[2].texCoords =
+              sf::Vector2f(texX + dy2, texY + tileSize.x - dx2);
+          quad.vertices[3].texCoords =
+              sf::Vector2f(texX + dy3, texY + tileSize.x - dx3);
         }
       } else {
         // No diagonal, just apply horizontal and vertical flips
@@ -412,11 +410,9 @@ std::vector<Track::BorderTile> Track::getBorderTiles() const {
     if (layer->getType() == tmx::Layer::Type::Tile) {
       std::string layerName = layer->getName();
       std::string layerNameLower = layerName;
-      std::transform(layerNameLower.begin(), layerNameLower.end(),
-                     layerNameLower.begin(),
-                     [](unsigned char c) {
-                       return static_cast<char>(std::tolower(c));
-                     });
+      std::transform(
+          layerNameLower.begin(), layerNameLower.end(), layerNameLower.begin(),
+          [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
       if (layerNameLower == "border") {
         borderLayer = &layer->getLayerAs<tmx::TileLayer>();
@@ -472,11 +468,9 @@ bool Track::isPositionOnTrack(const sf::Vector2f &position) const {
     if (layer->getType() == tmx::Layer::Type::Tile) {
       std::string layerName = layer->getName();
       std::string layerNameLower = layerName;
-      std::transform(layerNameLower.begin(), layerNameLower.end(),
-                     layerNameLower.begin(),
-                     [](unsigned char c) {
-                       return static_cast<char>(std::tolower(c));
-                     });
+      std::transform(
+          layerNameLower.begin(), layerNameLower.end(), layerNameLower.begin(),
+          [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
       if (layerNameLower == "track") {
         trackLayer = &layer->getLayerAs<tmx::TileLayer>();

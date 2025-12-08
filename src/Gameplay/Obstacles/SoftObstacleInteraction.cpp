@@ -26,9 +26,6 @@ void SoftObstacleInteraction::onCarPositionUpdated(
       // Apply gameplay effect only if car wasn't already inside
       if (!carStates_[carIndex].inObstacle) {
         vehicles_[carIndex]->HitSoftObstacle(obstacle);
-
-        std::cout << "Car " << carIndex << " hit obstacle " << activatedId
-                  << "\n";
       }
 
       // Refresh / set timer
@@ -73,8 +70,6 @@ void SoftObstacleInteraction::update(float dt) {
       state.timer = 0.f;
 
       vehicles_[i]->Reset();
-
-      std::cout << "Car " << i << " returns to normal!\n";
     }
   }
 }

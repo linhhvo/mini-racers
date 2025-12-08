@@ -50,7 +50,6 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
   };
   startGameBtn->onPress = [&]() {
     AudioManager::Instance().StopMusic();
-    std::cout << "[Audio] Menu music stopped" << std::endl;
     manager_.switchScene<RaceScene>(context_);
   };
   exitGameBtn->onPress = [&]() { window.close(); };
@@ -75,9 +74,6 @@ MenuScene::MenuScene(SceneManager &manager, GameContext &context)
   if (!musicStarted) {
     AudioManager::Instance().PlayMusic("../assets/sounds/music/menu_music.wav");
     musicStarted = true;
-    std::cout << "[Audio] Menu music started at 80%" << std::endl;
-  } else {
-    std::cout << "[Audio] Menu music continued at 80%" << std::endl;
   }
 }
 

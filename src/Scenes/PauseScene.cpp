@@ -4,7 +4,6 @@
 #include "System/GameContext.hpp"
 #include "System/SceneManager.hpp"
 #include <SFML/System/Vector2.hpp>
-#include <iostream>
 
 PauseScene::PauseScene(SceneManager &manager, GameContext &context)
     : manager_(manager), context_(context) {
@@ -20,7 +19,6 @@ PauseScene::PauseScene(SceneManager &manager, GameContext &context)
   exitGameBtn->onPress = [&]() {
     AudioManager::Instance().SetMusicVolume(80.0f);
     AudioManager::Instance().PlayMusic("../assets/sounds/music/menu_music.wav");
-    std::cout << "[Audio] Menu music started at 80%" << std::endl;
     manager_.switchScene<MenuScene>(context_);
   };
 
