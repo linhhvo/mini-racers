@@ -1,6 +1,6 @@
 # Overview
 
-Micro Machine is a top-down multiplayer racing game. Two players race against each other on a track, avoiding obstacles and hitting boosters on the way. The first to complete three laps wins the race. The game features local split-screen multiplayer, dynamic vehicle handling, and a robust checkpoint system.
+Micro Machines is a top-down multiplayer racing game. Two players race against each other on a track, avoiding obstacles and hitting boosters on the way. The first to complete three laps wins the race. The game features local split-screen multiplayer, dynamic vehicle handling, and a robust checkpoint system.
 
 ---
 
@@ -16,7 +16,7 @@ The program is coded in C++ and includes a scene manager, an input manager, a ga
 - **GameWorld** — Handles physics and creates Box2D objects for vehicles and obstacles
 - **Vehicle** — Manages movement, acceleration, steering, and collision consequences
 - **ObstacleManager / CheckpointManager** — Detect obstacle or checkpoint interactions
-- **Asset Manager** — Parses TMX maps and loads track, objects, vehicle data
+- **AssetManager** — Parses TMX maps and loads track, objects, vehicle data
 - **HUD, Timer, Cameras** — Display gameplay information and support split-screen
 - **AudioManager** — Plays audio using the asset library
 
@@ -65,7 +65,7 @@ The program is coded in C++ and includes a scene manager, an input manager, a ga
 
 - App (Entry point) initializes SceneManager, InputManager, AudioManager, CheckpointManager, and Config.
 - All scenes inherit from an abstract scene base class.
-- RaceScene contains core gameplay componenets and manages the GameWorld and Track.
+- RaceScene contains core gameplay components and manages the GameWorld and Track.
 - GameWorld contains all interactive objects and manages vehicles and obstacles using Box2D.
 - AudioManager is a Singleton accessed by all scenes and provides global audio access.
 
@@ -282,7 +282,7 @@ Work across sprints was distributed according to skill areas:
 ### Completed Work
 
 **Linh Bui**
-- Implemented heckpoint system  
+- Implemented checkpoint system  
 - Implemented lap counting and lap completion validation
 
 **Lam Ho**
