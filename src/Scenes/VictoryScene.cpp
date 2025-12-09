@@ -61,7 +61,6 @@ VictoryScene::VictoryScene(SceneManager &manager, GameContext &context,
   // Play menu music when returning to victory screen
   AudioManager::Instance().SetMusicVolume(80.0f);
   AudioManager::Instance().PlayMusic("../assets/sounds/music/menu_music.wav");
-  std::cout << "[Audio] Menu music started at 80%" << std::endl;
 }
 
 void VictoryScene::handleEvent(const sf::Event &event) {

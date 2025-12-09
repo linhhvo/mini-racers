@@ -35,6 +35,17 @@ public:
   // Extract a tile texture from the tileset by GID
   std::unique_ptr<sf::Texture> extractTileTexture(std::uint32_t tileGID) const;
 
+  // Get border collision tiles from the "border" layer
+  // Returns vector of tile positions (center) and sizes
+  struct BorderTile {
+    sf::Vector2f position; // Center position in pixels
+    sf::Vector2f size;     // Size in pixels
+  };
+  std::vector<BorderTile> getBorderTiles() const;
+
+  // Check if a position (in pixels) is on the "Track" tile layer
+  bool isPositionOnTrack(const sf::Vector2f &position) const;
+
 private:
   void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
   void createLayer(const tmx::Map &map, const tmx::TileLayer &layer,

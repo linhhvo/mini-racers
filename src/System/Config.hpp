@@ -17,5 +17,5 @@ public:
   const float DEGTORAD = 0.0174532925199432957f;
   const float RADTODEG = 57.295779513082320876f;
 
-  std::string TMX_MAP{"../assets/maps/stas_map.tmx"};
+  std::string TMX_MAP{"../assets/maps/map1.tmx"};
 };

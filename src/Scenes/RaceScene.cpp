@@ -15,6 +15,7 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -35,29 +36,8 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   // Load TMX map
   if (track_.loadFromFile(context_.config->TMX_MAP)) {
     useTmxMap_ = true;
-    // std::cout << "  Successfully loaded TMX map: " <<
-    // context_.config->TMX_MAP
-    //           << std::endl;
-    // std::cout << "  Map size: " << track_.getMapSize().x << "x"
-    //           << track_.getMapSize().y << std::endl;
-    // std::cout << "  Tile size: " << track_.getTileSize().x << "x"
-    //           << track_.getTileSize().y << std::endl;
   } else {
     useTmxMap_ = false;
-    // std::cerr << "  ERROR: Failed to load TMX map: " <<
-    // context_.config->TMX_MAP
-    //           << std::endl;
-    // std::cerr << "  Make sure you're running from the project root directory
-    // "
-    //              "(where CMakeLists.txt is)"
-    //           << std::endl;
-    // std::cerr << "  Or that the path '../assets/maps/stas_map.tmx' is correct
-    // "
-    //              "relative to your working directory."
-    //           << std::endl;
-    // std::cerr
-    //     << "  Game will continue but screen will be black without the map!"
-    //     << std::endl;
   }
 
   if (!defaultCarTexture_.loadFromFile(DEFAULT_CAR_TEXTURE)) {
@@ -85,6 +65,29 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
 
   softObstacleManager_ = std::make_unique<SoftObstacleManager>();
   softObstacleManager_->loadFromData(softObstacleData);
+
+  // create map border obstacles from tile layer (static collision bodies)
+  mapBorders_.clear();
+  const auto &borderTiles = track_.getBorderTiles();
+
+  for (const auto &borderTile : borderTiles) {
+    // Convert to Box2D coordinates (pixels to meters)
+    b2Vec2 worldPos(borderTile.position.x / context_.config->PIXELS_PER_METER,
+                    borderTile.position.y / context_.config->PIXELS_PER_METER);
+
+    // Convert size to Box2D (half-width and half-height for b2MakeBox)
+    // Obstacle constructor takes (height, width) and b2MakeBox expects
+    // half-extents
+    float halfWidth =
+        (borderTile.size.x * 0.5f) / context_.config->PIXELS_PER_METER;
+    float halfHeight =
+        (borderTile.size.y * 0.5f) / context_.config->PIXELS_PER_METER;
+
+    // Create static obstacle body
+    // Obstacle constructor: (world, position, height, width)
+    mapBorders_.push_back(
+        std::make_unique<Obstacle>(world_, worldPos, halfHeight, halfWidth));
+  }
 
   if (HUD_display_) {
     HUD_display_->setCheckpointManager(checkpointManager_.get());
@@ -161,107 +164,6 @@ RaceScene::RaceScene(SceneManager &manager, GameContext &context)
   // set up obstacle and vehicle interaction
   softObstacleInteraction_ = std::make_unique<SoftObstacleInteraction>(
       softObstacleManager_.get(), gameWorld_->GetAllVehicles());
-
-  // obstacles
-  // if (nofObstacles_ > 0) {
-  //   std::vector<b2Vec2> ObstacleSpawnVec;
-  //   std::vector<std::pair<float, float>> Obstaclesizes;
-  //
-  //   for (int i = 0; i < nofObstacles_; i++) {
-  //     sf::Vector2f size = obstacleSpawns[i].size;
-  //     if (size.x <= 0.f || size.y <= 0.f) {
-  //       size = {static_cast<float>(tileSize.x),
-  //       static_cast<float>(tileSize.y)};
-  //     }
-  //     float halfWidth = (size.x / 2.0f) / context_.config->PIXELS_PER_METER;
-  //     float halfHeight = (size.y / 2.0f) / context_.config->PIXELS_PER_METER;
-  //     sizes.push_back(std::pair<float, float>(halfWidth, halfHeight));
-  //     sf::Vector2f center = spawnPoints[0].position + size * 0.5f;
-  //     float startX = center.x / context_.config->PIXELS_PER_METER;
-  //     float startY = center.y / context_.config->PIXELS_PER_METER;
-  //     ObstacleSpawnVec.push_back(b2Vec2{startX, startY});
-  //   }
-  //
-  //   car_->ObstacleFactory(nofObstacles_, ObstacleSpawnVec, Obstaclesizes);
-  //   obstacleSprites.clear();
-  //   obstacleSprites.resize(nofObstacles_);
-  //
-  //   for (int i = 0; i < nofObstacles_; i++) {
-  //     const Track::SpawnPoint *obstacleSpawn = &spawnPoints[i];
-  //
-  //     sf::Texture *texture = &defaultObstacleTexture_;
-  //     if (obstacleSpawn) {
-  //       std::cout << "Obstacle " << i << ": tileID=" << obstacleSpawn->tileID
-  //                 << ", textureId='" << obstacleSpawn->textureId << "'"
-  //                 << std::endl;
-  //
-  //       // If object has a tile ID, use that (it will extract from tileset)
-  //       if (obstacleSpawn->tileID > 0) {
-  //         std::string tileKey = "tile_" +
-  //         std::to_string(obstacleSpawn->tileID); std::cout << "  Extracting
-  //         tile texture for GID: "
-  //                   << obstacleSpawn->tileID << std::endl;
-  //         texture = getObstacleTexture(tileKey);
-  //       } else if (!obstacleSpawn->textureId.empty()) {
-  //         // Otherwise use the texture property (blue/red or file path)
-  //         std::cout << "  Using texture property: " <<
-  //         obstacleSpawn->textureId
-  //                   << std::endl;
-  //         texture = getObstacleTexture(obstacleSpawn->textureId);
-  //       } else {
-  //         std::cout << "  No tileID or texture property, using default
-  //         texture"
-  //                   << std::endl;
-  //       }
-  //     } else {
-  //       std::cout << "Obstacle " << i
-  //                 << ": No spawn point, using default texture" << std::endl;
-  //     }
-  //     obstacleSprites[i].setTexture(*texture);
-  //
-  //     sf::FloatRect bounds = obstacleSprites[i].getLocalBounds();
-  //     obstacleSprites[i].setOrigin(bounds.width / 2.f, bounds.height / 2.f);
-  //
-  //     sf::Vector2f targetSize = {static_cast<float>(tileSize.x),
-  //                                static_cast<float>(tileSize.y)};
-  //     if (obstacleSpawn &&
-  //         (obstacleSpawn->size.x > 0.f && obstacleSpawn->size.y > 0.f)) {
-  //       targetSize = obstacleSpawn->size;
-  //     }
-  //
-  //     if (bounds.width > 0.f && bounds.height > 0.f) {
-  //       obstacleSprites[i].setScale(targetSize.x / bounds.width,
-  //                                   targetSize.y / bounds.height);
-  //     }
-  //
-  //     float rotationDeg = obstacleSpawn ? obstacleSpawn->rotation : 0.f;
-  //     float rotationRad = rotationDeg * context_.config->DEGTORAD;
-  //
-  //     b2BodyId body = car_->GetObstacle(i)->GetBody();
-  //
-  //     if (obstacleSpawn) {
-  //       sf::Vector2f center = obstacleSpawn->position;
-  //       if (obstacleSpawn->size.x > 0.f && obstacleSpawn->size.y > 0.f) {
-  //         center += obstacleSpawn->size * 0.5f;
-  //       } else {
-  //         center += targetSize * 0.5f;
-  //       }
-  //
-  //       b2Vec2 position{center.x / context_.config->PIXELS_PER_METER,
-  //                       center.y / context_.config->PIXELS_PER_METER};
-  //       b2Rot rotation = b2MakeRot(rotationRad);
-  //       b2Body_SetTransform(body, position, rotation);
-  //       obstacleSprites[i].setPosition(center);
-  //       obstacleSprites[i].setRotation(rotationDeg);
-  //     } else {
-  //       auto pos = b2Body_GetPosition(body);
-  //       obstacleSprites[i].setPosition(
-  //           {pos.x * context_.config->PIXELS_PER_METER,
-  //            pos.y * context_.config->PIXELS_PER_METER});
-  //       obstacleSprites[i].setRotation(rotationDeg);
-  //     }
-  //   }
-  // }
 }
 
 RaceScene::~RaceScene() {
@@ -374,7 +276,6 @@ void RaceScene::update(float dt) {
         AudioManager::Instance().PlaySound(
             "../assets/sounds/audio/collision_sound.wav");
         AudioManager::Instance().SetSoundVolume(70.0f); // Reset to default
-        std::cout << "[Audio] Vehicle collision detected at 100%" << std::endl;
         break;
       }
     }
@@ -397,6 +298,38 @@ void RaceScene::update(float dt) {
 
     softObstacleInteraction_->onCarPositionUpdated(i, sfPos);
 
+    // Off-track speed reduction
+    Vehicle *vehicle = gameWorld_->GetVehicle(i);
+    float baseSpeed = vehicle->GetBaseTargetForceStrength();
+    float currentSpeed = vehicle->GetTargetForceStrength();
+    bool isOnTrack = track_.isPositionOnTrack(sfPos);
+
+    // Off-track speed multiplier (60% of base speed)
+    const float offTrackSpeedMultiplier = 0.6f;
+    float offTrackSpeed = baseSpeed * offTrackSpeedMultiplier;
+
+    // Tolerance for comparing speeds (to account for floating point precision)
+    const float speedTolerance = 0.01f;
+
+    // Check if car is at base speed (not affected by soft obstacles)
+    bool isAtBaseSpeed = std::abs(currentSpeed - baseSpeed) < speedTolerance;
+    // Check if car is at off-track speed
+    bool isAtOffTrackSpeed =
+        std::abs(currentSpeed - offTrackSpeed) < speedTolerance;
+
+    if (isOnTrack) {
+      // On track: restore base speed if currently at off-track speed
+      if (isAtOffTrackSpeed) {
+        vehicle->SetTargetForceStrength(baseSpeed);
+      }
+    } else {
+      // Off track: apply speed reduction only if at base speed (not affected by
+      // soft obstacles)
+      if (isAtBaseSpeed) {
+        vehicle->SetTargetForceStrength(offTrackSpeed);
+      }
+    }
+
     // Update camera views to follow cars
     camera_.setCarTarget(i, sfPos);
   }
@@ -413,7 +346,6 @@ void RaceScene::update(float dt) {
     // Start race music after "GO!" sound finishes playing
     AudioManager::Instance().SetMusicVolume(40.0f); // Set race music to 40%
     AudioManager::Instance().PlayMusic("../assets/sounds/music/race_music.wav");
-    std::cout << "[Audio] Race music started at 40%" << std::endl;
   }
 
   // Race finished when either timer runs out or a player finishes all laps
@@ -423,11 +355,9 @@ void RaceScene::update(float dt) {
       AudioManager::Instance().PlaySound(
           "../assets/sounds/audio/end_game_sound.wav");
       AudioManager::Instance().StopMusic(); // Stop race music when game ends
-      std::cout << "[Audio] Race ended, music stopped" << std::endl;
     } else {
       victoryDelayTimer_ -= dt;
       if (victoryDelayTimer_ <= 0.f) {
-        std::cout << "Race over!\n";
         manager_.pushScene<VictoryScene>(context_, winnerCarID_);
         return;
       }

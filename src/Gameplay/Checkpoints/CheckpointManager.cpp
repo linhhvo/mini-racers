@@ -66,7 +66,6 @@ void CheckpointManager::onCarHitCheckpoint(int carID, Checkpoint *cp) {
     if (progress.currentLap >= context_.config->numOfLaps) {
       raceFinished_ = true;
       winnerCarID_ = carID;
-      std::cout << "Car " << winnerCarID_ << " wins the race!\n";
     }
 
     ResetCheckpoints();
