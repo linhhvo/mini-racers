@@ -189,12 +189,12 @@ make
 > [!NOTE]
 > Make sure to run the executable inside the build folder
 
-Linux/macOS
+### Linux/macOS
 ```bash
 ./MicroMachines
 ```
 
-Windows
+### Windows
 ```bash
 MicroMachines.exe
 ```
