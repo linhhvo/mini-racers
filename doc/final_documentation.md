@@ -26,38 +26,40 @@ The program is coded in C++ and includes a scene manager, an input manager, a ga
 
 ## Main Class Relationships Diagram
 
+![Main Class Relationships Diagram](diagram.png)
+
 ### Color-Coded Modules
 
 #### Purple (System Management):
 
-- SceneManager – Manages scene transitions and lifecycle
-- InputManager – Handles keyboard input for player controls
-- AudioManager – Singleton responsible for audio playback
-- CheckpointManager – Tracks lap progression and race completion
+- **SceneManager** – Manages scene transitions and lifecycle
+- **InputManager** – Handles keyboard input for player controls
+- **AudioManager** – Singleton responsible for audio playback
+- **CheckpointManager** – Tracks lap progression and race completion
 
 #### Gray (Configuration):
 
-- Config – Game settings and constants
+- **Config** – Game settings and constants
 
 #### Blue (Scene Layer):
 
-- Scene (Abstract) – Base class for all scenes
-- MenuScene – Main menu interface
-- VictoryScene – Race end/winner display
-- PauseScene – Pause menu
-- SelectMapScene – Map selection
-- RaceScene – Core gameplay scene
+- **Scene (Abstract)** – Base class for all scenes
+- **MenuScene** – Main menu interface
+- **VictoryScene** – Race end/winner display
+- **PauseScene** – Pause menu
+- **SelectMapScene** – Map selection
+- **RaceScene** – Core gameplay scene
 
 #### Orange/Yellow (Game Logic):
 
-- GameWorld (Box2D) – Physics simulation engine managing all dynamic bodies
-- Track (TMXLite) – Map data loaded from Tiled format files
+- **GameWorld (Box2D)** – Physics simulation engine managing all dynamic bodies
+- **Track (TMXLite)** – Map data loaded from Tiled format files
 
 #### Pink/Salmon (Game Objects):
 
-- Vehicle – Player-controlled vehicles with physics bodies
-- HardObstacle – Static map obstacles (walls, barriers)
-- SoftObstacle – Dynamic obstacles (oil slicks, boosters)
+- **Vehicle** – Player-controlled vehicles with physics bodies
+- **HardObstacle** – Static map obstacles (walls, barriers)
+- **SoftObstacle** – Dynamic obstacles (oil slicks, boosters)
 
 #### Architecture Flow
 
@@ -83,7 +85,7 @@ Purpose: Cross-platform multimedia framework for graphics, audio, and input hand
     - `sf::Music::play() / stop()` - Control playback
     - `sf::Music::setLoop()` - Enable looping for background music
 
-#### Graphics Module (sf::Texture, sf::Sprite, sf::RenderWindow)
+#### Graphics Module (`sf::Texture`, `sf::Sprite`, `sf::RenderWindow`)
 - **Location:** Multiple scene files and rendering code
 - **Usage:** Texture loading, sprite rendering, window management
 - **Key Classes:**
@@ -91,14 +93,14 @@ Purpose: Cross-platform multimedia framework for graphics, audio, and input hand
     - `sf::Texture` - Image resources for sprites and backgrounds
     - `sf::Sprite` - 2D drawable objects positioned on screen
 
-#### Input Module (sf::Keyboard, sf::Event)
+#### Input Module (`sf::Keyboard`, `sf::Event`)
 - **Location:** InputManager.hpp, scene event handlers
 - **Usage:** Keyboard input detection and event processing
 - **Key Functions:**
     - `sf::Keyboard::isKeyPressed()` - Poll keyboard state
     - `sf::Event` - Event-driven input handling
 
-#### Window Module (sf::View)
+#### Window Module (`sf::View`)
 - **Location:** Camera.cpp, scene rendering
 - **Usage:** Split-screen camera management and viewport control
 
@@ -123,7 +125,7 @@ Purpose: Cross-platform multimedia framework for graphics, audio, and input hand
         - `b2ContactEvents` - Contact-based events (vehicle collisions)
 
 ## TMXLite
-- **Purpose:** Load and render Tiled (.tmx) map files for level design.
+- **Purpose:** Load and render Tiled `.tmx` map files for level design.
 - **Location:** src/Race/Track.hpp/cpp, map loading, and object parsing
 - **Key Interfaces:**
     - Map Loading:
@@ -243,16 +245,16 @@ Work across sprints was distributed according to skill areas:
 
 ---
 
-# Sprint 1 — Setup & First Movement (13.10 – 24.10)
+## Sprint 1 — Setup & First Movement (13.10 – 24.10)
 
-## Planned Work
+### Planned Work
 - Set up CMake and integrate SFML and Box2D  
 - Add JSON library  
 - Load and draw a map  
 - Implement basic vehicle movement and collisions  
 - Create simple main menu  
 
-## Completed Work
+### Completed Work
 
 **Linh Bui**
 - Project and build setup, including CMake configuration  
@@ -268,16 +270,16 @@ Work across sprints was distributed according to skill areas:
 
 ---
 
-# Sprint 2 — Core Race Loop (27.10 – 07.11)
+## Sprint 2 — Core Race Loop (27.10 – 07.11)
 
-## Planned Work
+### Planned Work
 - Add a second local player  
 - Add soft and hard obstacles and boosters  
 - Countdown, checkpoints, finish line, and victory screen  
 - HUD for laps and timer  
 - Add unit tests  
 
-## Completed Work
+### Completed Work
 
 **Linh Bui**
 - Implemented heckpoint system  
@@ -302,15 +304,15 @@ Work across sprints was distributed according to skill areas:
 
 ---
 
-# Sprint 3 — Content & Polish (10.11 – 21.11)
+## Sprint 3 — Content & Polish (10.11 – 21.11)
 
-## Planned Work
+### Planned Work
 - Sound effects and music  
 - Additional vehicle type  
 - Terrain types with handling effects  
 - Optional: online play  
 
-## Completed Work
+### Completed Work
 
 **Linh Bui**
 - Implemented audio system for sound effects and background music
@@ -329,14 +331,14 @@ Work across sprints was distributed according to skill areas:
 
 ---
 
-# Sprint 4 — Stabilize & Submit (24.11 – 05.12)
+## Sprint 4 — Stabilize & Submit (24.11 – 05.12)
 
-## Planned Work
+### Planned Work
 - Bug fixes and code cleanup  
 - Small performance improvements  
 - Write user guide and final report  
 
-## Completed Work
+### Completed Work
 
 **Linh Bui**
 - Contributed to final documentation
