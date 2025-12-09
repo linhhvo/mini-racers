@@ -1,6 +1,7 @@
 # Mini Racers 
 A C++ top-down racing game inspired by Micro Machines, featuring two-player local multiplayer, checkpoint-based lap counting, and Box2D-powered physics with dynamic obstacles and boosters.
 
+---
 # Group
 
 - Linh Bui
@@ -8,6 +9,7 @@ A C++ top-down racing game inspired by Micro Machines, featuring two-player loca
 - Lam Ho
 - Stanislaw Piskorski
 
+---
 # Repository organization
 <details>
     <summary> Folder structure </summary>
@@ -96,6 +98,7 @@ A C++ top-down racing game inspired by Micro Machines, featuring two-player loca
 
 </details>
 
+---
 # Features
 ## Core Gameplay Features
 - Local two-player split-screen multiplayer
@@ -125,6 +128,7 @@ A C++ top-down racing game inspired by Micro Machines, featuring two-player loca
 - Background music during gameplay
 - Sound effects for driving and game events
 
+---
 # Installation
 
 1. Install dependencies
@@ -148,6 +152,7 @@ mkdir build && cd build
 cmake .. && make && ./MicroMachines
 ```
 
+---
 # How to play
 ### Menu:
 - Arrow keys to navigate
@@ -158,3 +163,5 @@ cmake .. && make && ./MicroMachines
 - Player 1 (left view): WASD
 - Player 2 (right view): Arrow keys
 - ESC to pause 
+
+---
