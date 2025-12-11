@@ -11,7 +11,6 @@
  * Provides a centralized interface for managing game audio:
  * - Background music playback (looping)
  * - Sound effects playback
- * - Error suppression for audio devices on headless systems
  */
 class AudioManager {
 public:

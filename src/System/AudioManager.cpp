@@ -3,19 +3,9 @@
 #include <iostream>
 #include <unistd.h>
 
-// // Suppress ALSA/OpenAL error messages (redirects stderr to /dev/null)
-// static void suppressAudioErrors() {
-//     int devnull = open("/dev/null", O_WRONLY);
-//     if (devnull != -1) {
-//         dup2(devnull, STDERR_FILENO);
-//         close(devnull);
-//     }
-// }
 
-// Constructor - suppress audio device errors on initialization
-AudioManager::AudioManager() {
-  // suppressAudioErrors();
-}
+// Constructor
+AudioManager::AudioManager() {}
 
 // Static sound effect object - keeps sound alive while playing
 sf::Music AudioManager::soundEffect_;

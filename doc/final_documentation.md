@@ -36,9 +36,6 @@ The program is coded in C++ and includes a scene manager, an input manager, a ga
 - **InputManager** – Handles keyboard input for player controls
 - **AudioManager** – Singleton responsible for audio playback
 - **CheckpointManager** – Tracks lap progression and race completion
-
-#### Gray (Configuration):
-
 - **Config** – Game settings and constants
 
 #### Blue (Scene Layer):
@@ -50,12 +47,12 @@ The program is coded in C++ and includes a scene manager, an input manager, a ga
 - **SelectMapScene** – Map selection
 - **RaceScene** – Core gameplay scene
 
-#### Orange/Yellow (Game Logic):
+#### Orange (Game Logic):
 
 - **GameWorld (Box2D)** – Physics simulation engine managing all dynamic bodies
 - **Track (TMXLite)** – Map data loaded from Tiled format files
 
-#### Pink/Salmon (Game Objects):
+#### Pink (Game Objects):
 
 - **Vehicle** – Player-controlled vehicles with physics bodies
 - **HardObstacle** – Static map obstacles (walls, barriers)
@@ -142,6 +139,13 @@ Purpose: Cross-platform multimedia framework for graphics, audio, and input hand
         - Tileset extraction for dynamic sprite generation
 
 ---
+## Platform-Specific Audio Behavior
+
+- **Linux/Ubuntu:** Audio system fully functional with hardware audio output
+- **WSL (Windows Subsystem for Linux):
+  - **Error:** `ALSA lib pulse.c:242: PulseAudio: Unable to connect: Timeout`
+  - **Cause:** WSL lacks audio hardware. SFML attempts PulseAudio connection and times out, causing audio glitches.
+  - **Impact:** Intermittent or no audio output during gameplay, but game runs smoothly otherwise. 
 
 # Instructions for Building and Using the Software
 
