@@ -46,6 +46,7 @@ private:
   GameContext &context_;
   b2WorldId world_;
   std::vector<std::unique_ptr<Checkpoint>> checkpoints_;
+  std::vector<int> checkpointIds_; // Store checkpoint IDs (from TMX) corresponding to checkpoints_
   std::vector<CarProgress> carProgress_;
   bool raceFinished_ = false;
   int winnerCarID_ = -1;

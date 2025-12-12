@@ -383,6 +383,10 @@ void RaceScene::render() {
 
     for (auto &sprite : carSprites)
       window.draw(sprite);
+
+    // Draw checkpoint layers above cars for correct z-ordering
+    if (useTmxMap_)
+      track_.drawCheckpointLayers(window, sf::RenderStates::Default);
   }
 
   // Reset to default view for HUD (full screen overlay)

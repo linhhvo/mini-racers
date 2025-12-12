@@ -296,7 +296,7 @@ void Track::draw(sf::RenderTarget &target, sf::RenderStates states) const {
   std::map<const sf::Texture *, std::vector<sf::Vertex>> textureGroups;
 
   // Render layers in the order they appear in the TMX file (bottom to top)
-  // This ensures correct z-ordering (e.g., checkpoints above track)
+  // Skip checkpoint layers - they will be drawn separately after cars
   for (const std::string &layerName : layerOrder_) {
     auto layerIt = layerTiles_.find(layerName);
     if (layerIt == layerTiles_.end()) {
@@ -308,12 +308,63 @@ void Track::draw(sf::RenderTarget &target, sf::RenderStates states) const {
         layerNameLower.begin(), layerNameLower.end(), layerNameLower.begin(),
         [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-    // Skip checkpoint activation layers (checkpoint_1, checkpoint_2, etc.)
-    // unless activated
+    // Skip all checkpoint layers - they will be drawn separately
     bool isCheckpointLayer = layerNameLower.find("checkpoint_") == 0;
     if (isCheckpointLayer) {
-      if (!activeCheckpointLayers_.contains(layerNameLower))
-        continue;
+      continue;
+    }
+
+    // Add tiles from this layer to the render groups
+    for (const auto &quad : layerIt->second) {
+      if (quad.texture) {
+        auto &vertices = textureGroups[quad.texture];
+        // Add two triangles per quad
+        vertices.push_back(quad.vertices[0]);
+        vertices.push_back(quad.vertices[1]);
+        vertices.push_back(quad.vertices[2]);
+        vertices.push_back(quad.vertices[0]);
+        vertices.push_back(quad.vertices[2]);
+        vertices.push_back(quad.vertices[3]);
+      }
+    }
+  }
+
+  // Draw each texture group
+  for (const auto &group : textureGroups) {
+    states.texture = group.first;
+    target.draw(group.second.data(), group.second.size(), sf::Triangles,
+                states);
+  }
+}
+
+void Track::drawCheckpointLayers(sf::RenderTarget &target, sf::RenderStates states) const {
+  if (!mapLoaded_)
+    return;
+
+  // Group tiles by texture for efficient rendering
+  std::map<const sf::Texture *, std::vector<sf::Vertex>> textureGroups;
+
+  // Render only checkpoint layers that are activated
+  for (const std::string &layerName : layerOrder_) {
+    auto layerIt = layerTiles_.find(layerName);
+    if (layerIt == layerTiles_.end()) {
+      continue;
+    }
+
+    std::string layerNameLower = layerName;
+    std::transform(
+        layerNameLower.begin(), layerNameLower.end(), layerNameLower.begin(),
+        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+    // Only process checkpoint layers
+    bool isCheckpointLayer = layerNameLower.find("checkpoint_") == 0;
+    if (!isCheckpointLayer) {
+      continue;
+    }
+
+    // Only draw if this checkpoint layer is activated
+    if (!activeCheckpointLayers_.contains(layerNameLower)) {
+      continue;
     }
 
     // Add tiles from this layer to the render groups
