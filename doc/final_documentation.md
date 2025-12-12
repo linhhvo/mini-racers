@@ -1,6 +1,6 @@
 # Overview
 
-Micro Machines is a top-down multiplayer racing game. Two players race against each other on a track, avoiding obstacles and hitting boosters on the way. The first to complete three laps wins the race. The game features local split-screen multiplayer, dynamic vehicle handling, and a robust checkpoint system.
+Mini Racers is a top-down multiplayer racing game. Two players race against each other on a track, avoiding obstacles and hitting boosters on the way. The first to complete three laps wins the race. The game features local split-screen multiplayer, dynamic vehicle handling, and a robust checkpoint system.
 
 ---
 
