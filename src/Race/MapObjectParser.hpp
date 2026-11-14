@@ -28,6 +28,7 @@ struct SoftObstacleData {
 struct CheckpointData {
   sf::Vector2f center;
   sf::Vector2f halfSize; // half width/height for Box2D
+  int id = 0; // Checkpoint ID from TMX property (used for layer names)
 };
 
 class MapObjectParser {

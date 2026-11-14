@@ -46,6 +46,9 @@ public:
   // Check if a position (in pixels) is on the "Track" tile layer
   bool isPositionOnTrack(const sf::Vector2f &position) const;
 
+  // Draw only checkpoint layers (called after cars for correct z-ordering)
+  void drawCheckpointLayers(sf::RenderTarget &target, sf::RenderStates states) const;
+
 private:
   void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
   void createLayer(const tmx::Map &map, const tmx::TileLayer &layer,
