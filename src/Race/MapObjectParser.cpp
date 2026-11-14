@@ -120,6 +120,15 @@ void MapObjectParser::parseCheckpointObjects(const tmx::ObjectGroup &group) {
 
     cp.halfSize = {aabb.width * 0.5f, aabb.height * 0.5f};
     cp.center = {pos.x + cp.halfSize.x, pos.y + cp.halfSize.y};
+    cp.id = 0; // Default if no id property
+
+    // Read the 'id' property from the TMX object
+    for (const auto &prop : obj.getProperties()) {
+      if (prop.getName() == "id" && prop.getType() == tmx::Property::Type::Int) {
+        cp.id = prop.getIntValue();
+        break;
+      }
+    }
 
     checkpoints_.push_back(cp);
   }

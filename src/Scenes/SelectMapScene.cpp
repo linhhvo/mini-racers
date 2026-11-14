@@ -46,13 +46,13 @@ SelectMapScene::SelectMapScene(SceneManager &manager, GameContext &context)
 
   // apply the selected map to the game
   map1Btn->onPress = [&]() {
-    context_.config->TMX_MAP = "../assets/maps/map1.tmx";
-    confirmationText_.setString("Map 1 applied successfully");
+    context_.config->TMX_MAP = "../assets/maps/map_1.tmx";
+    confirmationText_.setString("Map \"map_1\" applied successfully");
   };
 
   map2Btn->onPress = [&]() {
-    context_.config->TMX_MAP = "../assets/maps/map2.tmx";
-    confirmationText_.setString("Map 2 applied successfully");
+    context_.config->TMX_MAP = "../assets/maps/map_2.tmx";
+    confirmationText_.setString("Map \"map_2\" applied successfully");
   };
 
   buttonsContainer_.addBtn(std::move(map1Btn));
