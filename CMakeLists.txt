@@ -25,14 +25,9 @@ target_link_libraries(${EXECUTABLE_NAME} box2d)
 add_subdirectory(libs/tmxlite/tmxlite)
 target_link_libraries(${EXECUTABLE_NAME} tmxlite)
 
-# Detect and add SFML
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules" ${CMAKE_MODULE_PATH})
-#Find any version 2.X of SFML
-find_package(SFML 2 REQUIRED audio graphics window system)
-if(SFML_FOUND)
-    include_directories(${SFML_INCLUDE_DIR})
-    target_link_libraries(${EXECUTABLE_NAME} sfml-system sfml-window sfml-graphics sfml-audio)
-endif()
+# Add SFML 2
+add_subdirectory(libs/SFML)
+target_link_libraries(${EXECUTABLE_NAME} sfml-system sfml-window sfml-graphics sfml-audio)
 
 #Installing targets 
 install (TARGETS ${EXECUTABLE_NAME} DESTINATION bin)
