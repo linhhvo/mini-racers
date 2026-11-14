@@ -1,6 +1,6 @@
 # Overview
 
-Micro Machines is a top-down multiplayer racing game. Two players race against each other on a track, avoiding obstacles and hitting boosters on the way. The first to complete three laps wins the race. The game features local split-screen multiplayer, dynamic vehicle handling, and a robust checkpoint system.
+Mini Racers is a top-down multiplayer racing game. Two players race against each other on a track, avoiding obstacles and hitting boosters on the way. The first to complete three laps wins the race. The game features local split-screen multiplayer, dynamic vehicle handling, and a robust checkpoint system.
 
 ---
 
@@ -36,9 +36,6 @@ The program is coded in C++ and includes a scene manager, an input manager, a ga
 - **InputManager** – Handles keyboard input for player controls
 - **AudioManager** – Singleton responsible for audio playback
 - **CheckpointManager** – Tracks lap progression and race completion
-
-#### Gray (Configuration):
-
 - **Config** – Game settings and constants
 
 #### Blue (Scene Layer):
@@ -50,12 +47,12 @@ The program is coded in C++ and includes a scene manager, an input manager, a ga
 - **SelectMapScene** – Map selection
 - **RaceScene** – Core gameplay scene
 
-#### Orange/Yellow (Game Logic):
+#### Orange (Game Logic):
 
 - **GameWorld (Box2D)** – Physics simulation engine managing all dynamic bodies
 - **Track (TMXLite)** – Map data loaded from Tiled format files
 
-#### Pink/Salmon (Game Objects):
+#### Pink (Game Objects):
 
 - **Vehicle** – Player-controlled vehicles with physics bodies
 - **HardObstacle** – Static map obstacles (walls, barriers)
@@ -142,6 +139,17 @@ Purpose: Cross-platform multimedia framework for graphics, audio, and input hand
         - Tileset extraction for dynamic sprite generation
 
 ---
+# Known issues
+## Platform-Specific Audio Behavior
+
+- **Linux/Ubuntu:** Audio system fully functional with hardware audio output
+- **WSL (Windows Subsystem for Linux):**
+  - **Error:** `ALSA lib pulse.c:242: PulseAudio: Unable to connect: Timeout`
+  - **Cause:** WSL lacks audio hardware. SFML attempts PulseAudio connection and times out, causing audio glitches.
+  - **Impact:** Intermittent or no audio output during gameplay, but game runs smoothly otherwise. 
+
+## Valgrind Memory Check
+- Valgrind output reports no memory leaks. Some memory is reported as still reachable when exit the game which comes from SFML's internal allocations.
 
 # Instructions for Building and Using the Software
 
@@ -243,7 +251,7 @@ Work across sprints was distributed according to skill areas:
 - Build system, audio, and race logic – Linh Bui  
 - TMX map content and integration – Stanislaw Piskorski  
 
----
+We also utilized LLM such as ChatGPT to debug our codes, reorganize project structure, and generate documentation template.
 
 ## Sprint 1 — Setup & First Movement (13.10 – 24.10)
 
@@ -267,8 +275,6 @@ Work across sprints was distributed according to skill areas:
 - Set up scene management system 
 - Implemented menu UI components 
 - Handle transitions between menu and race scene 
-
----
 
 ## Sprint 2 — Core Race Loop (27.10 – 07.11)
 
@@ -302,8 +308,6 @@ Work across sprints was distributed according to skill areas:
 - Implemented soft obstacles, boosters, and checkpoint objects in TMX map
 - Implemented split screen views
 
----
-
 ## Sprint 3 — Content & Polish (10.11 – 21.11)
 
 ### Planned Work
@@ -328,8 +332,6 @@ Work across sprints was distributed according to skill areas:
 - Added map selection option to the main menu
 - Adapted HUD lap display for split-screen
 - Added countdown system with input freeze
-
----
 
 ## Sprint 4 — Stabilize & Submit (24.11 – 05.12)
 
